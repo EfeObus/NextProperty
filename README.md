@@ -788,11 +788,21 @@ Please see `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` for details on how to cont
 
 ## Contributing
 
+We welcome contributions from the community! See our [CONTRIBUTORS.md](CONTRIBUTORS.md) for the full team and contribution guidelines.
+
+### Quick Start
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Add tests
 5. Submit a pull request
+
+### Core Team
+- [@EfeObus](https://github.com/EfeObus) - Project Lead
+- [@RajyKetharaju9](https://github.com/RajyKetharaju9) - Developer
+- [@KIRTIRAJ4327](https://github.com/KIRTIRAJ4327) - Developer
+- [@Nisha-d7](https://github.com/Nisha-d7) - Developer
+- [@AneettaJijo](https://github.com/AneettaJijo) - Developer
 
 ## License
 
