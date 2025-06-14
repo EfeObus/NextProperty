@@ -1,0 +1,151 @@
+/* Modern Real Estate Hero Background */
+.hero-real-estate-bg {
+    position: relative;
+    background: linear-gradient(
+        135deg,
+        rgba(44, 62, 80, 0.9) 0%,
+        rgba(52, 73, 94, 0.7) 25%,
+        rgba(102, 126, 234, 0.8) 50%,
+        rgba(118, 75, 162, 0.7) 75%,
+        rgba(44, 62, 80, 0.9) 100%
+    );
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.hero-real-estate-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        /* City skyline silhouette */
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Cpath d='M0 1080h120V800h60v280h100V720h80v360h120V680h100v400h140V640h120v440h160V600h140v480h160V560h120v520h160V520h140v560h160V480h160v600h160V440h140v640z' fill='rgba(255,255,255,0.03)'/%3E%3C/svg%3E");
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+    z-index: 1;
+}
+
+.hero-real-estate-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        /* Floating particles */
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 2px, transparent 2px),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 1px, transparent 1px),
+        radial-gradient(circle at 40% 40%, rgba(255,255,255,0.12) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 60% 80%, rgba(255,255,255,0.06) 1px, transparent 1px),
+        radial-gradient(circle at 90% 60%, rgba(255,255,255,0.1) 2px, transparent 2px);
+    background-size: 100px 100px, 150px 150px, 200px 200px, 120px 120px, 180px 180px;
+    animation: float-particles 30s infinite linear;
+    z-index: 2;
+}
+
+@keyframes float-particles {
+    0% { transform: translateY(0px) rotate(0deg); }
+    100% { transform: translateY(-100px) rotate(360deg); }
+}
+
+/* Animated Building Icons */
+.hero-buildings {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    z-index: 3;
+    overflow: hidden;
+}
+
+.building {
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    border-radius: 4px 4px 0 0;
+    opacity: 0.6;
+    animation: building-glow 3s ease-in-out infinite alternate;
+}
+
+.building:nth-child(1) { left: 5%; width: 40px; height: 120px; animation-delay: 0s; }
+.building:nth-child(2) { left: 15%; width: 60px; height: 160px; animation-delay: 0.5s; }
+.building:nth-child(3) { left: 25%; width: 35px; height: 100px; animation-delay: 1s; }
+.building:nth-child(4) { left: 35%; width: 55px; height: 180px; animation-delay: 1.5s; }
+.building:nth-child(5) { left: 45%; width: 45px; height: 140px; animation-delay: 2s; }
+.building:nth-child(6) { left: 55%; width: 70px; height: 200px; animation-delay: 2.5s; }
+.building:nth-child(7) { left: 65%; width: 50px; height: 130px; animation-delay: 3s; }
+.building:nth-child(8) { left: 75%; width: 40px; height: 110px; animation-delay: 3.5s; }
+.building:nth-child(9) { left: 85%; width: 65px; height: 170px; animation-delay: 4s; }
+.building:nth-child(10) { left: 95%; width: 30px; height: 90px; animation-delay: 4.5s; }
+
+@keyframes building-glow {
+    0% { 
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        transform: scaleY(1);
+    }
+    100% { 
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+        transform: scaleY(1.05);
+    }
+}
+
+/* Content overlay */
+.hero-content {
+    position: relative;
+    z-index: 10;
+    padding: 100px 0;
+    text-align: center;
+    color: white;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    animation: fade-in-up 1s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    animation: fade-in-up 1s ease-out 0.3s both;
+}
+
+.hero-cta {
+    animation: fade-in-up 1s ease-out 0.6s both;
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .building {
+        height: 80%;
+    }
+}

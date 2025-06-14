@@ -1,0 +1,670 @@
+{% extends "base.html" %}
+
+{% block title %}Canada Map View - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-container {
+        height: 600px;
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .map-filters {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .property-popup {
+        max-width: 250px;
+    }
+    
+    .property-popup .popup-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .property-popup .popup-address {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 10px;
+    }
+    
+    .property-popup .popup-details {
+        font-size: 0.8rem;
+        color: #888;
+    }
+    
+    .map-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-toggle {
+        cursor: pointer;
+    }
+    
+    @media (max-width: 768px) {
+        .map-container {
+            height: 400px;
+        }
+        
+        .map-filters {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold text-primary">
+                <i class="fas fa-map me-3"></i>Canada Property Map View
+            </h1>
+            <p class="lead text-muted">Explore real estate listings across Canada on an interactive map</p>
+        </div>
+    </div>
+    
+    <!-- Map Statistics -->
+    <div class="map-stats">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <h3 class="mb-1" id="total-properties">{{ properties|length }}</h3>
+                <small>Properties Shown</small>
+            </div>
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <h3 class="mb-1" id="avg-price">
+                    {% if properties %}
+                        {{ ((properties | sum(attribute='sold_price') | float) / properties|length) | format_price }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h3>
+                <small>Average Price</small>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3 class="mb-1" id="price-range">
+                    {% if properties %}
+                        {{ (properties | map(attribute='sold_price') | min) | format_price }} - {{ (properties | map(attribute='sold_price') | max) | format_price }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h3>
+                <small>Price Range</small>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3 class="mb-1">
+                    {% set unique_cities = properties | map(attribute='city') | list | unique | list %}
+                    {{ unique_cities | length }}
+                </h3>
+                <small>Cities</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Filters -->
+    <div class="map-filters">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+            <button class="btn btn-sm btn-outline-primary filter-toggle d-md-none" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        
+        <div class="collapse d-md-block" id="filterCollapse">
+            <form method="GET" action="{{ url_for('main.mapview') }}" id="mapFilterForm">
+                <div class="row g-3">
+                    <div class="col-md-3 col-sm-6">
+                        <label for="city" class="form-label">City</label>
+                        <select class="form-select" id="city" name="city">
+                            <option value="">All Cities</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}" {% if current_filters.city == city %}selected{% endif %}>
+                                {{ city }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <label for="type" class="form-label">Property Type</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="">All Types</option>
+                            {% for ptype in property_types %}
+                            <option value="{{ ptype }}" {% if current_filters.type == ptype %}selected{% endif %}>
+                                {{ ptype }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2 col-sm-6">
+                        <label for="min_price" class="form-label">Min Price</label>
+                        <input type="number" class="form-control" id="min_price" name="min_price" 
+                               placeholder="0" value="{{ current_filters.min_price or '' }}">
+                    </div>
+                    
+                    <div class="col-md-2 col-sm-6">
+                        <label for="max_price" class="form-label">Max Price</label>
+                        <input type="number" class="form-control" id="max_price" name="max_price" 
+                               placeholder="No limit" value="{{ current_filters.max_price or '' }}">
+                    </div>
+                    
+                    <div class="col-md-1 col-sm-6">
+                        <label for="bedrooms" class="form-label">Beds</label>
+                        <select class="form-select" id="bedrooms" name="bedrooms">
+                            <option value="">Any</option>
+                            {% for i in range(1, 6) %}
+                            <option value="{{ i }}" {% if current_filters.bedrooms == i %}selected{% endif %}>
+                                {{ i }}+
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-1 col-sm-6">
+                        <label for="bathrooms" class="form-label">Baths</label>
+                        <select class="form-select" id="bathrooms" name="bathrooms">
+                            <option value="">Any</option>
+                            {% for i in [1, 1.5, 2, 2.5, 3, 3.5, 4] %}
+                            <option value="{{ i }}" {% if current_filters.bathrooms == i %}selected{% endif %}>
+                                {{ i }}+
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i>Apply Filters
+                        </button>
+                        <a href="{{ url_for('main.mapview') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Clear All
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Map Container -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body p-0">
+                    <div id="map" class="map-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Legend -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Map Legend</h6>
+                    <div class="row">
+                        <div class="col-md-3 col-6 mb-2">
+                            <span class="badge bg-success me-2">●</span>
+                            <small>Under $500K</small>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <span class="badge bg-warning me-2">●</span>
+                            <small>$500K - $1M</small>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <span class="badge bg-danger me-2">●</span>
+                            <small>$1M - $2M</small>
+                        </div>
+                        <div class="col-md-3 col-6 mb-2">
+                            <span class="badge bg-dark me-2">●</span>
+                            <small>Over $2M</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet Maps -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet MarkerCluster -->
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+<script>
+// Define Canada's geographic bounds
+var canadaBounds = [
+    [41.7, -141.0], // Southwest corner (southern border, western border)
+    [83.5, -52.6]   // Northeast corner (northern tip, eastern coast)
+];
+
+// Calculate Canada center
+var canadaCenter = [56.1304, -106.3468]; // Geographic center of Canada
+
+// Initialize map centered on Canada
+var map = L.map('map', {
+    center: canadaCenter,
+    zoom: 4,
+    maxBounds: canadaBounds,
+    maxBoundsViscosity: 1.0
+});
+
+// Set initial view to show Canada or filtered area
+{% if properties %}
+var initialCenter = [{{ map_center[0] }}, {{ map_center[1] }}];
+var initialZoom = 8;
+// If properties exist, center on them but within Canada bounds
+if (initialCenter[0] >= 41.7 && initialCenter[0] <= 83.5 && 
+    initialCenter[1] >= -141.0 && initialCenter[1] <= -52.6) {
+    map.setView(initialCenter, initialZoom);
+} else {
+    map.setView(canadaCenter, 4);
+}
+{% else %}
+// No properties, show all of Canada
+map.setView(canadaCenter, 4);
+{% endif %}
+
+// Add tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Create marker cluster group
+var markers = L.markerClusterGroup({
+    chunkedLoading: true,
+    maxClusterRadius: 50
+});
+
+// Function to get marker color based on price
+function getMarkerColor(price) {
+    if (!price) return 'gray';
+    if (price < 500000) return 'green';
+    if (price < 1000000) return 'orange';
+    if (price < 2000000) return 'red';
+    return 'black';
+}
+
+// Function to format price
+function formatPrice(price) {
+    if (!price) return 'N/A';
+    if (price >= 1000000) {
+        return '$' + (price / 1000000).toFixed(1) + 'M';
+    } else if (price >= 1000) {
+        return '$' + (price / 1000).toFixed(0) + 'K';
+    }
+    return '$' + price.toLocaleString();
+}
+
+// Add property markers
+var properties = {{ properties | tojson }};
+var markerArray = [];
+
+properties.forEach(function(property) {
+    if (property.latitude && property.longitude) {
+        var marker = L.circleMarker([property.latitude, property.longitude], {
+            radius: 8,
+            fillColor: getMarkerColor(property.sold_price),
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+        });
+        
+        // Create popup content
+        var popupContent = `
+            <div class="property-popup">
+                <div class="popup-price">${formatPrice(property.sold_price)}</div>
+                <div class="popup-address">${property.address || 'Address not available'}</div>
+                <div class="popup-details">
+                    <strong>${property.city || 'N/A'}</strong><br>
+                    ${property.property_type || 'N/A'} • 
+                    ${property.bedrooms || 'N/A'} bed • 
+                    ${property.bathrooms || 'N/A'} bath
+                    ${property.sqft ? '<br>' + property.sqft.toLocaleString() + ' sq ft' : ''}
+                </div>
+                <div class="mt-2">
+                    <a href="/property/${property.listing_id}" class="btn btn-sm btn-primary">
+                        View Details
+                    </a>
+                    <button class="btn btn-sm btn-outline-secondary save-btn" 
+                            data-listing-id="${property.listing_id}"
+                            onclick="showAuthMessage()"
+                            title="Authentication required">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        markers.addLayer(marker);
+        markerArray.push(marker);
+    }
+});
+
+// Add marker cluster group to map
+map.addLayer(markers);
+
+// Fit map to markers if properties exist, constrained to Canada
+if (markerArray.length > 0) {
+    var bounds = markers.getBounds();
+    // Ensure bounds don't exceed Canada boundaries
+    var constrainedBounds = L.latLngBounds(
+        L.latLng(Math.max(bounds.getSouth(), 41.7), Math.max(bounds.getWest(), -141.0)),
+        L.latLng(Math.min(bounds.getNorth(), 83.5), Math.min(bounds.getEast(), -52.6))
+    );
+    map.fitBounds(constrainedBounds, {padding: [20, 20]});
+}
+
+// Add loading indicator
+function showLoading() {
+    var loading = document.createElement('div');
+    loading.id = 'map-loading';
+    loading.className = 'position-absolute top-50 start-50 translate-middle';
+    loading.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+    document.getElementById('map').appendChild(loading);
+}
+
+function hideLoading() {
+    var loading = document.getElementById('map-loading');
+    if (loading) loading.remove();
+}
+
+// Enhanced filter functionality with AJAX
+function applyFiltersAjax() {
+    showLoading();
+    
+    var formData = new FormData(document.getElementById('mapFilterForm'));
+    var searchParams = new URLSearchParams(formData);
+    
+    fetch('/api/properties/map-data?' + searchParams.toString())
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+            
+            // Clear existing markers
+            markers.clearLayers();
+            
+            // Add new markers
+            data.properties.forEach(function(property) {
+                if (property.lat && property.lng) {
+                    var marker = L.circleMarker([property.lat, property.lng], {
+                        radius: 8,
+                        fillColor: getMarkerColor(property.price),
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                    
+                    var popupContent = `
+                        <div class="property-popup">
+                            <div class="popup-price">${formatPrice(property.price)}</div>
+                            <div class="popup-address">${property.address || 'Address not available'}</div>
+                            <div class="popup-details">
+                                <strong>${property.city || 'N/A'}</strong><br>
+                                ${property.property_type || 'N/A'} • 
+                                ${property.bedrooms || 'N/A'} bed • 
+                                ${property.bathrooms || 'N/A'} bath
+                                ${property.sqft ? '<br>' + property.sqft.toLocaleString() + ' sq ft' : ''}
+                            </div>
+                            <div class="mt-2">
+                                <a href="/property/${property.listing_id}" class="btn btn-sm btn-primary">
+                                    View Details
+                                </a>
+                                <button class="btn btn-sm btn-outline-secondary save-btn" 
+                                        data-listing-id="${property.listing_id}"
+                                        onclick="showAuthMessage()"
+                                        title="Authentication required">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    marker.bindPopup(popupContent);
+                    markers.addLayer(marker);
+                }
+            });
+            
+            // Update stats
+            document.getElementById('total-properties').textContent = data.count;
+            
+            // Fit map to new markers within Canada bounds
+            if (data.count > 0) {
+                var bounds = markers.getBounds();
+                // Ensure bounds don't exceed Canada boundaries
+                var constrainedBounds = L.latLngBounds(
+                    L.latLng(Math.max(bounds.getSouth(), 41.7), Math.max(bounds.getWest(), -141.0)),
+                    L.latLng(Math.min(bounds.getNorth(), 83.5), Math.min(bounds.getEast(), -52.6))
+                );
+                map.fitBounds(constrainedBounds, {padding: [20, 20]});
+            } else {
+                // No properties found, show all of Canada
+                map.setView(canadaCenter, 4);
+            }
+            
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error loading map data', 'error');
+            hideLoading();
+        });
+}
+
+{% if current_user.is_authenticated %}
+// Save/unsave property function
+function toggleSave(listingId) {
+    fetch('/api/save-property', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            listing_id: listingId,
+            action: 'toggle_favorite'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showToast(data.error, 'error');
+        } else {
+            // Update button appearance
+            var btn = document.querySelector(`[data-listing-id="${listingId}"]`);
+            if (btn) {
+                if (data.is_favorite) {
+                    btn.classList.remove('btn-outline-danger');
+                    btn.classList.add('btn-danger');
+                } else {
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-outline-danger');
+                }
+            }
+            
+            // Show success message
+            showToast(data.message, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error saving property', 'error');
+    });
+}
+{% else %}
+// Demo function for non-authenticated users
+function showAuthMessage() {
+    showToast('Authentication required to save properties. This feature will be available when user accounts are implemented.', 'info');
+}
+{% endif %}
+
+// Toast notification function
+function showToast(message, type) {
+    // Create toast element
+    var toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
+}
+
+// Handle filter form submission
+document.getElementById('mapFilterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    applyFiltersAjax();
+});
+
+// Real-time filter updates
+document.querySelectorAll('#mapFilterForm select, #mapFilterForm input').forEach(function(element) {
+    element.addEventListener('change', function() {
+        // Debounce the filter updates
+        clearTimeout(window.filterTimeout);
+        window.filterTimeout = setTimeout(applyFiltersAjax, 500);
+    });
+});
+
+// Mobile filter toggle
+document.querySelector('.filter-toggle')?.addEventListener('click', function() {
+    var icon = this.querySelector('i');
+    icon.classList.toggle('fa-chevron-down');
+    icon.classList.toggle('fa-chevron-up');
+});
+
+// Add search box control to map
+var searchControl = L.Control.extend({
+    options: {
+        position: 'topright'
+    },
+    
+    onAdd: function(map) {
+        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control search-control');
+        container.innerHTML = `
+            <div class="search-box">
+                <input type="text" id="mapSearch" placeholder="Search address..." class="form-control form-control-sm">
+                <button type="button" class="btn btn-sm btn-primary" onclick="searchLocation()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        `;
+        
+        L.DomEvent.disableClickPropagation(container);
+        return container;
+    }
+});
+
+map.addControl(new searchControl());
+
+// Search location function
+function searchLocation() {
+    var query = document.getElementById('mapSearch').value;
+    if (!query) return;
+    
+    // Geocoding using Nominatim with Canada restriction
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ca&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                
+                // Ensure the result is within Canada bounds
+                if (lat >= 41.7 && lat <= 83.5 && lon >= -141.0 && lon <= -52.6) {
+                    map.setView([lat, lon], 13);
+                    
+                    // Add temporary marker
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup(data[0].display_name)
+                        .openPopup();
+                } else {
+                    showToast('Location not found in Canada', 'error');
+                }
+            } else {
+                showToast('Location not found in Canada', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error searching location', 'error');
+        });
+}
+</script>
+
+<style>
+.search-control {
+    background: white;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.search-box {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    min-width: 250px;
+}
+
+.search-box input {
+    flex: 1;
+}
+
+.leaflet-popup-content {
+    margin: 10px;
+}
+
+.property-popup {
+    min-width: 200px;
+}
+
+/* Custom cluster styles */
+.marker-cluster-small {
+    background-color: rgba(181, 226, 140, 0.6);
+    border: 2px solid rgba(181, 226, 140, 1);
+}
+
+.marker-cluster-medium {
+    background-color: rgba(241, 211, 87, 0.6);
+    border: 2px solid rgba(241, 211, 87, 1);
+}
+
+.marker-cluster-large {
+    background-color: rgba(253, 156, 115, 0.6);
+    border: 2px solid rgba(253, 156, 115, 1);
+}
+</style>
+{% endblock %}

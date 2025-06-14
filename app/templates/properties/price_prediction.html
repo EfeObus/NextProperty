@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Price Prediction Result - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line text-success me-2"></i>
+                        Price Prediction Result
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if prediction %}
+                    <div class="text-center mb-4">
+                        <h2 class="text-primary mb-3">{{ prediction.predicted_price|format_currency }}</h2>
+                        <p class="text-muted">Estimated market value for this property</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Lower Bound</h6>
+                                    <h5 class="text-info">{{ prediction.confidence_interval.lower|format_currency }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Upper Bound</h6>
+                                    <h5 class="text-info">{{ prediction.confidence_interval.upper|format_currency }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6>Confidence Level</h6>
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-success" 
+                                 style="width: {{ prediction.confidence * 100 }}%">
+                                {{ "%.1f"|format(prediction.confidence * 100) }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">Model confidence in this prediction</small>
+                    </div>
+                    
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Property Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Bedrooms:</strong> {{ property_data.bedrooms }}</li>
+                                        <li><strong>Bathrooms:</strong> {{ property_data.bathrooms }}</li>
+                                        <li><strong>Square Feet:</strong> {{ property_data.square_feet|format_sqft }}</li>
+                                        <li><strong>Year Built:</strong> {{ property_data.year_built }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Property Type:</strong> {{ property_data.property_type }}</li>
+                                        <li><strong>Location:</strong> {{ property_data.city }}, {{ property_data.province }}</li>
+                                        <li><strong>Postal Code:</strong> {{ property_data.postal_code }}</li>
+                                        {% if property_data.lot_size %}
+                                        <li><strong>Lot Size:</strong> {{ property_data.lot_size|format_sqft }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if prediction.market_comparison %}
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">Market Comparison</h6>
+                        <p class="mb-0">{{ prediction.market_comparison }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('main.predict_price') }}" class="btn btn-outline-primary me-2">
+                            Predict Another Property
+                        </a>
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-primary">
+                            Browse Properties
+                        </a>
+                    </div>
+                    
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5>Unable to Generate Prediction</h5>
+                        <p class="text-muted">There was an issue generating the price prediction. Please try again.</p>
+                        <a href="{{ url_for('main.predict_price') }}" class="btn btn-primary">Try Again</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

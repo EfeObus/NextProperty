@@ -1,0 +1,122 @@
+<!-- Toast Notification Component -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11;">
+    <div id="toast-template" class="toast d-none" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-info-circle text-primary me-2" id="toast-icon"></i>
+            <strong class="me-auto" id="toast-title">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toast-message">
+            <!-- Message content -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced toast notification function
+function showToast(message, type = 'info', title = null) {
+    // Create a new toast element
+    const toastContainer = document.querySelector('.toast-container');
+    const template = document.getElementById('toast-template');
+    const toast = template.cloneNode(true);
+    
+    // Remove template id and d-none class
+    toast.id = 'toast-' + Date.now();
+    toast.classList.remove('d-none');
+    
+    // Set icon and styling based on type
+    const icon = toast.querySelector('#toast-icon');
+    const titleElement = toast.querySelector('#toast-title');
+    const messageElement = toast.querySelector('#toast-message');
+    
+    // Configure based on type
+    switch(type) {
+        case 'success':
+            icon.className = 'fas fa-check-circle text-success me-2';
+            titleElement.textContent = title || 'Success';
+            toast.classList.add('border-success');
+            break;
+        case 'error':
+        case 'danger':
+            icon.className = 'fas fa-exclamation-triangle text-danger me-2';
+            titleElement.textContent = title || 'Error';
+            toast.classList.add('border-danger');
+            break;
+        case 'warning':
+            icon.className = 'fas fa-exclamation-circle text-warning me-2';
+            titleElement.textContent = title || 'Warning';
+            toast.classList.add('border-warning');
+            break;
+        default:
+            icon.className = 'fas fa-info-circle text-info me-2';
+            titleElement.textContent = title || 'Info';
+            toast.classList.add('border-info');
+    }
+    
+    messageElement.textContent = message;
+    
+    // Add to container
+    toastContainer.appendChild(toast);
+    
+    // Initialize and show toast
+    const bsToast = new bootstrap.Toast(toast, {
+        autohide: true,
+        delay: type === 'error' ? 5000 : 3000
+    });
+    
+    bsToast.show();
+    
+    // Remove from DOM after hiding
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+    
+    return bsToast;
+}
+
+// Demo function for authentication required actions
+function showAuthMessage() {
+    showToast(
+        'Authentication required to save properties. This feature will be available when user accounts are implemented.',
+        'info',
+        'Authentication Required'
+    );
+}
+
+// Success message for completed actions
+function showSuccessMessage(message) {
+    showToast(message, 'success');
+}
+
+// Error message for failed actions
+function showErrorMessage(message) {
+    showToast(message, 'error');
+}
+</script>
+
+<style>
+.toast-container {
+    z-index: 9999 !important;
+}
+
+.toast {
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.toast.border-success {
+    border-left: 4px solid #28a745;
+}
+
+.toast.border-danger {
+    border-left: 4px solid #dc3545;
+}
+
+.toast.border-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.toast.border-info {
+    border-left: 4px solid #17a2b8;
+}
+</style>

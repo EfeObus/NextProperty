@@ -1,0 +1,1007 @@
+{% extends "base.html" %}
+
+{% block title %}Search Properties - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <!-- Search Header -->
+    <div class="search-header">
+        <div class="container">
+            <div class="search-form-container">
+                <form class="property-search-form" id="searchForm">
+                    <div class="search-row">
+                        <div class="search-field location-field">
+                            <label>Location</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <input type="text" name="location" placeholder="City, Province or Postal Code" 
+                                       value="{{ request.args.get('location', '') }}" id="locationInput">
+                                <div class="location-suggestions" id="locationSuggestions"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label>Property Type</label>
+                            <select name="property_type">
+                                <option value="">All Types</option>
+                                <option value="house" {{ 'selected' if request.args.get('property_type') == 'house' }}>House</option>
+                                <option value="condo" {{ 'selected' if request.args.get('property_type') == 'condo' }}>Condo</option>
+                                <option value="townhouse" {{ 'selected' if request.args.get('property_type') == 'townhouse' }}>Townhouse</option>
+                                <option value="apartment" {{ 'selected' if request.args.get('property_type') == 'apartment' }}>Apartment</option>
+                                <option value="commercial" {{ 'selected' if request.args.get('property_type') == 'commercial' }}>Commercial</option>
+                                <option value="land" {{ 'selected' if request.args.get('property_type') == 'land' }}>Land</option>
+                            </select>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label>Price Range</label>
+                            <select name="price_range">
+                                <option value="">Any Price</option>
+                                <option value="0-250000">Under $250K</option>
+                                <option value="250000-500000">$250K - $500K</option>
+                                <option value="500000-750000">$500K - $750K</option>
+                                <option value="750000-1000000">$750K - $1M</option>
+                                <option value="1000000-1500000">$1M - $1.5M</option>
+                                <option value="1500000-2000000">$1.5M - $2M</option>
+                                <option value="2000000+">$2M+</option>
+                            </select>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label>Bedrooms</label>
+                            <select name="bedrooms">
+                                <option value="">Any</option>
+                                <option value="1+">1+</option>
+                                <option value="2+">2+</option>
+                                <option value="3+">3+</option>
+                                <option value="4+">4+</option>
+                                <option value="5+">5+</option>
+                            </select>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label>Bathrooms</label>
+                            <select name="bathrooms">
+                                <option value="">Any</option>
+                                <option value="1+">1+</option>
+                                <option value="2+">2+</option>
+                                <option value="3+">3+</option>
+                                <option value="4+">4+</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                    </div>
+                    
+                    <div class="advanced-search-toggle">
+                        <button type="button" onclick="toggleAdvancedSearch()">
+                            <i class="fas fa-sliders-h"></i>
+                            Advanced Filters
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Advanced Search Panel -->
+                <div class="advanced-search-panel" id="advancedSearchPanel">
+                    <div class="advanced-row">
+                        <div class="search-field">
+                            <label>Square Footage</label>
+                            <div class="range-inputs">
+                                <input type="number" name="sqft_min" placeholder="Min" value="{{ request.args.get('sqft_min', '') }}">
+                                <span>to</span>
+                                <input type="number" name="sqft_max" placeholder="Max" value="{{ request.args.get('sqft_max', '') }}">
+                            </div>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label>Lot Size</label>
+                            <div class="range-inputs">
+                                <input type="number" name="lot_min" placeholder="Min sq ft" value="{{ request.args.get('lot_min', '') }}">
+                                <span>to</span>
+                                <input type="number" name="lot_max" placeholder="Max sq ft" value="{{ request.args.get('lot_max', '') }}">
+                            </div>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label>Year Built</label>
+                            <div class="range-inputs">
+                                <input type="number" name="year_min" placeholder="Min" value="{{ request.args.get('year_min', '') }}">
+                                <span>to</span>
+                                <input type="number" name="year_max" placeholder="Max" value="{{ request.args.get('year_max', '') }}">
+                            </div>
+                        </div>
+                        
+                        <div class="search-field">
+                            <label>Parking</label>
+                            <select name="parking">
+                                <option value="">Any</option>
+                                <option value="1+">1+ Spaces</option>
+                                <option value="2+">2+ Spaces</option>
+                                <option value="3+">3+ Spaces</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="advanced-row">
+                        <div class="search-field full-width">
+                            <label>Features</label>
+                            <div class="feature-checkboxes">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="features" value="fireplace">
+                                    <span>Fireplace</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="features" value="pool">
+                                    <span>Pool</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="features" value="garage">
+                                    <span>Garage</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="features" value="basement">
+                                    <span>Basement</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="features" value="waterfront">
+                                    <span>Waterfront</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="features" value="new_construction">
+                                    <span>New Construction</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Results -->
+    <div class="search-results">
+        <div class="container">
+            <div class="results-header">
+                <div class="results-info">
+                    <h2 id="resultsCount">{{ properties.total }} Properties Found</h2>
+                    <p>{{ "Showing {}-{} of {} results".format(
+                        ((properties.page - 1) * properties.per_page) + 1,
+                        min(properties.page * properties.per_page, properties.total),
+                        properties.total
+                    ) }}</p>
+                </div>
+                
+                <div class="results-controls">
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="grid" title="Grid View">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="view-btn" data-view="list" title="List View">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" data-view="map" title="Map View">
+                            <i class="fas fa-map"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="sort-dropdown">
+                        <select id="sortSelect" onchange="updateSort()">
+                            <option value="price_desc">Price: High to Low</option>
+                            <option value="price_asc">Price: Low to High</option>
+                            <option value="newest">Newest Listed</option>
+                            <option value="size_desc">Size: Largest First</option>
+                            <option value="size_asc">Size: Smallest First</option>
+                        </select>
+                    </div>
+                    
+                    <button class="save-search-btn" onclick="saveSearch()">
+                        <i class="fas fa-bookmark"></i>
+                        Save Search
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Active Filters -->
+            <div class="active-filters" id="activeFilters">
+                <!-- Filters will be populated by JavaScript -->
+            </div>
+            
+            <!-- Results Grid -->
+            <div class="results-grid" id="resultsGrid">
+                {% for property in properties.items %}
+                <div class="property-card" data-property-id="{{ property.listing_id }}">
+                    <div class="property-image">
+                        <img src="{{ property.images[0].url if property.images else url_for('static', filename='images/property-placeholder.jpg') }}" 
+                             alt="{{ property.title }}" loading="lazy">
+                        <div class="property-status {{ property.status|lower }}">
+                            {{ property.status.title() }}
+                        </div>
+                        <div class="property-actions">
+                            <button class="action-btn favorite-btn" onclick="toggleFavorite('{{ property.listing_id }}')">
+                                <i class="far fa-heart"></i>
+                            </button>
+                            <button class="action-btn share-btn" onclick="shareProperty('{{ property.listing_id }}')">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                        {% if property.images|length > 1 %}
+                        <div class="image-counter">
+                            <i class="fas fa-camera"></i>
+                            {{ property.images|length }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="property-content">
+                        <div class="property-price">
+                            ${{ "{:,.0f}".format(property.sold_price) }}
+                            {% if property.price_per_sqft %}
+                            <span class="price-per-sqft">${{ "{:.0f}".format(property.price_per_sqft) }}/sq ft</span>
+                            {% endif %}
+                        </div>
+                        
+                        <h3 class="property-title">
+                            <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}">
+                                {{ property.title }}
+                            </a>
+                        </h3>
+                        
+                        <p class="property-address">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ property.address }}, {{ property.city }}, {{ property.province }}
+                        </p>
+                        
+                        <div class="property-features">
+                            <span class="feature">
+                                <i class="fas fa-bed"></i>
+                                {{ property.bedrooms }}
+                            </span>
+                            <span class="feature">
+                                <i class="fas fa-bath"></i>
+                                {{ property.bathrooms }}
+                            </span>
+                            <span class="feature">
+                                <i class="fas fa-ruler-combined"></i>
+                                {{ "{:,.0f}".format(property.sqft) }} sq ft
+                            </span>
+                        </div>
+                        
+                        <div class="property-footer">
+                            <div class="agent-info">
+                                <img src="{{ property.agent.avatar_url or '/static/images/default-avatar.png' }}" 
+                                     alt="{{ property.agent.name }}" class="agent-avatar">
+                                <span>{{ property.agent.name }}</span>
+                            </div>
+                            <div class="listing-date">
+                                Listed {{ property.created_at.strftime('%b %d') }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Map View -->
+            <div class="results-map hidden" id="resultsMap">
+                <div id="propertyMap" style="height: 600px; border-radius: 12px;"></div>
+            </div>
+            
+            <!-- Pagination -->
+            {% if properties.pages > 1 %}
+            <div class="pagination-container">
+                <nav aria-label="Search results pagination">
+                    <ul class="pagination">
+                        {% if properties.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.search', page=properties.prev_num, **request.args) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in properties.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != properties.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.search', page=page_num, **request.args) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if properties.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.search', page=properties.next_num, **request.args) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.search-container {
+    min-height: calc(100vh - 140px);
+}
+
+.search-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem 0;
+    color: white;
+}
+
+.search-form-container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.search-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.search-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-field label {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.input-with-icon input {
+    padding-left: 40px;
+}
+
+.location-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.search-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-btn:hover {
+    background: var(--primary-dark);
+}
+
+.advanced-search-toggle {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.advanced-search-toggle button {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 auto;
+}
+
+.advanced-search-panel {
+    display: none;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.advanced-search-panel.show {
+    display: block;
+}
+
+.advanced-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.range-inputs input {
+    flex: 1;
+}
+
+.range-inputs span {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.feature-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.search-results {
+    padding: 2rem 0;
+    background: #f8f9fa;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.results-info h2 {
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+.results-info p {
+    color: var(--text-muted);
+    margin-bottom: 0;
+}
+
+.results-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 0.25rem;
+    background: white;
+    border-radius: 8px;
+    padding: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.view-btn {
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+.view-btn.active,
+.view-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.sort-dropdown select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+}
+
+.save-search-btn {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.property-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.property-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.property-image {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+.property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.property-card:hover .property-image img {
+    transform: scale(1.05);
+}
+
+.property-status {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.property-status.for-sale {
+    background: #28a745;
+    color: white;
+}
+
+.property-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.property-card:hover .property-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: white;
+    color: var(--primary-color);
+}
+
+.image-counter {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.property-content {
+    padding: 1.5rem;
+}
+
+.property-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.price-per-sqft {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-left: 0.5rem;
+}
+
+.property-title {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.property-title a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.property-title a:hover {
+    color: var(--primary-color);
+}
+
+.property-address {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.property-features {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.feature i {
+    color: var(--primary-color);
+    width: 14px;
+}
+
+.property-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.agent-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.agent-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.agent-info span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.listing-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.pagination-container {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.page-item {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: white;
+    color: var(--text-color);
+    text-decoration: none;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.page-item.active .page-link {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.page-link:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .search-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .results-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Search form functionality
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    performSearch();
+});
+
+function performSearch() {
+    const formData = new FormData(document.getElementById('searchForm'));
+    const params = new URLSearchParams();
+    
+    for (let [key, value] of formData.entries()) {
+        if (value.trim()) {
+            params.append(key, value);
+        }
+    }
+    
+    window.location.href = '{{ url_for("main.search") }}?' + params.toString();
+}
+
+function toggleAdvancedSearch() {
+    const panel = document.getElementById('advancedSearchPanel');
+    const toggle = document.querySelector('.advanced-search-toggle button i:last-child');
+    
+    panel.classList.toggle('show');
+    
+    if (panel.classList.contains('show')) {
+        toggle.style.transform = 'rotate(180deg)';
+    } else {
+        toggle.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Location autocomplete
+document.getElementById('locationInput').addEventListener('input', function(e) {
+    const query = e.target.value;
+    if (query.length > 2) {
+        // Fetch location suggestions
+        fetch(`/api/locations/suggest?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const suggestions = document.getElementById('locationSuggestions');
+                suggestions.innerHTML = data.map(location => 
+                    `<div class="suggestion-item" onclick="selectLocation('${location}')">${location}</div>`
+                ).join('');
+                suggestions.style.display = 'block';
+            });
+    } else {
+        document.getElementById('locationSuggestions').style.display = 'none';
+    }
+});
+
+function selectLocation(location) {
+    document.getElementById('locationInput').value = location;
+    document.getElementById('locationSuggestions').style.display = 'none';
+}
+
+// View toggle functionality
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const view = this.dataset.view;
+        switchView(view);
+    });
+});
+
+function switchView(view) {
+    const grid = document.getElementById('resultsGrid');
+    const map = document.getElementById('resultsMap');
+    
+    if (view === 'grid') {
+        grid.classList.remove('hidden');
+        map.classList.add('hidden');
+        grid.style.display = 'grid';
+    } else if (view === 'list') {
+        grid.classList.remove('hidden');
+        map.classList.add('hidden');
+        grid.style.display = 'block';
+        // Add list view styling
+        grid.querySelectorAll('.property-card').forEach(card => {
+            card.style.display = 'flex';
+            card.style.maxWidth = '100%';
+        });
+    } else if (view === 'map') {
+        grid.classList.add('hidden');
+        map.classList.remove('hidden');
+        initializeMap();
+    }
+}
+
+// Sort functionality
+function updateSort() {
+    const sortValue = document.getElementById('sortSelect').value;
+    const url = new URL(window.location);
+    url.searchParams.set('sort', sortValue);
+    window.location.href = url.toString();
+}
+
+// Property actions
+function toggleFavorite(propertyId) {
+    fetch(`/api/properties/${propertyId}/favorite`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const btn = document.querySelector(`[data-property-id="${propertyId}"] .favorite-btn i`);
+        if (data.favorited) {
+            btn.classList.remove('far');
+            btn.classList.add('fas');
+        } else {
+            btn.classList.remove('fas');
+            btn.classList.add('far');
+        }
+    });
+}
+
+function shareProperty(propertyId) {
+    const propertyCard = document.querySelector(`[data-property-id="${propertyId}"]`);
+    const title = propertyCard.querySelector('.property-title a').textContent;
+    const url = propertyCard.querySelector('.property-title a').href;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url);
+        alert('Property link copied to clipboard!');
+    }
+}
+
+function saveSearch() {
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    fetch('/api/saved-searches', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            criteria: Object.fromEntries(searchParams),
+            name: prompt('Name this search:') || 'Untitled Search'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Search saved successfully!');
+    });
+}
+
+// Initialize map for map view
+function initializeMap() {
+    // Map initialization code would go here
+    // This would use Google Maps, Mapbox, or another mapping service
+}
+
+// Load property cards with click handlers
+document.querySelectorAll('.property-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+        // Don't navigate if clicking on action buttons
+        if (e.target.closest('.action-btn')) return;
+        
+        const link = this.querySelector('.property-title a');
+        if (link) {
+            window.location.href = link.href;
+        }
+    });
+});
+</script>
+{% endblock %}

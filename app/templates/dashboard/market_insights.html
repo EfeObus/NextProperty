@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Market Insights - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line text-success me-2"></i>
+                        Market Insights & Predictions
+                    </h4>
+                    <p class="text-muted mb-0">AI-powered market analysis and future trends</p>
+                </div>
+                <div class="card-body">
+                    {% if market_predictions %}
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-gradient-primary text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Average Predicted Price</h6>
+                                    <h3>{{ market_predictions.avg_predicted_price|format_currency }}</h3>
+                                    <small>Next 6 months</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-gradient-success text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Market Trend</h6>
+                                    <h3>
+                                        {% if market_predictions.trend_direction > 0 %}
+                                        <i class="fas fa-arrow-up"></i> {{ "%.1f"|format(market_predictions.trend_direction) }}%
+                                        {% else %}
+                                        <i class="fas fa-arrow-down"></i> {{ "%.1f"|format(market_predictions.trend_direction|abs) }}%
+                                        {% endif %}
+                                    </h3>
+                                    <small>Price movement</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-gradient-info text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Market Confidence</h6>
+                                    <h3>{{ "%.0f"|format(market_predictions.confidence * 100) }}%</h3>
+                                    <small>Prediction accuracy</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if market_predictions.top_performing_areas %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Top Performing Areas</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Area</th>
+                                                    <th>Growth</th>
+                                                    <th>Avg Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for area in market_predictions.top_performing_areas %}
+                                                <tr>
+                                                    <td>{{ area.name }}</td>
+                                                    <td>
+                                                        <span class="badge bg-success">+{{ "%.1f"|format(area.growth) }}%</span>
+                                                    </td>
+                                                    <td>{{ area.avg_price|format_currency }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Investment Opportunities</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if market_predictions.investment_opportunities %}
+                                    <ul class="list-unstyled">
+                                        {% for opportunity in market_predictions.investment_opportunities %}
+                                        <li class="mb-2">
+                                            <i class="fas fa-star text-warning me-2"></i>
+                                            {{ opportunity }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <p class="text-muted">No specific opportunities identified at this time.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    
+                    {% if economic_summary %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Economic Impact Analysis</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 text-center">
+                                            <h5 class="text-primary">{{ "%.2f"|format(economic_summary.bank_rate) }}%</h5>
+                                            <small class="text-muted">Interest Rate</small>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <h5 class="text-success">{{ "%.1f"|format(economic_summary.inflation_rate) }}%</h5>
+                                            <small class="text-muted">Inflation</small>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <h5 class="text-info">{{ "%.3f"|format(economic_summary.cad_usd_rate) }}</h5>
+                                            <small class="text-muted">CAD/USD</small>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <h5 class="text-warning">{{ "%.2f"|format(economic_summary.prime_rate) }}%</h5>
+                                            <small class="text-muted">Prime Rate</small>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if economic_summary.market_sentiment %}
+                                    <div class="mt-3">
+                                        <div class="alert alert-info">
+                                            <h6 class="alert-heading">Market Sentiment</h6>
+                                            <p class="mb-0">{{ economic_summary.market_sentiment }}</p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if market_stats %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Current Market Statistics</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
+                                            <h5>{{ "{:,}".format(market_stats.total_properties) }}</h5>
+                                            <small class="text-muted">Total Properties</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h5>{{ market_stats.avg_price|format_currency }}</h5>
+                                            <small class="text-muted">Average Price</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h5>{{ market_stats.median_price|format_currency }}</h5>
+                                            <small class="text-muted">Median Price</small>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <h5>{{ "{:,}".format(market_stats.avg_sqft|int) }}</h5>
+                                            <small class="text-muted">Avg Sq Ft</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-outline-success">
+                            <i class="fas fa-trophy me-2"></i>
+                            View Top Investment Properties
+                        </a>
+                        <a href="{{ url_for('main.predict_price') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-calculator me-2"></i>
+                            Get Price Prediction
+                        </a>
+                        <a href="{{ url_for('main.economic_dashboard') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-area me-2"></i>
+                            Economic Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">AI Recommendations</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        <strong>Market Tip:</strong> Based on current economic indicators, 
+                        consider properties in emerging neighborhoods with good transportation access.
+                    </div>
+                    <div class="alert alert-light">
+                        <i class="fas fa-chart-line text-success me-2"></i>
+                        <strong>Trend Alert:</strong> Interest rates are affecting buyer behavior. 
+                        Properties priced competitively are moving faster.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

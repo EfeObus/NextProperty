@@ -1,0 +1,510 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Operations - Admin - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .operation-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid #28a745;
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .operation-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .operation-card.warning {
+        border-left-color: #ffc107;
+    }
+    
+    .operation-card.danger {
+        border-left-color: #dc3545;
+    }
+    
+    .progress-container {
+        display: none;
+        margin-top: 1rem;
+    }
+    
+    .result-container {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+    
+    .admin-nav {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .admin-nav .nav-link {
+        color: #495057;
+        font-weight: 500;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-nav .nav-link:hover,
+    .admin-nav .nav-link.active {
+        background: #667eea;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<section class="admin-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-tasks me-3"></i>Bulk Operations
+                </h1>
+                <p class="lead mb-0">
+                    Manage large-scale data operations and AI analysis
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('admin.bulk_operations') }}">
+                    <i class="fas fa-tasks me-2"></i>Bulk Operations
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.model_management') }}">
+                    <i class="fas fa-brain me-2"></i>Model Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.top_properties') }}">
+                    <i class="fas fa-chart-line me-2"></i>Top Deals
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Operations Status Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h2 class="fw-bold">{{ operations_status.properties_need_analysis|default(0) }}</h2>
+                    <p class="mb-0">Properties Need AI Analysis</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h2 class="fw-bold">{{ operations_status.properties_outdated_analysis|default(0) }}</h2>
+                    <p class="mb-0">Outdated Analysis (30+ days)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h2 class="fw-bold">{{ operations_status.total_analyzed|default(0) }}</h2>
+                    <p class="mb-0">Successfully Analyzed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Operations -->
+    <div class="row g-4">
+        <!-- AI Analysis -->
+        <div class="col-lg-6">
+            <div class="operation-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-brain fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">Bulk AI Analysis</h4>
+                        <p class="text-muted mb-0">Generate AI predictions for properties</p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="batchSize" class="form-label">Batch Size</label>
+                    <select class="form-select" id="batchSize">
+                        <option value="25">25 properties</option>
+                        <option value="50" selected>50 properties</option>
+                        <option value="100">100 properties</option>
+                        <option value="200">200 properties</option>
+                    </select>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="forceUpdate">
+                    <label class="form-check-label" for="forceUpdate">
+                        Force update existing analyses
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary w-100" onclick="startBulkAnalysis()">
+                    <i class="fas fa-play me-2"></i>Start AI Analysis
+                </button>
+                
+                <div class="progress-container" id="analysisProgress">
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Processing properties...</small>
+                </div>
+                
+                <div class="result-container" id="analysisResult"></div>
+            </div>
+        </div>
+
+        <!-- Database Optimization -->
+        <div class="col-lg-6">
+            <div class="operation-card warning">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-warning text-dark rounded-circle p-3 me-3">
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">Database Optimization</h4>
+                        <p class="text-muted mb-0">Optimize database for better performance</p>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    Optimizes indexes, connection pooling, and query performance for bulk operations.
+                </p>
+                
+                <button class="btn btn-warning w-100" onclick="optimizeDatabase()">
+                    <i class="fas fa-cogs me-2"></i>Optimize Database
+                </button>
+                
+                <div class="progress-container" id="optimizeProgress">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Optimizing database...</small>
+                </div>
+                
+                <div class="result-container" id="optimizeResult"></div>
+            </div>
+        </div>
+
+        <!-- Data Cleanup -->
+        <div class="col-lg-6">
+            <div class="operation-card danger">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-danger text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-broom fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">Data Cleanup</h4>
+                        <p class="text-muted mb-0">Clean invalid and duplicate data</p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="cleanupType" class="form-label">Cleanup Type</label>
+                    <select class="form-select" id="cleanupType">
+                        <option value="all">All cleanup operations</option>
+                        <option value="duplicates">Remove duplicates only</option>
+                        <option value="invalid_data">Fix invalid data only</option>
+                        <option value="coordinates">Update coordinates only</option>
+                    </select>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This operation will permanently modify data. 
+                    Please ensure you have a backup.
+                </div>
+                
+                <button class="btn btn-danger w-100" onclick="cleanupData()">
+                    <i class="fas fa-trash-alt me-2"></i>Start Cleanup
+                </button>
+                
+                <div class="progress-container" id="cleanupProgress">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Cleaning data...</small>
+                </div>
+                
+                <div class="result-container" id="cleanupResult"></div>
+            </div>
+        </div>
+
+        <!-- Export Data -->
+        <div class="col-lg-6">
+            <div class="operation-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-download fa-2x"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">Export Data</h4>
+                        <p class="text-muted mb-0">Export properties and analysis data</p>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    Export property data with AI analysis results in various formats.
+                </p>
+                
+                <div class="d-grid gap-2">
+                    <a href="/api/export/properties?format=csv" class="btn btn-outline-success">
+                        <i class="fas fa-file-csv me-2"></i>Export as CSV
+                    </a>
+                    <a href="/api/export/properties?format=json" class="btn btn-outline-success">
+                        <i class="fas fa-file-code me-2"></i>Export as JSON
+                    </a>
+                    <a href="{{ url_for('main.top_properties') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-2"></i>View Top Deals
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function startBulkAnalysis() {
+    const btn = event.target;
+    const batchSize = document.getElementById('batchSize').value;
+    const forceUpdate = document.getElementById('forceUpdate').checked;
+    const progressContainer = document.getElementById('analysisProgress');
+    const resultContainer = document.getElementById('analysisResult');
+    
+    // Show loading state
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Starting...';
+    btn.disabled = true;
+    
+    // Show progress
+    progressContainer.style.display = 'block';
+    resultContainer.style.display = 'none';
+    
+    fetch('/admin/api/bulk-ai-analysis', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            batch_size: parseInt(batchSize),
+            force_update: forceUpdate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        progressContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        
+        if (data.success) {
+            resultContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>✅ Analysis Complete!</h6>
+                    <p class="mb-1">Processed: <strong>${data.processed}</strong> out of ${data.total_batch} properties</p>
+                    ${data.errors && data.errors.length > 0 ? 
+                        `<p class="mb-0 text-warning">⚠️ ${data.errors.length} errors occurred</p>` : 
+                        ''
+                    }
+                </div>
+            `;
+            
+            // Refresh page after 3 seconds to show updated stats
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+        } else {
+            resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>❌ Analysis Failed</h6>
+                    <p class="mb-0">${data.error}</p>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        progressContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        resultContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ Request Failed</h6>
+                <p class="mb-0">Network error occurred</p>
+            </div>
+        `;
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function optimizeDatabase() {
+    const btn = event.target;
+    const progressContainer = document.getElementById('optimizeProgress');
+    const resultContainer = document.getElementById('optimizeResult');
+    
+    // Show loading state
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Optimizing...';
+    btn.disabled = true;
+    
+    // Show progress
+    progressContainer.style.display = 'block';
+    resultContainer.style.display = 'none';
+    
+    fetch('/admin/api/optimize-database', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        progressContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        
+        if (data.success) {
+            resultContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>✅ Optimization Complete!</h6>
+                    <p class="mb-0">${data.message}</p>
+                </div>
+            `;
+        } else {
+            resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>❌ Optimization Failed</h6>
+                    <p class="mb-0">${data.error}</p>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        progressContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        resultContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ Request Failed</h6>
+                <p class="mb-0">Network error occurred</p>
+            </div>
+        `;
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function cleanupData() {
+    const btn = event.target;
+    const cleanupType = document.getElementById('cleanupType').value;
+    const progressContainer = document.getElementById('cleanupProgress');
+    const resultContainer = document.getElementById('cleanupResult');
+    
+    // Confirm action
+    if (!confirm('Are you sure you want to proceed with data cleanup? This action cannot be undone.')) {
+        return;
+    }
+    
+    // Show loading state
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Cleaning...';
+    btn.disabled = true;
+    
+    // Show progress
+    progressContainer.style.display = 'block';
+    resultContainer.style.display = 'none';
+    
+    fetch('/admin/api/cleanup-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            type: cleanupType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        progressContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        
+        if (data.success) {
+            const results = data.results;
+            resultContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>✅ Cleanup Complete!</h6>
+                    <ul class="mb-0">
+                        <li>Duplicates removed: ${results.removed_duplicates}</li>
+                        <li>Invalid data fixed: ${results.fixed_invalid_data}</li>
+                        <li>Coordinates updated: ${results.updated_coordinates}</li>
+                    </ul>
+                </div>
+            `;
+            
+            // Refresh page after 3 seconds
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+        } else {
+            resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>❌ Cleanup Failed</h6>
+                    <p class="mb-0">${data.error}</p>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        progressContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        resultContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ Request Failed</h6>
+                <p class="mb-0">Network error occurred</p>
+            </div>
+        `;
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+</script>
+{% endblock %}

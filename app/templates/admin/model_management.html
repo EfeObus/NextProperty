@@ -1,0 +1,615 @@
+{% extends "base.html" %}
+
+{% block title %}Model Management - Admin - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .model-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .model-card.active {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #f8fff9, #ffffff);
+    }
+    
+    .model-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .performance-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    
+    .performance-excellent { background: #d4edda; color: #155724; }
+    .performance-good { background: #d1ecf1; color: #0c5460; }
+    .performance-fair { background: #fff3cd; color: #856404; }
+    .performance-poor { background: #f8d7da; color: #721c24; }
+    
+    .admin-nav {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .admin-nav .nav-link {
+        color: #495057;
+        font-weight: 500;
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-nav .nav-link:hover,
+    .admin-nav .nav-link.active {
+        background: #667eea;
+        color: white;
+    }
+    
+    .metric-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .metric-item:last-child {
+        border-bottom: none;
+    }
+    
+    .metric-value {
+        font-weight: 600;
+        color: #495057;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<section class="admin-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-brain me-3"></i>Model Management
+                </h1>
+                <p class="lead mb-0">
+                    Manage and switch between AI models for property valuation
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Admin Navigation -->
+    <div class="admin-nav">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.bulk_operations') }}">
+                    <i class="fas fa-tasks me-2"></i>Bulk Operations
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('admin.model_management') }}">
+                    <i class="fas fa-brain me-2"></i>Model Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('main.top_properties') }}">
+                    <i class="fas fa-chart-line me-2"></i>Top Deals
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Current Model Status -->
+    {% if current_model %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-1">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Currently Active: {{ current_model.get('model_name', 'ML Model') }}
+                            </h4>
+                            <p class="mb-0">
+                                Features: {{ current_model.get('features_count', 'N/A') }} | 
+                                Accuracy: {{ "%.1f"|format(current_model.get('accuracy', 0) * 100) }}% |
+                                Version: {{ current_model.get('version', '1.0') }}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <button class="btn btn-light btn-sm" onclick="testCurrentModel()">
+                                <i class="fas fa-vial me-1"></i>Test Model
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Available Models -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="mb-3">Available Models</h3>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LightGBM Model -->
+        <div class="col-lg-4">
+            <div class="model-card active">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-leaf fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">LightGBM</h5>
+                        <span class="performance-badge performance-excellent">Excellent</span>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    Advanced gradient boosting model optimized for real estate predictions with 26 features including economic indicators.
+                </p>
+                
+                <div class="mb-3">
+                    <div class="metric-item">
+                        <span>Accuracy (R²):</span>
+                        <span class="metric-value text-success">85.3%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>RMSE:</span>
+                        <span class="metric-value">$263,680</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Features:</span>
+                        <span class="metric-value">26</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Training Time:</span>
+                        <span class="metric-value">4.2s</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <span class="btn btn-success disabled">
+                        <i class="fas fa-check me-2"></i>Currently Active
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Random Forest Model -->
+        <div class="col-lg-4">
+            <div class="model-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-tree fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Random Forest</h5>
+                        <span class="performance-badge performance-good">Good</span>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    Ensemble learning method with robust performance and good interpretability for property analysis.
+                </p>
+                
+                <div class="mb-3">
+                    <div class="metric-item">
+                        <span>Accuracy (R²):</span>
+                        <span class="metric-value text-primary">82.7%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>RMSE:</span>
+                        <span class="metric-value">$285,420</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Features:</span>
+                        <span class="metric-value">26</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Training Time:</span>
+                        <span class="metric-value">6.8s</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button class="btn btn-outline-primary" onclick="switchModel('RandomForest')">
+                        <i class="fas fa-exchange-alt me-2"></i>Switch to This Model
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- XGBoost Model -->
+        <div class="col-lg-4">
+            <div class="model-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-warning text-dark rounded-circle p-3 me-3">
+                        <i class="fas fa-rocket fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">XGBoost</h5>
+                        <span class="performance-badge performance-good">Good</span>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    High-performance gradient boosting framework with excellent predictive accuracy.
+                </p>
+                
+                <div class="mb-3">
+                    <div class="metric-item">
+                        <span>Accuracy (R²):</span>
+                        <span class="metric-value text-warning">79.4%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>RMSE:</span>
+                        <span class="metric-value">$312,150</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Features:</span>
+                        <span class="metric-value">26</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Training Time:</span>
+                        <span class="metric-value">8.1s</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button class="btn btn-outline-warning" onclick="switchModel('XGBoost')">
+                        <i class="fas fa-exchange-alt me-2"></i>Switch to This Model
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gradient Boosting Model -->
+        <div class="col-lg-4">
+            <div class="model-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-info text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Gradient Boosting</h5>
+                        <span class="performance-badge performance-fair">Fair</span>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    Traditional gradient boosting with solid performance and good stability.
+                </p>
+                
+                <div class="mb-3">
+                    <div class="metric-item">
+                        <span>Accuracy (R²):</span>
+                        <span class="metric-value text-info">76.2%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>RMSE:</span>
+                        <span class="metric-value">$334,890</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Features:</span>
+                        <span class="metric-value">26</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Training Time:</span>
+                        <span class="metric-value">12.3s</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button class="btn btn-outline-info" onclick="switchModel('GradientBoosting')">
+                        <i class="fas fa-exchange-alt me-2"></i>Switch to This Model
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ridge Regression Model -->
+        <div class="col-lg-4">
+            <div class="model-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-secondary text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-line-chart fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Ridge Regression</h5>
+                        <span class="performance-badge performance-fair">Fair</span>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    Linear regression with L2 regularization. Fast and interpretable baseline model.
+                </p>
+                
+                <div class="mb-3">
+                    <div class="metric-item">
+                        <span>Accuracy (R²):</span>
+                        <span class="metric-value text-secondary">72.1%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>RMSE:</span>
+                        <span class="metric-value">$356,406</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Features:</span>
+                        <span class="metric-value">26</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Training Time:</span>
+                        <span class="metric-value">0.2s</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button class="btn btn-outline-secondary" onclick="switchModel('Ridge')">
+                        <i class="fas fa-exchange-alt me-2"></i>Switch to This Model
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ensemble Model -->
+        <div class="col-lg-4">
+            <div class="model-card">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-dark text-white rounded-circle p-3 me-3">
+                        <i class="fas fa-layer-group fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Ensemble Model</h5>
+                        <span class="performance-badge performance-excellent">Excellent</span>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-3">
+                    Stacking ensemble combining the top 3 models for maximum accuracy.
+                </p>
+                
+                <div class="mb-3">
+                    <div class="metric-item">
+                        <span>Accuracy (R²):</span>
+                        <span class="metric-value text-dark">87.1%</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>RMSE:</span>
+                        <span class="metric-value">$245,320</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Features:</span>
+                        <span class="metric-value">26</span>
+                    </div>
+                    <div class="metric-item">
+                        <span>Training Time:</span>
+                        <span class="metric-value">15.7s</span>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button class="btn btn-outline-dark" onclick="switchModel('Ensemble')">
+                        <i class="fas fa-exchange-alt me-2"></i>Switch to This Model
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Testing -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-vial me-2"></i>Model Testing
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        Test any model with sample property data to compare predictions.
+                    </p>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="testBedrooms" class="form-label">Bedrooms</label>
+                            <input type="number" class="form-select" id="testBedrooms" value="3" min="1" max="10">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="testBathrooms" class="form-label">Bathrooms</label>
+                            <input type="number" class="form-select" id="testBathrooms" value="2" min="1" max="8" step="0.5">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="testSqft" class="form-label">Square Feet</label>
+                            <input type="number" class="form-select" id="testSqft" value="1500" min="500" max="10000">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="testCity" class="form-label">City</label>
+                            <select class="form-select" id="testCity">
+                                <option value="Toronto">Toronto</option>
+                                <option value="Vancouver">Vancouver</option>
+                                <option value="Calgary">Calgary</option>
+                                <option value="Ottawa">Ottawa</option>
+                                <option value="Montreal">Montreal</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-primary" onclick="testModel()">
+                            <i class="fas fa-play me-2"></i>Test Current Model
+                        </button>
+                    </div>
+                    
+                    <div id="testResult" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchModel(modelName) {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    
+    if (!confirm(`Are you sure you want to switch to the ${modelName} model? This will affect all future predictions.`)) {
+        return;
+    }
+    
+    // Show loading state
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Switching...';
+    btn.disabled = true;
+    
+    fetch('/admin/api/switch-model', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            model_name: modelName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ Successfully switched to ${modelName} model!`);
+            location.reload();
+        } else {
+            alert(`❌ Failed to switch model: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Error switching model');
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function testModel() {
+    const btn = event.target;
+    const resultContainer = document.getElementById('testResult');
+    
+    const testData = {
+        bedrooms: parseInt(document.getElementById('testBedrooms').value),
+        bathrooms: parseFloat(document.getElementById('testBathrooms').value),
+        square_feet: parseInt(document.getElementById('testSqft').value),
+        city: document.getElementById('testCity').value
+    };
+    
+    // Show loading state
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+    btn.disabled = true;
+    
+    fetch('/api/property-prediction', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultContainer.style.display = 'block';
+        
+        if (data.success) {
+            const prediction = data.prediction;
+            resultContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>🎯 Test Results</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Predicted Price:</strong> $${prediction.predicted_price.toLocaleString()}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Confidence:</strong> ${(prediction.confidence * 100).toFixed(1)}%
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <strong>Range:</strong> $${prediction.confidence_interval.lower.toLocaleString()} - $${prediction.confidence_interval.upper.toLocaleString()}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Method:</strong> ${prediction.prediction_method}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>❌ Test Failed</h6>
+                    <p class="mb-0">${data.error}</p>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        resultContainer.style.display = 'block';
+        resultContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ Request Failed</h6>
+                <p class="mb-0">Network error occurred</p>
+            </div>
+        `;
+    })
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function testCurrentModel() {
+    // Scroll to test section
+    document.querySelector('#testResult').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+    });
+    
+    // Trigger test with current values
+    setTimeout(() => {
+        testModel();
+    }, 500);
+}
+</script>
+{% endblock %}

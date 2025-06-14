@@ -1,0 +1,617 @@
+{% extends "base.html" %}
+
+{% block title %}NextProperty AI - AI-Powered Real Estate Investment Platform{% endblock %}
+
+{% block meta_description %}Discover profitable real estate investments with NextProperty AI. Advanced market analysis, property valuations, and investment insights powered by artificial intelligence.{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/hero-background.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/modern-home.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/modern-properties.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!-- Modern Hero Section -->
+<section class="hero-real-estate-bg hero-section">
+    <!-- Animated Buildings -->
+    <div class="hero-buildings">
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+        <div class="building"></div>
+    </div>
+    
+    <div class="container">
+        <div class="hero-content-wrapper animate-on-scroll">
+            <h1 class="hero-title-modern">
+                Smart Real Estate Investing with <span class="text-warning">AI</span>
+            </h1>
+            <p class="hero-subtitle-modern">
+                Discover profitable investment opportunities with our AI-powered platform. 
+                Get comprehensive market analysis, property valuations, and investment insights 
+                to make informed decisions in the Canadian real estate market.
+            </p>
+            
+            <div class="hero-cta-buttons">
+                <a href="{{ url_for('main.properties') }}" class="btn-hero-primary">
+                    <i class="fas fa-trophy me-2"></i>Explore Top Deals
+                </a>
+                <a href="{{ url_for('main.predict_price') }}" class="btn-hero-secondary">
+                    <i class="fas fa-calculator me-2"></i>AI Price Prediction
+                </a>
+            </div>
+            
+            <!-- Modern Search Bar -->
+            <div class="hero-search-container animate-on-scroll delay-1">
+                <form class="search-form-modern" action="{{ url_for('main.search') }}" method="GET">
+                    <div class="search-input-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="city" class="search-input-modern" 
+                               placeholder="Enter city or postal code" value="{{ request.args.get('city', '') }}">
+                    </div>
+                    <div class="search-input-group">
+                        <label for="property_type">Property Type</label>
+                        <select id="property_type" name="property_type" class="search-input-modern">
+                            <option value="">All Types</option>
+                            <option value="House">House</option>
+                            <option value="Condo">Condo</option>
+                            <option value="Townhouse">Townhouse</option>
+                        </select>
+                    </div>
+                    <div class="search-input-group">
+                        <label for="max_price">Max Price</label>
+                        <select id="max_price" name="max_price" class="search-input-modern">
+                            <option value="">Any Price</option>
+                            <option value="500000">$500K</option>
+                            <option value="750000">$750K</option>
+                            <option value="1000000">$1M</option>
+                            <option value="1500000">$1.5M</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="search-btn-modern">
+                        <i class="fas fa-search me-2"></i>Search Properties
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item animate-on-scroll">
+                <span class="stat-number">{{ "{:,}".format(market_stats.total_properties) if market_stats and market_stats.total_properties else "50,000+" }}</span>
+                <span class="stat-label">Properties Analyzed</span>
+            </div>
+            <div class="stat-item animate-on-scroll delay-1">
+                <span class="stat-number">${{ "{:.1f}M".format(market_stats.avg_price/1000000) if market_stats and market_stats.avg_price else "2.5M" }}</span>
+                <span class="stat-label">Average Property Value</span>
+            </div>
+            <div class="stat-item animate-on-scroll delay-2">
+                <span class="stat-number">{{ market_stats.cities_covered if market_stats and market_stats.cities_covered else "100+" }}</span>
+                <span class="stat-label">Cities Covered</span>
+            </div>
+            <div class="stat-item animate-on-scroll delay-3">
+                <span class="stat-number">{{ "{:,}".format(market_stats.ai_analyzed) if market_stats and market_stats.ai_analyzed else "25,000+" }}</span>
+                <span class="stat-label">AI Predictions Made</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="features-header animate-on-scroll">
+            <h2 class="features-title">Why Choose NextProperty AI?</h2>
+            <p class="features-subtitle">
+                Our advanced AI technology provides unparalleled insights into the real estate market
+            </p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card-modern animate-on-scroll delay-1">
+                <div class="feature-icon-modern ai-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h4 class="feature-title-modern">AI-Powered Analysis</h4>
+                <p class="feature-description-modern">
+                    Advanced machine learning algorithms analyze market trends, property values, 
+                    and investment potential to provide accurate predictions.
+                </p>
+            </div>
+            
+            <div class="feature-card-modern animate-on-scroll delay-2">
+                <div class="feature-icon-modern data-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h4 class="feature-title-modern">Real-Time Market Data</h4>
+                <p class="feature-description-modern">
+                    Access live market data, economic indicators, and trends from Bank of Canada 
+                    and Statistics Canada to stay ahead of the market.
+                </p>
+            </div>
+            
+            <div class="feature-card-modern animate-on-scroll delay-3">
+                <div class="feature-icon-modern location-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <h4 class="feature-title-modern">Location Intelligence</h4>
+                <p class="feature-description-modern">
+                    Comprehensive location analysis including walkability scores, transit access, 
+                    and neighborhood insights to evaluate investment potential.
+                </p>
+            </div>
+            
+            <div class="feature-card-modern animate-on-scroll delay-4">
+                <div class="feature-icon-modern calculator-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h4 class="feature-title-modern">Investment Calculator</h4>
+                <p class="feature-description-modern">
+                    Calculate ROI, cash flow, and investment metrics with our sophisticated 
+                    financial modeling tools and scenario analysis.
+                </p>
+            </div>
+            
+            <div class="feature-card-modern animate-on-scroll delay-5">
+                <div class="feature-icon-modern security-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h4 class="feature-title-modern">Risk Assessment</h4>
+                <p class="feature-description-modern">
+                    Comprehensive risk analysis considering market volatility, economic factors, 
+                    and property-specific risks to protect your investments.
+                </p>
+            </div>
+            
+            <div class="feature-card-modern animate-on-scroll delay-6">
+                <div class="feature-icon-modern alert-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h4 class="feature-title-modern">Smart Alerts</h4>
+                <p class="feature-description-modern">
+                    Get notified about new opportunities, market changes, and portfolio updates 
+                    with our intelligent notification system.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Top Investment Opportunities -->
+{% if top_properties %}
+<section class="top-properties py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center" data-aos="fade-up">
+                <h2 class="display-4 fw-bold mb-3">
+                    <i class="fas fa-trophy text-warning me-3"></i>
+                    Top Investment Opportunities
+                </h2>
+                <p class="lead">
+                    Properties priced below our AI prediction - potential good deals identified by our algorithms
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-4 mb-4">
+            {% for property_data in top_properties[:3] %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="card h-100 bg-dark text-white border-warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title text-warning">{{ property_data.property.city }}, {{ property_data.property.province }}</h5>
+                            <span class="badge bg-success">Great Deal</span>
+                        </div>
+                        
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <h6 class="text-warning">{{ property_data.property.bedrooms }}</h6>
+                                <small>Beds</small>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="text-warning">{{ property_data.property.bathrooms }}</h6>
+                                <small>Baths</small>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="text-warning">{{ property_data.property.sqft|number if property_data.property.sqft else 'N/A' }}</h6>
+                                <small>Sq Ft</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Listed:</span>
+                                <span class="text-info">{{ property_data.actual_price|format_currency if property_data.actual_price else 'N/A' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>AI Prediction:</span>
+                                <span class="text-success">{{ property_data.predicted_price|format_currency if property_data.predicted_price else 'N/A' }}</span>
+                            </div>
+                            {% if property_data.value_difference_percent %}
+                            <div class="d-flex justify-content-between">
+                                <span>Potential:</span>
+                                <span class="text-warning">{{ property_data.value_difference_percent|percentage if property_data.value_difference_percent else 'N/A' }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{{ url_for('main.property_detail', listing_id=property_data.property.listing_id) }}" 
+                           class="btn btn-warning btn-sm w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center">
+            <a href="{{ url_for('main.properties') }}" class="btn btn-warning btn-lg">
+                <i class="fas fa-trophy me-2"></i>
+                View All Top Opportunities
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Properties -->
+<section class="featured-properties py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center" data-aos="fade-up">
+                <h2 class="display-4 fw-bold mb-3">Featured Investment Properties</h2>
+                <p class="lead text-muted">
+                    Handpicked properties with high investment potential
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for property in featured_properties[:6] if featured_properties %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="property-card-modern">
+                    <div class="property-image-container">
+                        <img src="{{ property.images[0].image_url if property.images else url_for('static', filename='images/property-placeholder.jpg') }}" 
+                             alt="{{ property.address }}" 
+                             class="property-image">
+                        
+                        <div class="property-badges">
+                            <span class="price-badge">{{ property.sold_price|format_price if property.sold_price else 'N/A' }}</span>
+                            {% if property.ai_score %}
+                            <span class="ai-score-badge">
+                                <i class="fas fa-robot"></i>{{ property.ai_score }}/100
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="property-overlay">
+                            <div class="property-actions">
+                                <button class="action-btn favorite-btn" title="Add to favorites">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                                <button class="action-btn share-btn" title="Share property">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="property-content">
+                        <div class="property-header">
+                            <h5 class="property-title">{{ property.street_number }} {{ property.street_name }}{% if property.unit %}, Unit {{ property.unit }}{% endif %}</h5>
+                            <p class="property-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ property.city }}, {{ property.province }} {{ property.postal_code }}
+                            </p>
+                        </div>
+                        
+                        <div class="property-details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Bedrooms</span>
+                                <span class="detail-value">{{ property.bedrooms or 'N/A' }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Bathrooms</span>
+                                <span class="detail-value">{{ property.bathrooms or 'N/A' }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Sq Ft</span>
+                                <span class="detail-value">{{ property.sqft|number if property.sqft else 'N/A' }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if property.estimated_rental_income or property.roi_estimate %}
+                        <div class="property-metrics">
+                            {% if property.estimated_rental_income %}
+                            <div class="metric-item">
+                                <span class="metric-label">Est. Monthly Rent:</span>
+                                <span class="metric-value rental-income">{{ property.estimated_rental_income|format_price if property.estimated_rental_income else 'N/A' }}</span>
+                            </div>
+                            {% endif %}
+                            {% if property.roi_estimate %}
+                            <div class="metric-item">
+                                <span class="metric-label">Est. ROI:</span>
+                                <span class="metric-value roi-value">{{ "{:.1f}".format(property.roi_estimate) }}%</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}" 
+                           class="btn-view-details">
+                            <span>View Details</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Featured properties will appear here</h4>
+                <p class="text-muted">Our AI is analyzing the market to find the best investment opportunities</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if featured_properties %}
+        <div class="text-center mt-5">
+            <a href="{{ url_for('main.properties') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-th-large me-2"></i>View All Properties
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Market Insights -->
+<section class="market-insights py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center" data-aos="fade-up">
+                <h2 class="display-4 fw-bold mb-3">Market Insights</h2>
+                <p class="lead text-muted">
+                    Stay informed with real-time market data and trends
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Market Chart -->
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="card market-chart-card h-100">
+                    <div class="card-header market-chart-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-white">
+                                <i class="fas fa-chart-area me-2"></i>Market Trends
+                            </h5>
+                            <div class="chart-controls">
+                                <select class="form-select form-select-sm chart-period-select">
+                                    <option value="7d">7 Days</option>
+                                    <option value="30d" selected>30 Days</option>
+                                    <option value="90d">90 Days</option>
+                                    <option value="1y">1 Year</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body market-chart-body">
+                        <div class="chart-container">
+                            <canvas id="marketTrendsChart" height="100"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color avg-price"></span>
+                                <span class="legend-label">Average Price</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color sales-volume"></span>
+                                <span class="legend-label">Sales Volume</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color days-market"></span>
+                                <span class="legend-label">Days on Market</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Enhanced Key Metrics -->
+            <div class="col-lg-4" data-aos="fade-left">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="metric-card-modern primary">
+                            <div class="metric-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Avg Property Price</div>
+                                <div class="metric-value">${{ market_stats.avg_price|format_price if market_stats and market_stats.avg_price else "650,000" }}</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+5.2% from last month</span>
+                                </div>
+                            </div>
+                            <div class="metric-chart">
+                                <canvas id="priceChart" width="80" height="40"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="metric-card-modern success">
+                            <div class="metric-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Active Listings</div>
+                                <div class="metric-value">{{ market_stats.active_listings|number if market_stats and market_stats.active_listings else "1,234" }}</div>
+                                <div class="metric-change negative">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>-2.1% from last month</span>
+                                </div>
+                            </div>
+                            <div class="metric-chart">
+                                <canvas id="listingsChart" width="80" height="40"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="metric-card-modern warning">
+                            <div class="metric-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Avg Days on Market</div>
+                                <div class="metric-value">{{ market_stats.avg_dom if market_stats and market_stats.avg_dom else "23" }} days</div>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>-3 days from last month</span>
+                                </div>
+                            </div>
+                            <div class="metric-chart">
+                                <canvas id="domChart" width="80" height="40"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Market Summary Cards -->
+        <div class="row g-4 mt-4" data-aos="fade-up">
+            <div class="col-md-3 col-sm-6">
+                <div class="market-summary-card">
+                    <div class="summary-icon buyer">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="summary-content">
+                        <h4 class="summary-title">Buyer's Market</h4>
+                        <p class="summary-description">High inventory levels favor buyers with more negotiating power</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="market-summary-card">
+                    <div class="summary-icon trending">
+                        <i class="fas fa-trending-up"></i>
+                    </div>
+                    <div class="summary-content">
+                        <h4 class="summary-title">Rising Prices</h4>
+                        <p class="summary-description">Property values continue upward trend across major markets</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="market-summary-card">
+                    <div class="summary-icon investment">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="summary-content">
+                        <h4 class="summary-title">Strong ROI</h4>
+                        <p class="summary-description">Investment properties showing healthy returns across portfolios</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="market-summary-card">
+                    <div class="summary-icon forecast">
+                        <i class="fas fa-crystal-ball"></i>
+                    </div>
+                    <div class="summary-content">
+                        <h4 class="summary-title">AI Forecast</h4>
+                        <p class="summary-description">Machine learning predicts continued growth in key markets</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('main.market_insights') }}" class="btn btn-outline-primary btn-lg market-insights-btn">
+                <i class="fas fa-chart-line me-2"></i>Detailed Market Analysis
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section bg-dark text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-right">
+                <h2 class="display-5 fw-bold mb-3">Ready to Start Investing?</h2>
+                <p class="lead mb-4">
+                    Join thousands of smart investors using NextProperty AI to build their real estate portfolios. 
+                    Get started with a free account and access our powerful investment tools.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end" data-aos="fade-left">
+                <a href="{{ url_for('main.predict_price') }}" class="btn btn-warning btn-lg mb-2 me-2">
+                    <i class="fas fa-magic me-2"></i>Get AI Prediction
+                </a>
+                <a href="{{ url_for('main.properties') }}" class="btn btn-outline-light btn-lg mb-2">
+                    <i class="fas fa-search me-2"></i>Browse Properties
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/modern-interactions.js') }}"></script>
+<script>
+// Market Trends Chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('marketTrendsChart').getContext('2d');
+    
+    // Sample data - would be replaced with real data from the backend
+    const chartData = {
+        labels: {{ trend_data.dates|safe if trend_data else "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']" }},
+        datasets: [{
+            label: 'Average Property Price',
+            data: {{ trend_data.avg_prices|safe if trend_data else "[580000, 595000, 610000, 625000, 640000, 655000]" }},
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

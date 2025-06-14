@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+
+{% block title %}Property Listings - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/modern-properties.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Enhanced Search Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="filters-card">
+                <div class="filters-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        Smart Filters
+                    </h5>
+                    <span class="filters-badge">Advanced</span>
+                </div>
+                <div class="filters-body">
+                    <form method="GET" action="{{ url_for('main.properties') }}" class="modern-filter-form">
+                        <div class="filter-group">
+                            <label for="city" class="filter-label">City</label>
+                            <select class="filter-select" id="city" name="city">
+                                <option value="">All Cities</option>
+                                {% for city in cities %}
+                                <option value="{{ city }}" {{ 'selected' if search_params.city == city else '' }}>
+                                    {{ city }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="type" class="filter-label">Property Type</label>
+                            <select class="filter-select" id="type" name="type">
+                                <option value="">All Types</option>
+                                {% for type in property_types %}
+                                <option value="{{ type }}" {{ 'selected' if search_params.type == type else '' }}>
+                                    {{ type }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label class="filter-label">Price Range</label>
+                            <div class="price-range-inputs">
+                                <input type="number" class="filter-input" name="min_price" 
+                                       placeholder="Min Price" value="{{ search_params.min_price or '' }}">
+                                <span class="price-separator">to</span>
+                                <input type="number" class="filter-input" name="max_price"
+                                       placeholder="Max Price" value="{{ search_params.max_price or '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="bedrooms" class="filter-label">Bedrooms</label>
+                            <select class="filter-select" id="bedrooms" name="bedrooms">
+                                <option value="">Any</option>
+                                {% for i in range(1, 6) %}
+                                <option value="{{ i }}" {{ 'selected' if search_params.bedrooms == i else '' }}>
+                                    {{ i }}{{ '+' if i == 5 else '' }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="bathrooms" class="filter-label">Bathrooms</label>
+                            <select class="filter-select" id="bathrooms" name="bathrooms">
+                                <option value="">Any</option>
+                                {% for i in [1, 1.5, 2, 2.5, 3, 3.5, 4] %}
+                                <option value="{{ i }}" {{ 'selected' if search_params.bathrooms == i else '' }}>
+                                    {{ i }}{{ '+' if i == 4 else '' }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-actions">
+                            <button type="submit" class="btn-filter-search">
+                                <i class="fas fa-search me-2"></i>
+                                Search Properties
+                            </button>
+                            <a href="{{ url_for('main.properties') }}" class="btn-filter-clear">
+                                Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Property Listings -->
+        <div class="col-lg-9">
+            <div class="listings-container">
+                <div class="listings-header">
+                    <div class="listings-title">
+                        <h4 class="mb-0">
+                            <i class="fas fa-home me-2"></i>Property Listings
+                        </h4>
+                        <span class="results-count">{{ properties.total if properties else 0 }} properties found</span>
+                    </div>
+                    <div class="listings-actions">
+                        <a href="{{ url_for('main.properties') }}" class="action-btn top-deals-btn">
+                            <i class="fas fa-trophy me-1"></i>
+                            Top Deals
+                        </a>
+                        <a href="{{ url_for('main.predict_price') }}" class="action-btn predict-btn">
+                            <i class="fas fa-magic me-1"></i>
+                            AI Prediction
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="listings-content">
+                    {% if properties and properties.items %}
+                    <div class="properties-grid">
+                        {% for property in properties.items %}
+                        <div class="property-card modern-enhanced">
+                            <div class="property-image">
+                                <img src="{{ property.images[0].image_url if property.images else url_for('static', filename='images/property-placeholder.jpg') }}" 
+                                     alt="{{ property.address }}" 
+                                     class="property-img">
+                                
+                                <div class="property-badges">
+                                    <span class="price-badge">{{ property.sold_price|format_currency if property.sold_price else 'Price on request' }}</span>
+                                    {% if property.ai_prediction %}
+                                    <span class="ai-badge">
+                                        <i class="fas fa-robot me-1"></i>
+                                        AI: {{ property.ai_prediction|format_currency }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="property-overlay">
+                                    <div class="overlay-actions">
+                                        <button class="action-btn-overlay favorite-btn" title="Add to favorites">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                        <button class="action-btn-overlay share-btn" title="Share property">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h6 class="property-title">{{ property.address }}</h6>
+                                    <p class="property-location">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ property.city }}, {{ property.province }} {{ property.postal_code }}
+                                    </p>
+                                </div>
+                                
+                                <div class="property-meta">
+                                    <div class="property-feature">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-bed"></i>
+                                        </div>
+                                        <div class="feature-content">
+                                            <span class="feature-value">{{ property.bedrooms or 'N/A' }}</span>
+                                            <span class="feature-label">Beds</span>
+                                        </div>
+                                    </div>
+                                    <div class="property-feature">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-bath"></i>
+                                        </div>
+                                        <div class="feature-content">
+                                            <span class="feature-value">{{ property.bathrooms or 'N/A' }}</span>
+                                            <span class="feature-label">Baths</span>
+                                        </div>
+                                    </div>
+                                    <div class="property-feature">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-expand-arrows-alt"></i>
+                                        </div>
+                                        <div class="feature-content">
+                                            <span class="feature-value">{{ property.sqft|number if property.sqft else 'N/A' }}</span>
+                                            <span class="feature-label">Sq Ft</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="property-actions">
+                                    <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}" 
+                                       class="btn-modern btn-view-details">
+                                        <span>View Details</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                    <button type="button" class="btn-modern btn-ai-predict" 
+                                            onclick="getPrediction('{{ property.listing_id }}')">
+                                        <i class="fas fa-magic me-1"></i>
+                                        AI Price
+                                    </button>
+                                    <div class="property-rating">
+                                        {% if property.ai_score %}
+                                        <span class="ai-score">
+                                            <i class="fas fa-star text-warning"></i>
+                                            {{ property.ai_score }}/100
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Enhanced Pagination -->
+                    {% if properties.pages > 1 %}
+                    <div class="pagination-container">
+                        <nav aria-label="Property listings pagination">
+                            <ul class="pagination-modern">
+                                {% if properties.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.properties', page=properties.prev_num, **search_params) }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page_num in properties.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != properties.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('main.properties', page=page_num, **search_params) }}">{{ page_num }}</a>
+                                        </li>
+                                        {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                        {% endif %}
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if properties.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.properties', page=properties.next_num, **search_params) }}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="no-results">
+                        <div class="no-results-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h4>No Properties Found</h4>
+                        <p>Try adjusting your search filters to find more properties.</p>
+                        <a href="{{ url_for('main.properties') }}" class="btn-modern">
+                            <i class="fas fa-refresh me-2"></i>Reset Search
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="bedrooms" class="form-label">Bedrooms</label>
+                            <select class="form-select" id="bedrooms" name="bedrooms">
+                                <option value="">Any</option>
+                                {% for i in range(1, 6) %}
+                                <option value="{{ i }}" {{ 'selected' if search_params.bedrooms == i else '' }}>
+                                    {{ i }}{{ '+' if i == 5 else '' }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="bathrooms" class="form-label">Bathrooms</label>
+                            <select class="form-select" id="bathrooms" name="bathrooms">
+                                <option value="">Any</option>
+                                {% for i in [1, 1.5, 2, 2.5, 3, 3.5, 4] %}
+                                <option value="{{ i }}" {{ 'selected' if search_params.bathrooms == i else '' }}>
+                                    {{ i }}{{ '+' if i == 4 else '' }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>
+                                Search Properties
+                            </button>
+                        </div>
+                        
+                        <div class="d-grid mt-2">
+                            <a href="{{ url_for('main.properties') }}" class="btn btn-outline-secondary btn-sm">
+                                Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Property Listings -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        Property Listings
+                        <span class="badge bg-primary ms-2">{{ properties.total if properties else 0 }}</span>
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-trophy me-1"></i>
+                            Top Deals
+                        </a>
+                        <a href="{{ url_for('main.predict_price') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-calculator me-1"></i>
+                            Price Prediction
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if properties and properties.items %}
+                    <div class="row g-4">
+                        {% for property in properties.items %}
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="position-relative">
+                                    <img src="{{ property.images[0].image_url if property.images else url_for('static', filename='images/property-placeholder.jpg') }}" 
+                                         alt="{{ property.address }}" 
+                                         class="card-img-top" 
+                                         style="height: 200px; object-fit: cover;">
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-primary">{{ property.sold_price|format_currency if property.sold_price else 'Price on request' }}</span>
+                                    </div>
+                                    {% if property.ai_prediction %}
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-robot me-1"></i>
+                                            AI: {{ property.ai_prediction|format_currency }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ property.address }}</h6>
+                                    <p class="text-muted small mb-2">{{ property.city }}, {{ property.province }} {{ property.postal_code }}</p>
+                                    
+                                    <div class="row text-center mb-3">
+                                        <div class="col-4">
+                                            <div class="border-end">
+                                                <small class="d-block text-muted">Beds</small>
+                                                <strong>{{ property.bedrooms or 'N/A' }}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="border-end">
+                                                <small class="d-block text-muted">Baths</small>
+                                                <strong>{{ property.bathrooms or 'N/A' }}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <small class="d-block text-muted">Sq Ft</small>
+                                            <strong>{{ property.sqft|format_sqft if property.sqft else 'N/A' }}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">{{ property.property_type }}</small>
+                                        {% if property.year_built %}
+                                        <small class="text-muted"> • Built {{ property.year_built }}</small>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}" 
+                                           class="btn btn-outline-primary btn-sm">View Details</a>
+                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                onclick="getPrediction('{{ property.listing_id }}')">
+                                            <i class="fas fa-magic"></i> AI Price
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if properties.pages > 1 %}
+                    <nav aria-label="Property pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if properties.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.properties', page=properties.prev_num, **search_params) }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in properties.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != properties.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.properties', page=page_num, **search_params) }}">{{ page_num }}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if properties.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.properties', page=properties.next_num, **search_params) }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5>No properties found</h5>
+                        <p class="text-muted">Try adjusting your search criteria or browse all properties.</p>
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-primary">Show All Properties</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Prediction Modal -->
+<div class="modal fade" id="predictionModal" tabindex="-1" aria-labelledby="predictionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="predictionModalLabel">
+                    <i class="fas fa-robot me-2"></i>AI Price Prediction
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="predictionContent">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Generating AI prediction...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function getPrediction(propertyId) {
+    const modal = new bootstrap.Modal(document.getElementById('predictionModal'));
+    const content = document.getElementById('predictionContent');
+    
+    // Show loading state
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Generating AI prediction...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Fetch prediction
+    fetch(`/api/property-prediction/${propertyId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const prediction = data.prediction;
+                content.innerHTML = `
+                    <div class="text-center mb-3">
+                        <h3 class="text-primary">${formatCurrency(prediction.predicted_price)}</h3>
+                        <p class="text-muted">Estimated market value</p>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Lower Bound</h6>
+                                    <h5 class="text-info">${formatCurrency(prediction.confidence_interval.lower)}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Upper Bound</h6>
+                                    <h5 class="text-info">${formatCurrency(prediction.confidence_interval.upper)}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Confidence Level</h6>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: ${prediction.confidence * 100}%">
+                                ${(prediction.confidence * 100).toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Unable to generate prediction. Please try again.
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Error generating prediction. Please try again.
+                </div>
+            `;
+        });
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(value);
+}
+</script>
+{% endblock %}

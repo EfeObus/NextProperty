@@ -1,0 +1,558 @@
+{% extends "base.html" %}
+
+{% block title %}Top Investment Properties - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section-deals {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section-deals::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .deals-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+    }
+
+    .deals-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #FFD700, #FFA500, #FF6B6B);
+    }
+
+    .deals-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        background: rgba(255, 255, 255, 1);
+    }
+
+    .deal-badge {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border-radius: 20px;
+        padding: 0.4rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .deal-badge.excellent {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: #333;
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+
+    .deal-badge.great {
+        background: linear-gradient(135deg, #28a745, #20c997);
+    }
+
+    .deal-badge.good {
+        background: linear-gradient(135deg, #17a2b8, #007bff);
+    }
+
+    .property-stats {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        position: relative;
+    }
+
+    .stat-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 40px;
+        background: linear-gradient(to bottom, transparent, #dee2e6, transparent);
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #495057;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .price-section {
+        background: linear-gradient(135deg, #fff, #f8f9fa);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border: 2px solid #e9ecef;
+    }
+
+    .price-item {
+        text-align: center;
+    }
+
+    .price-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .price-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+
+    .price-value.listed {
+        color: #6c757d;
+    }
+
+    .price-value.predicted {
+        color: #28a745;
+    }
+
+    .investment-meter {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .meter-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+    }
+
+    .meter-bar {
+        height: 12px;
+        background: #e9ecef;
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .meter-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997, #FFD700);
+        border-radius: 6px;
+        position: relative;
+        transition: width 1s ease-in-out;
+    }
+
+    .meter-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .action-section {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-radius: 15px;
+        margin-top: 1rem;
+    }
+
+    .btn-view-details {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-view-details:hover {
+        background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .property-meta {
+        color: #6c757d;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .property-meta i {
+        color: #495057;
+    }
+
+    .pagination-deals {
+        margin-top: 3rem;
+    }
+
+    .pagination-deals .page-link {
+        border: 2px solid #e9ecef;
+        color: #495057;
+        padding: 0.75rem 1.25rem;
+        margin: 0 0.25rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .pagination-deals .page-link:hover {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+    }
+
+    .pagination-deals .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: transparent;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-radius: 20px;
+        margin: 2rem 0;
+    }
+
+    .empty-state i {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .deals-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        .price-section .row > div {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section-deals py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center text-white">
+                <div class="mb-4">
+                    <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
+                    <h1 class="display-4 fw-bold mb-3">Top Investment Opportunities</h1>
+                    <p class="lead mb-4">
+                        Properties priced below our AI prediction - potential good deals identified by our advanced algorithms
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filters Section -->
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filter & Sort Top Deals
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="city" class="form-label">City</label>
+                            <select name="city" id="city" class="form-select">
+                                <option value="">All Cities</option>
+                                {% for city in cities %}
+                                <option value="{{ city }}" {% if current_filters.city == city %}selected{% endif %}>
+                                    {{ city }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="type" class="form-label">Property Type</label>
+                            <select name="type" id="type" class="form-select">
+                                <option value="">All Types</option>
+                                {% for prop_type in property_types %}
+                                <option value="{{ prop_type }}" {% if current_filters.type == prop_type %}selected{% endif %}>
+                                    {{ prop_type }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="sort_by" class="form-label">Sort By</label>
+                            <select name="sort_by" id="sort_by" class="form-select">
+                                <option value="investment_potential" {% if request.args.get('sort_by') == 'investment_potential' %}selected{% endif %}>
+                                    Investment Potential
+                                </option>
+                                <option value="value_difference" {% if request.args.get('sort_by') == 'value_difference' %}selected{% endif %}>
+                                    Value Difference
+                                </option>
+                                <option value="predicted_price" {% if request.args.get('sort_by') == 'predicted_price' %}selected{% endif %}>
+                                    AI Prediction
+                                </option>
+                                <option value="actual_price" {% if request.args.get('sort_by') == 'actual_price' %}selected{% endif %}>
+                                    Listed Price
+                                </option>
+                                <option value="bedrooms" {% if request.args.get('sort_by') == 'bedrooms' %}selected{% endif %}>
+                                    Bedrooms
+                                </option>
+                                <option value="sqft" {% if request.args.get('sort_by') == 'sqft' %}selected{% endif %}>
+                                    Square Feet
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-search me-1"></i>Apply Filters
+                            </button>
+                            <a href="{{ url_for('main.top_properties') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    {% if top_properties %}
+        <!-- Results Summary -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-star text-warning me-2"></i>
+                        {{ top_properties|length }} Investment Opportunities Found
+                        {% if current_filters.city or current_filters.type %}
+                        <small class="text-muted">
+                            (filtered{% if current_filters.city %} by city: {{ current_filters.city }}{% endif %}{% if current_filters.type %} by type: {{ current_filters.type }}{% endif %})
+                        </small>
+                        {% endif %}
+                    </h4>
+                    
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-building me-1"></i>All Properties
+                        </a>
+                        <a href="{{ url_for('main.predict_price') }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-calculator me-1"></i>Price Prediction
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {% for property in top_properties %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="deals-card h-100">
+                    <div class="p-4">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold mb-1">{{ property.address }}</h5>
+                                <div class="property-meta">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ property.city }}, {{ property.province }}</span>
+                                </div>
+                            </div>
+                            {% set potential = property.investment_potential * 100 if property.investment_potential else 0 %}
+                            <span class="deal-badge {{ 'excellent' if potential > 20 else 'great' if potential > 10 else 'good' }}">
+                                <i class="fas fa-star"></i>
+                                {% if potential > 20 %}Excellent Deal{% elif potential > 10 %}Great Deal{% else %}Good Deal{% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Property Stats -->
+                        <div class="property-stats">
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value">{{ property.bedrooms or 'N/A' }}</span>
+                                        <span class="stat-label">Beds</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value">{{ property.bathrooms or 'N/A' }}</span>
+                                        <span class="stat-label">Baths</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-item">
+                                        <span class="stat-value">{{ property.sqft|format_sqft if property.sqft else 'N/A' }}</span>
+                                        <span class="stat-label">Sq Ft</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price Comparison -->
+                        <div class="price-section">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="price-item">
+                                        <div class="price-label">Listed Price</div>
+                                        <div class="price-value listed">{{ property.sold_price|format_currency if property.sold_price else 'N/A' }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="price-item">
+                                        <div class="price-label">AI Prediction</div>
+                                        <div class="price-value predicted">{{ property.predicted_price|format_currency if property.predicted_price else 'N/A' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Investment Potential -->
+                        {% if property.investment_potential %}
+                        <div class="investment-meter">
+                            <div class="meter-label">
+                                <span>Investment Potential</span>
+                                <span class="fw-bold">{{ "%.1f"|format(property.investment_potential * 100) }}%</span>
+                            </div>
+                            <div class="meter-bar">
+                                <div class="meter-fill" style="width: {{ min(property.investment_potential * 100, 100) }}%"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Action Section -->
+                        <div class="action-section">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="property-meta">
+                                    <i class="fas fa-home"></i>
+                                    <span>{{ property.property_type or 'Property' }}</span>
+                                    {% if property.postal_code %}
+                                    <span>•</span>
+                                    <span>{{ property.postal_code }}</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}" 
+                                   class="btn-view-details">
+                                    <span>View Details</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+                        
+        <!-- Enhanced Pagination -->
+        {% if pagination and pagination.total > 20 %}
+        <nav aria-label="Top properties pagination" class="pagination-deals">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.top_properties', page=pagination.page-1, city=current_filters.city, type=current_filters.type, sort_by=request.args.get('sort_by')) }}">
+                        <i class="fas fa-chevron-left me-1"></i>Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Page numbers -->
+                {% for page_num in range(max(1, pagination.page-2), min(pagination.total//20 + 2, pagination.page+3)) %}
+                {% if page_num <= pagination.total//20 + 1 %}
+                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('main.top_properties', page=page_num, city=current_filters.city, type=current_filters.type, sort_by=request.args.get('sort_by')) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('main.top_properties', page=pagination.page+1, city=current_filters.city, type=current_filters.type, sort_by=request.args.get('sort_by')) }}">
+                        Next<i class="fas fa-chevron-right ms-1"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search fa-4x"></i>
+            <h4 class="mt-3 mb-2">No Investment Opportunities Found</h4>
+            <p class="text-muted mb-4">
+                Our AI is constantly analyzing the market for new opportunities.
+                <br>Check back later or explore our property listings.
+            </p>
+            <a href="{{ url_for('main.properties') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-home me-2"></i>Browse All Properties
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

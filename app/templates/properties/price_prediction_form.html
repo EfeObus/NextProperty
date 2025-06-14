@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Property Price Prediction - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calculator text-primary me-2"></i>
+                        AI Property Price Prediction
+                    </h4>
+                    <p class="text-muted mb-0">Get an instant price estimate using our AI model</p>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="bedrooms" class="form-label">Bedrooms</label>
+                                <select class="form-select" id="bedrooms" name="bedrooms" required>
+                                    <option value="">Select bedrooms</option>
+                                    {% for i in range(1, 11) %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select number of bedrooms.</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="bathrooms" class="form-label">Bathrooms</label>
+                                <select class="form-select" id="bathrooms" name="bathrooms" required>
+                                    <option value="">Select bathrooms</option>
+                                    {% for i in [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5] %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select number of bathrooms.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="square_feet" class="form-label">Square Feet</label>
+                                <input type="number" class="form-control" id="square_feet" name="square_feet" 
+                                       min="500" max="10000" required>
+                                <div class="invalid-feedback">Please enter valid square footage (500-10000).</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="lot_size" class="form-label">Lot Size (sq ft)</label>
+                                <input type="number" class="form-control" id="lot_size" name="lot_size" 
+                                       min="1000" max="50000">
+                                <small class="form-text text-muted">Optional</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="year_built" class="form-label">Year Built</label>
+                                <input type="number" class="form-control" id="year_built" name="year_built" 
+                                       min="1900" max="2025" required>
+                                <div class="invalid-feedback">Please enter valid year (1900-2025).</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="property_type" class="form-label">Property Type</label>
+                                <select class="form-select" id="property_type" name="property_type" required>
+                                    <option value="">Select property type</option>
+                                    {% for type in property_types %}
+                                    <option value="{{ type }}">{{ type }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select property type.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <select class="form-select" id="city" name="city" required>
+                                    <option value="">Select city</option>
+                                    {% for city in cities %}
+                                    <option value="{{ city }}">{{ city }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a city.</div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="province" class="form-label">Province</label>
+                                <select class="form-select" id="province" name="province" required>
+                                    <option value="">Select province</option>
+                                    <option value="ON">Ontario</option>
+                                    <option value="QC">Quebec</option>
+                                    <option value="BC">British Columbia</option>
+                                    <option value="AB">Alberta</option>
+                                    <option value="MB">Manitoba</option>
+                                    <option value="SK">Saskatchewan</option>
+                                    <option value="NS">Nova Scotia</option>
+                                    <option value="NB">New Brunswick</option>
+                                    <option value="NL">Newfoundland and Labrador</option>
+                                    <option value="PE">Prince Edward Island</option>
+                                    <option value="NT">Northwest Territories</option>
+                                    <option value="YT">Yukon</option>
+                                    <option value="NU">Nunavut</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a province.</div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-3">
+                                <label for="postal_code" class="form-label">Postal Code</label>
+                                <input type="text" class="form-control" id="postal_code" name="postal_code" 
+                                       pattern="[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d" placeholder="M3J 3T4" required>
+                                <div class="invalid-feedback">Please enter valid postal code (e.g., M3J 3T4).</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-magic me-2"></i>
+                                Predict Price
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bootstrap form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

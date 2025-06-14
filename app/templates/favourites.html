@@ -1,0 +1,808 @@
+{% extends "base.html" %}
+
+{% block title %}My Favourites - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .favourites-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .property-card {
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .property-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .property-image {
+        height: 200px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+    }
+    
+    .price-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(40, 167, 69, 0.9);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    
+    .favourite-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        padding: 8px;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .property-details {
+        padding: 20px;
+    }
+    
+    .property-meta {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    
+    .property-features {
+        display: flex;
+        gap: 15px;
+        margin: 15px 0;
+        font-size: 0.9rem;
+        color: #888;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .property-actions {
+        border-top: 1px solid #eee;
+        padding: 15px 20px;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .notes-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+    
+    .filter-tabs {
+        margin-bottom: 30px;
+    }
+    
+    .nav-pills .nav-link {
+        border-radius: 25px;
+        padding: 10px 20px;
+        margin-right: 10px;
+    }
+    
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    @media (max-width: 768px) {
+        .favourites-stats {
+            padding: 20px;
+        }
+        
+        .property-features {
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .property-actions {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 fw-bold text-primary">
+                <i class="fas fa-heart me-3"></i>My Favourites
+            </h1>
+            {% if is_demo %}
+            <p class="lead text-muted">
+                Demo Mode - This feature will be available when user authentication is implemented.
+            </p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                This is a preview of the favourites functionality. Once user accounts are implemented, 
+                you'll be able to save properties, add notes, and organize your favourite listings.
+            </div>
+            {% else %}
+            <p class="lead text-muted">Your saved and favourite properties</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    {% if not is_demo and saved_properties %}
+    <div class="favourites-stats">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <h3 class="mb-1">{{ stats.total_saved }}</h3>
+                <small>Total Saved</small>
+            </div>
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <h3 class="mb-1">{{ stats.favourites }}</h3>
+                <small>Favourites</small>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3 class="mb-1">{{ stats.total_value | format_price }}</h3>
+                <small>Total Value</small>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3 class="mb-1">{{ stats.avg_price | format_price }}</h3>
+                <small>Average Price</small>
+            </div>
+        </div>
+    </div>
+    {% elif is_demo %}
+    <div class="favourites-stats">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <h3 class="mb-1">0</h3>
+                <small>Total Saved</small>
+            </div>
+            <div class="col-md-3 col-6 mb-3 mb-md-0">
+                <h3 class="mb-1">0</h3>
+                <small>Favourites</small>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3 class="mb-1">$0</h3>
+                <small>Total Value</small>
+            </div>
+            <div class="col-md-3 col-6">
+                <h3 class="mb-1">$0</h3>
+                <small>Average Price</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <ul class="nav nav-pills" id="favouriteTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-properties" 
+                        type="button" role="tab" aria-controls="all-properties" aria-selected="true">
+                    <i class="fas fa-list me-1"></i>All Saved ({{ saved_properties | length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="favourites-tab" data-bs-toggle="pill" data-bs-target="#favourite-properties" 
+                        type="button" role="tab" aria-controls="favourite-properties" aria-selected="false">
+                    <i class="fas fa-heart me-1"></i>Favourites Only ({{ favourite_properties | length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="saved-tab" data-bs-toggle="pill" data-bs-target="#saved-only-properties" 
+                        type="button" role="tab" aria-controls="saved-only-properties" aria-selected="false">
+                    <i class="fas fa-bookmark me-1"></i>Saved Only ({{ saved_only | length }})
+                </button>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="favouriteTabContent">
+        <!-- All Properties Tab -->
+        <div class="tab-pane fade show active" id="all-properties" role="tabpanel" aria-labelledby="all-tab">
+            {% if is_demo %}
+                <div class="empty-state">
+                    <i class="fas fa-user-lock"></i>
+                    <h4>Authentication Required</h4>
+                    <p>To save and manage your favourite properties, you'll need to create an account and log in.</p>
+                    <p class="mb-4">Once authentication is implemented, you'll be able to:</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li><i class="fas fa-check text-success me-2"></i>Save properties for later viewing</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Mark properties as favourites</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Add personal notes and tags</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Track property value changes</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Get personalized recommendations</li>
+                    </ul>
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Sample Properties</h5>
+                            <p class="text-muted">Here are some properties to explore while we work on authentication:</p>
+                        </div>
+                    </div>
+                    {% if sample_properties %}
+                        <div class="row">
+                            {% for property in sample_properties %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card property-card h-100">
+                                    <div class="position-relative">
+                                        <div class="property-image">
+                                            <i class="fas fa-home"></i>
+                                        </div>
+                                        <div class="price-badge">
+                                            {{ property.sold_price | format_price }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="property-details">
+                                        <div class="property-meta">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            {{ property.city }}, {{ property.province }}
+                                        </div>
+                                        
+                                        <h6 class="property-address mb-2">
+                                            {{ property.address or 'Address not available' }}
+                                        </h6>
+                                        
+                                        <div class="property-type mb-2">
+                                            <span class="badge bg-primary">{{ property.property_type or 'N/A' }}</span>
+                                        </div>
+                                        
+                                        <div class="property-features">
+                                            <div class="feature-item">
+                                                <i class="fas fa-bed"></i>
+                                                <span>{{ property.bedrooms or 'N/A' }}</span>
+                                            </div>
+                                            <div class="feature-item">
+                                                <i class="fas fa-bath"></i>
+                                                <span>{{ property.bathrooms or 'N/A' }}</span>
+                                            </div>
+                                            {% if property.sqft %}
+                                            <div class="feature-item">
+                                                <i class="fas fa-ruler-combined"></i>
+                                                <span>{{ property.sqft | format_sqft }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="property-actions">
+                                        <div>
+                                            <a href="/property/{{ property.listing_id }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View Details
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-outline-secondary btn-sm" disabled>
+                                                <i class="fas fa-heart"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm" disabled>
+                                                <i class="fas fa-bookmark"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% elif saved_properties %}
+                <div class="row">
+                    {% for saved_prop in saved_properties %}
+                        {% set property = saved_prop.property %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card property-card h-100">
+                                <div class="position-relative">
+                                    <div class="property-image">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    {% if saved_prop.is_favorite %}
+                                    <div class="favourite-badge">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="price-badge">
+                                        {{ property.sold_price | format_price }}
+                                    </div>
+                                </div>
+                                
+                                <div class="property-details">
+                                    <div class="property-meta">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ property.city }}, {{ property.province }}
+                                    </div>
+                                    
+                                    <h6 class="property-address mb-2">
+                                        {{ property.address or 'Address not available' }}
+                                    </h6>
+                                    
+                                    <div class="property-type mb-2">
+                                        <span class="badge bg-primary">{{ property.property_type or 'N/A' }}</span>
+                                    </div>
+                                    
+                                    <div class="property-features">
+                                        <div class="feature-item">
+                                            <i class="fas fa-bed"></i>
+                                            <span>{{ property.bedrooms or 'N/A' }}</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-bath"></i>
+                                            <span>{{ property.bathrooms or 'N/A' }}</span>
+                                        </div>
+                                        {% if property.sqft %}
+                                        <div class="feature-item">
+                                            <i class="fas fa-ruler-combined"></i>
+                                            <span>{{ property.sqft | format_sqft }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if saved_prop.notes %}
+                                    <div class="notes-section">
+                                        <strong>Notes:</strong>
+                                        <p class="mb-0 mt-1">{{ saved_prop.notes }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if saved_prop.tags %}
+                                    <div class="mt-2">
+                                        {% for tag in saved_prop.tags.split(',') %}
+                                        <span class="badge bg-secondary me-1">{{ tag.strip() }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Saved {{ saved_prop.created_at.strftime('%B %d, %Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="property-actions">
+                                    <div>
+                                        <a href="/property/{{ property.listing_id }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                        <button class="btn btn-outline-info btn-sm" onclick="editNotes('{{ saved_prop.id }}')">
+                                            <i class="fas fa-edit me-1"></i>Edit
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-outline-{{ 'danger' if saved_prop.is_favorite else 'secondary' }} btn-sm favourite-btn" 
+                                                data-saved-id="{{ saved_prop.id }}" 
+                                                data-listing-id="{{ property.listing_id }}"
+                                                onclick="toggleFavourite('{{ property.listing_id }}', this)">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="removeSaved('{{ property.listing_id }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-heart-broken"></i>
+                    <h4>No Saved Properties</h4>
+                    <p>You haven't saved any properties yet. Start exploring and save properties you're interested in!</p>
+                    <a href="{{ url_for('main.properties') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Browse Properties
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Favourites Only Tab -->
+        <div class="tab-pane fade" id="favourite-properties" role="tabpanel" aria-labelledby="favourites-tab">
+            {% if favourite_properties %}
+                <div class="row">
+                    {% for saved_prop in favourite_properties %}
+                        {% set property = saved_prop.property %}
+                        <!-- Same card structure as above, but only for favourites -->
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card property-card h-100">
+                                <div class="position-relative">
+                                    <div class="property-image">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <div class="favourite-badge">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
+                                    <div class="price-badge">
+                                        {{ property.sold_price | format_price }}
+                                    </div>
+                                </div>
+                                
+                                <div class="property-details">
+                                    <div class="property-meta">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ property.city }}, {{ property.province }}
+                                    </div>
+                                    
+                                    <h6 class="property-address mb-2">
+                                        {{ property.address or 'Address not available' }}
+                                    </h6>
+                                    
+                                    <div class="property-type mb-2">
+                                        <span class="badge bg-primary">{{ property.property_type or 'N/A' }}</span>
+                                    </div>
+                                    
+                                    <div class="property-features">
+                                        <div class="feature-item">
+                                            <i class="fas fa-bed"></i>
+                                            <span>{{ property.bedrooms or 'N/A' }}</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-bath"></i>
+                                            <span>{{ property.bathrooms or 'N/A' }}</span>
+                                        </div>
+                                        {% if property.sqft %}
+                                        <div class="feature-item">
+                                            <i class="fas fa-ruler-combined"></i>
+                                            <span>{{ property.sqft | format_sqft }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if saved_prop.notes %}
+                                    <div class="notes-section">
+                                        <strong>Notes:</strong>
+                                        <p class="mb-0 mt-1">{{ saved_prop.notes }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="property-actions">
+                                    <div>
+                                        <a href="/property/{{ property.listing_id }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-outline-danger btn-sm favourite-btn" 
+                                                data-listing-id="{{ property.listing_id }}"
+                                                onclick="toggleFavourite('{{ property.listing_id }}', this)">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="removeSaved('{{ property.listing_id }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <h4>No Favourite Properties</h4>
+                    <p>You haven't marked any properties as favourites yet. Click the heart icon on saved properties to add them to your favourites!</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Saved Only Tab -->
+        <div class="tab-pane fade" id="saved-only-properties" role="tabpanel" aria-labelledby="saved-tab">
+            {% if saved_only %}
+                <div class="row">
+                    {% for saved_prop in saved_only %}
+                        {% set property = saved_prop.property %}
+                        <!-- Same card structure, but only for non-favourite saved properties -->
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card property-card h-100">
+                                <div class="position-relative">
+                                    <div class="property-image">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <div class="price-badge">
+                                        {{ property.sold_price | format_price }}
+                                    </div>
+                                </div>
+                                
+                                <div class="property-details">
+                                    <div class="property-meta">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ property.city }}, {{ property.province }}
+                                    </div>
+                                    
+                                    <h6 class="property-address mb-2">
+                                        {{ property.address or 'Address not available' }}
+                                    </h6>
+                                    
+                                    <div class="property-type mb-2">
+                                        <span class="badge bg-primary">{{ property.property_type or 'N/A' }}</span>
+                                    </div>
+                                    
+                                    <div class="property-features">
+                                        <div class="feature-item">
+                                            <i class="fas fa-bed"></i>
+                                            <span>{{ property.bedrooms or 'N/A' }}</span>
+                                        </div>
+                                        <div class="feature-item">
+                                            <i class="fas fa-bath"></i>
+                                            <span>{{ property.bathrooms or 'N/A' }}</span>
+                                        </div>
+                                        {% if property.sqft %}
+                                        <div class="feature-item">
+                                            <i class="fas fa-ruler-combined"></i>
+                                            <span>{{ property.sqft | format_sqft }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if saved_prop.notes %}
+                                    <div class="notes-section">
+                                        <strong>Notes:</strong>
+                                        <p class="mb-0 mt-1">{{ saved_prop.notes }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="property-actions">
+                                    <div>
+                                        <a href="/property/{{ property.listing_id }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-outline-secondary btn-sm favourite-btn" 
+                                                data-listing-id="{{ property.listing_id }}"
+                                                onclick="toggleFavourite('{{ property.listing_id }}', this)">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="removeSaved('{{ property.listing_id }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bookmark"></i>
+                    <h4>No Saved Properties</h4>
+                    <p>All your saved properties are marked as favourites!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Notes Modal -->
+<div class="modal fade" id="editNotesModal" tabindex="-1" aria-labelledby="editNotesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editNotesModalLabel">Edit Notes & Tags</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editNotesForm">
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" rows="3" placeholder="Add your notes about this property..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tags" placeholder="e.g., investment, family home, good location">
+                        <div class="form-text">Separate tags with commas</div>
+                    </div>
+                    <input type="hidden" id="editSavedId">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveNotes()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle favourite status
+function toggleFavourite(listingId, button) {
+    fetch('/api/save-property', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            listing_id: listingId,
+            action: 'toggle_favorite'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showToast(data.error, 'error');
+        } else {
+            // Update button appearance
+            if (data.is_favorite) {
+                button.classList.remove('btn-outline-secondary', 'btn-outline-danger');
+                button.classList.add('btn-outline-danger');
+            } else {
+                button.classList.remove('btn-outline-danger');
+                button.classList.add('btn-outline-secondary');
+            }
+            
+            showToast(data.message, 'success');
+            
+            // Reload page to update tabs
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error updating favourite status', 'error');
+    });
+}
+
+// Remove saved property
+function removeSaved(listingId) {
+    if (confirm('Are you sure you want to remove this property from your saved list?')) {
+        fetch('/api/save-property', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                listing_id: listingId,
+                action: 'unsave'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showToast(data.error, 'error');
+            } else {
+                showToast(data.message, 'success');
+                // Reload page to update the list
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error removing property', 'error');
+        });
+    }
+}
+
+// Edit notes functionality
+function editNotes(savedId) {
+    // Fetch current notes and tags
+    fetch(`/api/saved-property/${savedId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+            
+            // Populate the form
+            document.getElementById('notes').value = data.notes || '';
+            document.getElementById('tags').value = data.tags || '';
+            document.getElementById('editSavedId').value = savedId;
+            
+            // Show the modal
+            var modal = new bootstrap.Modal(document.getElementById('editNotesModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error loading property details', 'error');
+        });
+}
+
+function saveNotes() {
+    var savedId = document.getElementById('editSavedId').value;
+    var notes = document.getElementById('notes').value;
+    var tags = document.getElementById('tags').value;
+    
+    fetch('/api/update-saved-property', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            saved_id: savedId,
+            notes: notes,
+            tags: tags
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showToast(data.error, 'error');
+        } else {
+            var modal = bootstrap.Modal.getInstance(document.getElementById('editNotesModal'));
+            modal.hide();
+            showToast(data.message, 'success');
+            
+            // Reload page to show updated notes
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error updating notes', 'error');
+    });
+}
+
+// Toast notification function
+function showToast(message, type) {
+    var toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

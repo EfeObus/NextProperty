@@ -1,0 +1,817 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.title }} - NextProperty AI{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{{ property.description[:160] }}">
+<meta property="og:title" content="{{ property.title }}">
+<meta property="og:description" content="{{ property.description[:160] }}">
+<meta property="og:image" content="{{ property.images[0].url if property.images else url_for('static', filename='images/property-placeholder.jpg') }}">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/modern-property-detail.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/modern-properties.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="property-detail-container">
+    <!-- Property Hero Section -->
+    <div class="property-hero">
+        <div class="property-gallery">
+            <div class="main-image">
+                <img src="{{ property.images[0].url if property.images else url_for('static', filename='images/property-placeholder.jpg') }}" 
+                     alt="{{ property.title }}" id="mainPropertyImage">
+                <div class="image-counter">
+                    <span id="imageIndex">1</span> / <span id="totalImages">{{ property.images|length or 1 }}</span>
+                </div>
+                <div class="gallery-controls">
+                    <button class="gallery-btn prev-btn" onclick="changeImage(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="gallery-btn next-btn" onclick="changeImage(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <button class="view-all-photos" onclick="openPhotoGallery()">
+                    <i class="fas fa-images"></i>
+                    View All Photos
+                </button>
+            </div>
+            
+            <div class="thumbnail-gallery">
+                {% for image in property.images[:12] %}
+                <img src="{{ image.url }}" alt="Property Image {{ loop.index }}" 
+                     class="thumbnail {{ 'active' if loop.first else '' }}"
+                     onclick="selectImage({{ loop.index0 }})">
+                {% endfor %}
+                {% if property.images|length > 12 %}
+                <div class="more-photos" onclick="openPhotoGallery()">
+                    +{{ property.images|length - 12 }} more
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="property-summary">
+            <div class="property-header">
+                <div class="property-status {{ property.status|lower }}">
+                    {{ property.status.title() }}
+                </div>
+                <div class="property-actions">
+                    <button class="btn-icon" onclick="toggleFavorite('{{ property.listing_id }}')" id="favoriteBtn">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    <button class="btn-icon" onclick="shareProperty()">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="btn-icon" onclick="printProperty()">
+                        <i class="fas fa-print"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <h1>{{ property.title }}</h1>
+            <p class="property-address">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ property.address }}, {{ property.city }}, {{ property.province }}
+            </p>
+            
+            <div class="property-price">
+                <span class="current-price">${{ "{:,.0f}".format(property.sold_price) }}</span>
+                {% if property.price_per_sqft %}
+                <span class="price-per-sqft">${{ "{:.0f}".format(property.price_per_sqft) }}/sq ft</span>
+                {% endif %}
+            </div>
+            
+            <div class="property-features">
+                <div class="feature">
+                    <i class="fas fa-bed"></i>
+                    <span>{{ property.bedrooms }} Bed{{ 's' if property.bedrooms != 1 else '' }}</span>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-bath"></i>
+                    <span>{{ property.bathrooms }} Bath{{ 's' if property.bathrooms != 1 else '' }}</span>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>{{ "{:,.0f}".format(property.sqft) }} sq ft</span>
+                </div>
+                {% if property.lot_size %}
+                <div class="feature">
+                    <i class="fas fa-map"></i>
+                    <span>{{ "{:,.0f}".format(property.lot_size) }} sq ft lot</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="property-contact">
+                <div class="agent-info">
+                    <img src="{{ property.agent.avatar_url or '/static/images/default-avatar.png' }}" 
+                         alt="{{ property.agent.name }}" class="agent-avatar">
+                    <div>
+                        <h4>{{ property.agent.name }}</h4>
+                        <p>{{ property.agent.title or 'Real Estate Agent' }}</p>
+                        <p class="agent-phone">{{ property.agent.phone }}</p>
+                    </div>
+                </div>
+                <div class="contact-buttons">
+                    <button class="btn btn-primary" onclick="contactAgent()">
+                        <i class="fas fa-phone"></i>
+                        Contact Agent
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="scheduleViewing()">
+                        <i class="fas fa-calendar"></i>
+                        Schedule Viewing
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Property Details Section -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Description -->
+                <div class="detail-section">
+                    <h2>About This Property</h2>
+                    <div class="description">
+                        {{ property.description|nl2br }}
+                    </div>
+                </div>
+                
+                <!-- Features & Amenities -->
+                <div class="detail-section">
+                    <h2>Features & Amenities</h2>
+                    <div class="features-grid">
+                        {% if property.features %}
+                            {% for feature in property.features %}
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                {{ feature }}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No features listed</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Property Details -->
+                <div class="detail-section">
+                    <h2>Property Details</h2>
+                    <div class="details-table">
+                        <div class="detail-row">
+                            <span class="detail-label">Property Type</span>
+                            <span class="detail-value">{{ property.property_type.title() }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Year Built</span>
+                            <span class="detail-value">{{ property.year_built or 'Not specified' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Parking</span>
+                            <span class="detail-value">{{ property.parking_spaces or 0 }} spaces</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Heating</span>
+                            <span class="detail-value">{{ property.heating_type or 'Not specified' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Cooling</span>
+                            <span class="detail-value">{{ property.cooling_type or 'Not specified' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">MLS #</span>
+                            <span class="detail-value">{{ property.mls_number or 'Not available' }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Analysis -->
+                <div class="ai-analysis" id="aiAnalysisSection">
+                    <div class="ai-header">
+                        <div class="ai-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div>
+                            <h2>AI Investment Analysis</h2>
+                            <p>Powered by advanced machine learning algorithms</p>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-score">
+                        <div class="score-circle" data-score="{{ property.ai_score or 85 }}">
+                            <div class="score-value">{{ property.ai_score or 85 }}</div>
+                        </div>
+                        <h3>Investment Score</h3>
+                        <p>Based on market analysis, location, and property features</p>
+                    </div>
+                    
+                    <div class="investment-metrics">
+                        <div class="metric">
+                            <div class="metric-value">{{ property.estimated_rental_income|format_price if property.estimated_rental_income else '$3,200' }}</div>
+                            <div class="metric-label">Est. Monthly Rent</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">{{ "{:.1f}%".format(property.roi_estimate) if property.roi_estimate else '7.2%' }}</div>
+                            <div class="metric-label">Expected ROI</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">{{ property.cap_rate|round(2) if property.cap_rate else '5.8' }}%</div>
+                            <div class="metric-label">Cap Rate</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">{{ property.days_on_market if property.days_on_market else '23' }}</div>
+                            <div class="metric-label">Days on Market</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Location & Map -->
+                <div class="detail-section">
+                    <h2>Location & Neighborhood</h2>
+                    <div class="location-info">
+                        <div id="propertyMap" class="property-map"></div>
+                        <div class="neighborhood-scores">
+                            <div class="score-item">
+                                <span class="score-label">Walk Score</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: 75%"></div>
+                                </div>
+                                <span class="score-value">75</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Transit Score</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: 60%"></div>
+                                </div>
+                                <span class="score-value">60</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">Bike Score</span>
+                                <div class="score-bar">
+                                    <div class="score-fill" style="width: 80%"></div>
+                                </div>
+                                <span class="score-value">80</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nearby Amenities -->
+                <div class="detail-section">
+                    <h2>Nearby Amenities</h2>
+                    <div class="amenities-tabs">
+                        <button class="amenity-tab active" data-category="schools">Schools</button>
+                        <button class="amenity-tab" data-category="transportation">Transportation</button>
+                        <button class="amenity-tab" data-category="shopping">Shopping</button>
+                        <button class="amenity-tab" data-category="dining">Dining</button>
+                        <button class="amenity-tab" data-category="healthcare">Healthcare</button>
+                    </div>
+                    <div class="amenities-content" id="amenitiesContent">
+                        <!-- Content will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Mortgage Calculator -->
+                <div class="sidebar-widget">
+                    <h3>Mortgage Calculator</h3>
+                    <div class="calculator">
+                        <div class="form-group">
+                            <label>Home Price</label>
+                            <input type="number" class="form-control" id="homePrice" 
+                                   value="{{ property.sold_price }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Down Payment</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="downPayment" 
+                                       value="{{ (property.sold_price|float * 0.2)|int }}">
+                                <span class="input-group-text">
+                                    <span id="downPaymentPercent">20</span>%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Interest Rate</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="interestRate" 
+                                       value="3.5" step="0.1">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Loan Term</label>
+                            <select class="form-control" id="loanTerm">
+                                <option value="15">15 years</option>
+                                <option value="20">20 years</option>
+                                <option value="25" selected>25 years</option>
+                                <option value="30">30 years</option>
+                            </select>
+                        </div>
+                        <div class="calculator-result">
+                            <div class="result-item">
+                                <span>Monthly Payment</span>
+                                <strong id="monthlyPayment">$0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Similar Properties -->
+                <div class="sidebar-widget">
+                    <h3>Similar Properties</h3>
+                    <div class="similar-properties" id="similarProperties">
+                        <!-- Content will be loaded dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Market Trends -->
+                <div class="sidebar-widget">
+                    <h3>Market Trends</h3>
+                    <div class="market-trend">
+                        <canvas id="priceHistoryChart" width="100" height="60"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Gallery Modal -->
+<div class="modal fade" id="photoGalleryModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Property Photos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="photo-gallery-container">
+                    <div class="photo-display">
+                        <img id="galleryMainImage" src="" alt="">
+                        <div class="gallery-navigation">
+                            <button class="gallery-nav-btn prev" onclick="galleryPrevImage()">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="gallery-nav-btn next" onclick="galleryNextImage()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="photo-thumbnails">
+                        {% for image in property.images %}
+                        <img src="{{ image.url }}" alt="Property Image {{ loop.index }}" 
+                             class="gallery-thumbnail {{ 'active' if loop.first else '' }}"
+                             onclick="selectGalleryImage({{ loop.index0 }})">
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentImageIndex = 0;
+const propertyImages = {{ property.images|map(attribute='url')|list|tojson }};
+const totalImages = propertyImages.length;
+
+// Image gallery functionality
+function changeImage(direction) {
+    currentImageIndex += direction;
+    if (currentImageIndex >= totalImages) currentImageIndex = 0;
+    if (currentImageIndex < 0) currentImageIndex = totalImages - 1;
+    
+    updateMainImage();
+}
+
+function selectImage(index) {
+    currentImageIndex = index;
+    updateMainImage();
+}
+
+function updateMainImage() {
+    document.getElementById('mainPropertyImage').src = propertyImages[currentImageIndex];
+    document.getElementById('imageIndex').textContent = currentImageIndex + 1;
+    
+    // Update thumbnail active state
+    document.querySelectorAll('.thumbnail').forEach((thumb, index) => {
+        thumb.classList.toggle('active', index === currentImageIndex);
+    });
+}
+
+// Photo gallery modal
+function openPhotoGallery() {
+    const modal = new bootstrap.Modal(document.getElementById('photoGalleryModal'));
+    modal.show();
+    document.getElementById('galleryMainImage').src = propertyImages[currentImageIndex];
+}
+
+// Mortgage calculator
+function calculateMortgage() {
+    const homePrice = parseFloat(document.getElementById('homePrice').value);
+    const downPayment = parseFloat(document.getElementById('downPayment').value);
+    const interestRate = parseFloat(document.getElementById('interestRate').value) / 100 / 12;
+    const loanTerm = parseInt(document.getElementById('loanTerm').value) * 12;
+    
+    const loanAmount = homePrice - downPayment;
+    const monthlyPayment = (loanAmount * interestRate * Math.pow(1 + interestRate, loanTerm)) / 
+                          (Math.pow(1 + interestRate, loanTerm) - 1);
+    
+    document.getElementById('monthlyPayment').textContent = 
+        '$' + monthlyPayment.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    
+    // Update down payment percentage
+    const downPaymentPercent = (downPayment / homePrice * 100).toFixed(0);
+    document.getElementById('downPaymentPercent').textContent = downPaymentPercent;
+}
+
+// Event listeners
+document.getElementById('downPayment').addEventListener('input', calculateMortgage);
+document.getElementById('interestRate').addEventListener('input', calculateMortgage);
+document.getElementById('loanTerm').addEventListener('change', calculateMortgage);
+
+// Initialize calculator
+calculateMortgage();
+
+// Load AI analysis
+fetch(`/api/properties/{{ property.listing_id }}/analysis`)
+    .then(response => response.json())
+    .then(data => {
+        // Update AI analysis section
+        const analysisElement = document.getElementById('aiAnalysis');
+        analysisElement.innerHTML = `
+            <div class="analysis-score">
+                <div class="score-circle">
+                    <span class="score">${data.investment_score}</span>
+                    <span class="score-label">Investment Score</span>
+                </div>
+            </div>
+            <div class="analysis-details">
+                <div class="analysis-item">
+                    <h4>Estimated Value</h4>
+                    <p>$${data.estimated_value.toLocaleString()}</p>
+                </div>
+                <div class="analysis-item">
+                    <h4>ROI Potential</h4>
+                    <p>${data.roi_potential}%</p>
+                </div>
+                <div class="analysis-item">
+                    <h4>Market Trend</h4>
+                    <p>${data.market_trend}</p>
+                </div>
+            </div>
+        `;
+    })
+    .catch(error => {
+        document.getElementById('aiAnalysis').innerHTML = 
+            '<p class="text-muted">Analysis temporarily unavailable</p>';
+    });
+
+// Load amenities
+function loadAmenities(category) {
+    fetch(`/api/properties/{{ property.listing_id }}/amenities?category=${category}`)
+        .then(response => response.json())
+        .then(data => {
+            const content = document.getElementById('amenitiesContent');
+            content.innerHTML = data.map(amenity => `
+                <div class="amenity-item">
+                    <h5>${amenity.name}</h5>
+                    <p>${amenity.distance} away</p>
+                    <div class="amenity-rating">
+                        ${'★'.repeat(amenity.rating)}${'☆'.repeat(5 - amenity.rating)}
+                    </div>
+                </div>
+            `).join('');
+        });
+}
+
+// Amenity tabs
+document.querySelectorAll('.amenity-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.amenity-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        loadAmenities(this.dataset.category);
+    });
+});
+
+// Load initial amenities
+loadAmenities('schools');
+
+// Property actions
+function toggleFavorite(propertyId) {
+    // Toggle favorite status
+    const btn = document.getElementById('favoriteBtn');
+    const icon = btn.querySelector('i');
+    icon.classList.toggle('far');
+    icon.classList.toggle('fas');
+}
+
+function shareProperty() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ property.title }}',
+            text: '{{ property.description[:100] }}...',
+            url: window.location.href
+        });
+    } else {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(window.location.href);
+        alert('Property link copied to clipboard!');
+    }
+}
+
+function contactAgent() {
+    // Open contact modal or redirect to contact form
+    window.location.href = 'tel:{{ property.agent.phone }}';
+}
+
+function scheduleViewing() {
+    // Open scheduling modal
+    alert('Viewing scheduling feature coming soon!');
+}
+</script>
+
+<style>
+.property-detail-container {
+    margin-top: -2rem;
+}
+
+.property-hero {
+    background: white;
+    padding: 2rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.property-gallery {
+    display: flex;
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.main-image {
+    flex: 2;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.main-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+}
+
+.thumbnail-gallery {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.thumbnail {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.more-photos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.more-photos:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.thumbnail.active,
+.thumbnail:hover {
+    border-color: var(--primary-color);
+}
+
+.property-summary {
+    max-width: 1200px;
+    margin: 2rem auto 0;
+    padding: 0 1rem;
+}
+
+.property-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.property-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.property-status.available,
+.property-status.for-sale {
+    background: #28a745;
+    color: white;
+}
+
+.property-status.sold {
+    background: #dc3545;
+    color: white;
+}
+
+.property-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.property-price {
+    margin: 1rem 0;
+}
+
+.current-price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.price-per-sqft {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-left: 1rem;
+}
+
+.property-features {
+    display: flex;
+    gap: 2rem;
+    margin: 1.5rem 0;
+    flex-wrap: wrap;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+}
+
+.feature i {
+    color: var(--primary-color);
+}
+
+.detail-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.detail-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.feature-item i {
+    color: var(--success-color);
+}
+
+.details-table {
+    display: grid;
+    gap: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: between;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--text-color);
+    flex: 1;
+}
+
+.detail-value {
+    color: var(--text-muted);
+    flex: 1;
+    text-align: right;
+}
+
+.sidebar-widget {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-widget h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.calculator .form-group {
+    margin-bottom: 1rem;
+}
+
+.calculator-result {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.result-item strong {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .property-gallery {
+        flex-direction: column;
+    }
+    
+    .thumbnail-gallery {
+        grid-template-columns: repeat(4, 1fr);
+        max-height: 200px;
+    }
+    
+    .thumbnail {
+        height: 60px;
+    }
+    
+    .property-features {
+        gap: 1rem;
+    }
+    
+    .current-price {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}

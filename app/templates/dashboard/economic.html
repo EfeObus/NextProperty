@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Economic Dashboard - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-area text-info me-2"></i>
+                        Economic Indicators Dashboard
+                    </h4>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="refreshEconomicData()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Refresh Data
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if economic_summary %}
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white text-center">
+                                <div class="card-body">
+                                    <h6 class="card-title">Bank Rate</h6>
+                                    <h4>{{ "%.2f"|format(economic_summary.bank_rate) }}%</h4>
+                                    <small>Bank of Canada</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white text-center">
+                                <div class="card-body">
+                                    <h6 class="card-title">Prime Rate</h6>
+                                    <h4>{{ "%.2f"|format(economic_summary.prime_rate) }}%</h4>
+                                    <small>Commercial Banks</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white text-center">
+                                <div class="card-body">
+                                    <h6 class="card-title">Inflation Rate</h6>
+                                    <h4>{{ "%.1f"|format(economic_summary.inflation_rate) }}%</h4>
+                                    <small>Year over Year</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white text-center">
+                                <div class="card-body">
+                                    <h6 class="card-title">CAD/USD</h6>
+                                    <h4>{{ "%.3f"|format(economic_summary.cad_usd_rate) }}</h4>
+                                    <small>Exchange Rate</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Bank of Canada Data</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if boc_data %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Overnight Rate</strong></td>
+                                                    <td>{{ "%.2f"|format(boc_data.overnight_rate) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Prime Rate</strong></td>
+                                                    <td>{{ "%.2f"|format(boc_data.prime_rate) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>5Y Mortgage Rate</strong></td>
+                                                    <td>{{ "%.2f"|format(boc_data.mortgage_rate_5y) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>10Y Bond Yield</strong></td>
+                                                    <td>{{ "%.2f"|format(boc_data.bond_yield_10y) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Inflation (CPI)</strong></td>
+                                                    <td>{{ "%.1f"|format(boc_data.inflation_rate) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>CAD/USD Rate</strong></td>
+                                                    <td>{{ "%.4f"|format(boc_data.cad_usd_rate) }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <small class="text-muted">Last updated: {{ boc_data.date_collected.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    {% else %}
+                                    <p class="text-muted">No Bank of Canada data available.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Statistics Canada Data</h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if statscan_data %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>House Price Index</strong></td>
+                                                    <td>{{ "%.1f"|format(statscan_data.house_price_index) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Housing Starts</strong></td>
+                                                    <td>{{ "{:,}".format(statscan_data.housing_starts|int) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Building Permits</strong></td>
+                                                    <td>{{ "{:,}".format(statscan_data.building_permits|int) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Employment Rate</strong></td>
+                                                    <td>{{ "%.1f"|format(statscan_data.employment_rate) }}%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Population</strong></td>
+                                                    <td>{{ "{:,}".format(statscan_data.population|int) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>GDP Growth</strong></td>
+                                                    <td>{{ "%.1f"|format(statscan_data.gdp_growth) }}%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <small class="text-muted">Last updated: {{ statscan_data.date_collected.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    {% else %}
+                                    <p class="text-muted">No Statistics Canada data available.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if economic_summary and economic_summary.market_sentiment %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Market Analysis</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <h6 class="alert-heading">Current Market Sentiment</h6>
+                                        <p class="mb-0">{{ economic_summary.market_sentiment }}</p>
+                                    </div>
+                                    
+                                    {% if economic_summary.key_trends %}
+                                    <h6>Key Economic Trends:</h6>
+                                    <ul>
+                                        {% for trend in economic_summary.key_trends %}
+                                        <li>{{ trend }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshEconomicData() {
+    const button = document.querySelector('[onclick="refreshEconomicData()"]');
+    const icon = button.querySelector('i');
+    
+    // Add loading state
+    button.disabled = true;
+    icon.classList.add('fa-spin');
+    
+    fetch('/api/refresh-economic-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message and reload page
+            alert('Economic data refreshed successfully!');
+            window.location.reload();
+        } else {
+            alert('Error refreshing data: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error refreshing economic data. Please try again.');
+    })
+    .finally(() => {
+        // Remove loading state
+        button.disabled = false;
+        icon.classList.remove('fa-spin');
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Market Insights - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="fas fa-chart-line text-primary me-2"></i>
+                Market Insights
+            </h1>
+        </div>
+    </div>
+
+    <!-- Market Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-home text-primary fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-0">Total Properties</h5>
+                            <p class="card-text text-muted" id="total-properties">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-dollar-sign text-success fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-0">Avg Price</h5>
+                            <p class="card-text text-muted" id="avg-price">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-chart-area text-info fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-0">Market Trend</h5>
+                            <p class="card-text text-muted" id="market-trend">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-robot text-warning fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-0">AI Analyzed</h5>
+                            <p class="card-text text-muted" id="ai-analyzed">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Price Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="priceChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Property Types</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="typeChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Indicators -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Economic Indicators</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="economic-indicators">
+                        <div class="col-12 text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load market data
+    loadMarketData();
+    loadEconomicIndicators();
+});
+
+function loadMarketData() {
+    // This would typically fetch from your API
+    // For now, showing placeholder data
+    fetch('/api/market-summary')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-properties').textContent = data.total_properties || 'N/A';
+            document.getElementById('avg-price').textContent = data.avg_price ? '$' + Number(data.avg_price).toLocaleString() : 'N/A';
+            document.getElementById('market-trend').textContent = data.market_condition || 'N/A';
+            document.getElementById('ai-analyzed').textContent = data.ai_analyzed || 'N/A';
+            
+            // Initialize charts
+            initializeCharts(data);
+        })
+        .catch(error => {
+            console.error('Error loading market data:', error);
+            // Show fallback data
+            document.getElementById('total-properties').textContent = 'N/A';
+            document.getElementById('avg-price').textContent = 'N/A';
+            document.getElementById('market-trend').textContent = 'N/A';
+            document.getElementById('ai-analyzed').textContent = 'N/A';
+        });
+}
+
+function loadEconomicIndicators() {
+    fetch('/api/economic-indicators')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('economic-indicators');
+            container.innerHTML = '';
+            
+            // Display economic indicators
+            Object.entries(data).forEach(([key, value]) => {
+                const col = document.createElement('div');
+                col.className = 'col-md-2 col-sm-4 col-6 mb-3';
+                col.innerHTML = `
+                    <div class="text-center">
+                        <h6 class="text-muted small">${formatIndicatorName(key)}</h6>
+                        <p class="h5 mb-0">${formatIndicatorValue(key, value)}</p>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading economic indicators:', error);
+            document.getElementById('economic-indicators').innerHTML = 
+                '<div class="col-12 text-center text-muted">Economic data temporarily unavailable</div>';
+        });
+}
+
+function formatIndicatorName(key) {
+    const names = {
+        'policy_rate': 'Policy Rate',
+        'prime_rate': 'Prime Rate',
+        'mortgage_rate': 'Mortgage Rate',
+        'inflation_rate': 'Inflation',
+        'unemployment_rate': 'Unemployment',
+        'exchange_rate': 'USD/CAD',
+        'gdp_growth': 'GDP Growth'
+    };
+    return names[key] || key.replace('_', ' ').toUpperCase();
+}
+
+function formatIndicatorValue(key, value) {
+    if (value === null || value === undefined) return 'N/A';
+    
+    const percentageKeys = ['policy_rate', 'prime_rate', 'mortgage_rate', 'inflation_rate', 'unemployment_rate', 'gdp_growth'];
+    
+    if (percentageKeys.includes(key)) {
+        return Number(value).toFixed(2) + '%';
+    }
+    
+    if (key === 'exchange_rate') {
+        return Number(value).toFixed(4);
+    }
+    
+    return Number(value).toFixed(2);
+}
+
+function initializeCharts(data) {
+    // Price Chart (placeholder)
+    const priceCtx = document.getElementById('priceChart').getContext('2d');
+    new Chart(priceCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Average Price',
+                data: [650000, 655000, 660000, 665000, 670000, 675000],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Type Chart (placeholder)
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['House', 'Condo', 'Townhouse', 'Other'],
+            datasets: [{
+                data: [45, 30, 20, 5],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+</script>
+{% endblock %}

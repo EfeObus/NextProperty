@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Economic Dashboard - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h2 mb-4">
+                <i class="fas fa-chart-bar text-primary me-2"></i>
+                Economic Dashboard
+            </h1>
+        </div>
+    </div>
+
+    <!-- Economic Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Canadian Economic Indicators</h5>
+                    <small class="text-muted">Real-time data from Bank of Canada and Statistics Canada</small>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="economic-overview">
+                        <div class="col-12 text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading economic data...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interest Rates Section -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Interest Rates</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="interestRatesChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Economic Health</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="economicHealthChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Impact Analysis -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Real Estate Market Impact</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card border-left-primary h-100">
+                                <div class="card-body">
+                                    <h6 class="text-primary">Interest Environment</h6>
+                                    <p id="interest-environment" class="h4 mb-2">Loading...</p>
+                                    <small class="text-muted" id="interest-description">Analyzing current rates...</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-left-success h-100">
+                                <div class="card-body">
+                                    <h6 class="text-success">Economic Momentum</h6>
+                                    <p id="economic-momentum" class="h4 mb-2">Loading...</p>
+                                    <small class="text-muted" id="momentum-description">Evaluating economic trends...</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-left-warning h-100">
+                                <div class="card-body">
+                                    <h6 class="text-warning">Affordability Pressure</h6>
+                                    <p id="affordability-pressure" class="h4 mb-2">Loading...</p>
+                                    <small class="text-muted" id="affordability-description">Assessing market accessibility...</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Forecast -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Market Insights & Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div id="economic-insights">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading insights...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadEconomicData();
+    loadMarketImpact();
+    loadEconomicInsights();
+});
+
+function loadEconomicData() {
+    fetch('/api/economic-indicators')
+        .then(response => response.json())
+        .then(data => {
+            displayEconomicOverview(data);
+            initializeCharts(data);
+        })
+        .catch(error => {
+            console.error('Error loading economic data:', error);
+            showErrorState();
+        });
+}
+
+function displayEconomicOverview(data) {
+    const container = document.getElementById('economic-overview');
+    container.innerHTML = '';
+    
+    const indicators = [
+        { key: 'policy_rate', label: 'Policy Rate', icon: 'fa-percentage', color: 'primary' },
+        { key: 'prime_rate', label: 'Prime Rate', icon: 'fa-chart-line', color: 'success' },
+        { key: 'mortgage_rate', label: 'Mortgage Rate', icon: 'fa-home', color: 'info' },
+        { key: 'inflation_rate', label: 'Inflation', icon: 'fa-arrow-up', color: 'warning' },
+        { key: 'unemployment_rate', label: 'Unemployment', icon: 'fa-users', color: 'danger' },
+        { key: 'gdp_growth', label: 'GDP Growth', icon: 'fa-chart-area', color: 'dark' }
+    ];
+    
+    indicators.forEach(indicator => {
+        const value = data[indicator.key];
+        const col = document.createElement('div');
+        col.className = 'col-lg-2 col-md-4 col-sm-6 mb-3';
+        col.innerHTML = `
+            <div class="card border-left-${indicator.color} h-100">
+                <div class="card-body text-center">
+                    <i class="fas ${indicator.icon} text-${indicator.color} fa-2x mb-2"></i>
+                    <h6 class="card-title">${indicator.label}</h6>
+                    <p class="h4 text-${indicator.color}">${formatValue(indicator.key, value)}</p>
+                </div>
+            </div>
+        `;
+        container.appendChild(col);
+    });
+}
+
+function loadMarketImpact() {
+    fetch('/api/market-impact')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('interest-environment').textContent = data.interest_environment || 'N/A';
+            document.getElementById('interest-description').textContent = data.interest_description || '';
+            
+            document.getElementById('economic-momentum').textContent = data.economic_momentum || 'N/A';
+            document.getElementById('momentum-description').textContent = data.momentum_description || '';
+            
+            document.getElementById('affordability-pressure').textContent = data.affordability_pressure || 'N/A';
+            document.getElementById('affordability-description').textContent = data.affordability_description || '';
+        })
+        .catch(error => {
+            console.error('Error loading market impact:', error);
+        });
+}
+
+function loadEconomicInsights() {
+    fetch('/api/economic-insights')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('economic-insights');
+            container.innerHTML = '';
+            
+            if (data.insights && data.insights.length > 0) {
+                data.insights.forEach(insight => {
+                    const alert = document.createElement('div');
+                    alert.className = `alert alert-${insight.type || 'info'} alert-dismissible fade show`;
+                    alert.innerHTML = `
+                        <strong>${insight.title || 'Market Insight'}:</strong> ${insight.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    container.appendChild(alert);
+                });
+            } else {
+                container.innerHTML = '<p class="text-muted">Economic insights will be displayed here when available.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading economic insights:', error);
+            document.getElementById('economic-insights').innerHTML = 
+                '<p class="text-muted">Economic insights temporarily unavailable.</p>';
+        });
+}
+
+function formatValue(key, value) {
+    if (value === null || value === undefined) return 'N/A';
+    
+    const percentageKeys = ['policy_rate', 'prime_rate', 'mortgage_rate', 'inflation_rate', 'unemployment_rate', 'gdp_growth'];
+    
+    if (percentageKeys.includes(key)) {
+        return Number(value).toFixed(2) + '%';
+    }
+    
+    return Number(value).toFixed(2);
+}
+
+function initializeCharts(data) {
+    // Interest Rates Chart
+    const interestCtx = document.getElementById('interestRatesChart').getContext('2d');
+    new Chart(interestCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Policy Rate', 'Prime Rate', 'Mortgage Rate'],
+            datasets: [{
+                label: 'Interest Rates (%)',
+                data: [
+                    data.policy_rate || 0,
+                    data.prime_rate || 0,
+                    data.mortgage_rate || 0
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 99, 132, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Economic Health Chart
+    const healthCtx = document.getElementById('economicHealthChart').getContext('2d');
+    new Chart(healthCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Inflation', 'Unemployment', 'GDP Growth'],
+            datasets: [{
+                data: [
+                    Math.abs(data.inflation_rate || 2),
+                    data.unemployment_rate || 5,
+                    Math.abs(data.gdp_growth || 2)
+                ],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#4BC0C0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function showErrorState() {
+    document.getElementById('economic-overview').innerHTML = 
+        '<div class="col-12 text-center text-muted">Economic data temporarily unavailable</div>';
+}
+</script>
+
+<style>
+.border-left-primary {
+    border-left: 4px solid #007bff !important;
+}
+.border-left-success {
+    border-left: 4px solid #28a745 !important;
+}
+.border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+.border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+}
+.border-left-danger {
+    border-left: 4px solid #dc3545 !important;
+}
+.border-left-dark {
+    border-left: 4px solid #343a40 !important;
+}
+</style>
+{% endblock %}

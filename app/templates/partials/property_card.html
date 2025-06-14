@@ -1,0 +1,208 @@
+<!-- Property Card Component -->
+<!-- Usage: {% include 'partials/property_card.html' with property=property %} -->
+
+<div class="col-md-6 col-lg-4 mb-4">
+    <div class="card property-card h-100">
+        <div class="position-relative">
+            <div class="property-image">
+                <i class="fas fa-home"></i>
+            </div>
+            {% if property.is_favorite|default(false) %}
+            <div class="favourite-badge">
+                <i class="fas fa-heart"></i>
+            </div>
+            {% endif %}
+            <div class="price-badge">
+                {{ property.sold_price | format_price }}
+            </div>
+        </div>
+        
+        <div class="property-details">
+            <div class="property-meta">
+                <i class="fas fa-map-marker-alt me-1"></i>
+                {{ property.city }}, {{ property.province }}
+            </div>
+            
+            <h6 class="property-address mb-2">
+                {{ property.address or 'Address not available' }}
+            </h6>
+            
+            <div class="property-type mb-2">
+                <span class="badge bg-primary">{{ property.property_type or 'N/A' }}</span>
+            </div>
+            
+            <div class="property-features">
+                <div class="feature-item">
+                    <i class="fas fa-bed"></i>
+                    <span>{{ property.bedrooms or 'N/A' }}</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-bath"></i>
+                    <span>{{ property.bathrooms or 'N/A' }}</span>
+                </div>
+                {% if property.sqft %}
+                <div class="feature-item">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>{{ property.sqft | format_sqft }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if property.notes %}
+            <div class="notes-section">
+                <strong>Notes:</strong>
+                <p class="mb-0 mt-1">{{ property.notes }}</p>
+            </div>
+            {% endif %}
+            
+            {% if property.tags %}
+            <div class="mt-2">
+                {% for tag in property.tags.split(',') %}
+                <span class="badge bg-secondary me-1">{{ tag.strip() }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            {% if property.created_at %}
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    Saved {{ property.created_at.strftime('%B %d, %Y') }}
+                </small>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="property-actions">
+            <div>
+                <a href="/property/{{ property.listing_id }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>View Details
+                </a>
+                {% if show_edit_button|default(false) %}
+                <button class="btn btn-outline-info btn-sm" onclick="editNotes('{{ property.id }}')">
+                    <i class="fas fa-edit me-1"></i>Edit
+                </button>
+                {% endif %}
+            </div>
+            <div>
+                {% if show_save_buttons|default(true) %}
+                <button class="btn btn-outline-secondary btn-sm save-btn" 
+                        data-listing-id="{{ property.listing_id }}"
+                        onclick="showAuthMessage()"
+                        title="Authentication required">
+                    <i class="fas fa-heart"></i>
+                </button>
+                {% if show_edit_button|default(false) %}
+                <button class="btn btn-outline-danger btn-sm" onclick="removeSaved('{{ property.listing_id }}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.property-card {
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: none;
+    overflow: hidden;
+}
+
+.property-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.property-image {
+    height: 200px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+}
+
+.price-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(40, 167, 69, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.favourite-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    padding: 8px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.property-details {
+    padding: 20px;
+}
+
+.property-meta {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.property-features {
+    display: flex;
+    gap: 15px;
+    margin: 15px 0;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.property-actions {
+    border-top: 1px solid #eee;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notes-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .property-features {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .property-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>

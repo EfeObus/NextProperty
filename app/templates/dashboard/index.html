@@ -1,0 +1,905 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container-fluid">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="welcome-section">
+                <h1>Welcome back, {{ current_user.first_name }}!</h1>
+                <p>Here's what's happening with your real estate investments today.</p>
+            </div>
+            <div class="quick-actions">
+                <a href="{{ url_for('main.search') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                    Search Properties
+                </a>
+                <a href="{{ url_for('dashboard.portfolio') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-pie"></i>
+                    Portfolio
+                </a>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 id="savedPropertiesCount">{{ saved_properties_count or 0 }}</h3>
+                    <p>Saved Properties</p>
+                    <span class="kpi-change positive">+3 this week</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 id="favoritesCount">{{ favorites_count or 0 }}</h3>
+                    <p>Favorites</p>
+                    <span class="kpi-change positive">+1 this week</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 id="searchesCount">{{ saved_searches_count or 0 }}</h3>
+                    <p>Saved Searches</p>
+                    <span class="kpi-change neutral">No change</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="kpi-content">
+                    <h3 id="portfolioValue">${{ "{:,.0f}".format(portfolio_value or 0) }}</h3>
+                    <p>Portfolio Value</p>
+                    <span class="kpi-change positive">+2.3% this month</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Recent Activity -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h3>Recent Activity</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="widget-content">
+                        <div class="activity-timeline" id="activityTimeline">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-search text-primary"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4>Property Search</h4>
+                                    <p>Searched for 3-bedroom houses in Toronto</p>
+                                    <time>2 hours ago</time>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-heart text-danger"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4>Property Favorited</h4>
+                                    <p>Added "Modern Downtown Condo" to favorites</p>
+                                    <time>1 day ago</time>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-calculator text-success"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4>Investment Analysis</h4>
+                                    <p>Analyzed ROI for property on King Street</p>
+                                    <time>2 days ago</time>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-bookmark text-warning"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4>Search Saved</h4>
+                                    <p>Saved search for "Condos under $500K"</p>
+                                    <time>3 days ago</time>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Insights -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h3>Market Insights</h3>
+                        <div class="widget-controls">
+                            <select id="marketRegion" onchange="updateMarketData()">
+                                <option value="toronto">Toronto</option>
+                                <option value="vancouver">Vancouver</option>
+                                <option value="montreal">Montreal</option>
+                                <option value="calgary">Calgary</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <div class="market-summary">
+                            <div class="market-stat">
+                                <h4>Average Price</h4>
+                                <span class="stat-value">$1,234,567</span>
+                                <span class="stat-change positive">+5.2%</span>
+                            </div>
+                            <div class="market-stat">
+                                <h4>Properties Sold</h4>
+                                <span class="stat-value">2,847</span>
+                                <span class="stat-change negative">-2.1%</span>
+                            </div>
+                            <div class="market-stat">
+                                <h4>Days on Market</h4>
+                                <span class="stat-value">23</span>
+                                <span class="stat-change positive">-3 days</span>
+                            </div>
+                        </div>
+                        <div class="market-chart">
+                            <canvas id="marketTrendChart" width="100" height="40"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommended Properties -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h3>Recommended for You</h3>
+                        <a href="{{ url_for('main.search') }}" class="view-all">View All</a>
+                    </div>
+                    <div class="widget-content">
+                        <div class="recommended-properties" id="recommendedProperties">
+                            <!-- Properties will be loaded dynamically -->
+                            <div class="loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading recommendations...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Saved Searches -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h3>Saved Searches</h3>
+                        <button class="btn-icon" onclick="createNewSearch()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="widget-content">
+                        <div class="saved-searches" id="savedSearches">
+                            <div class="search-item">
+                                <div class="search-info">
+                                    <h4>Toronto Condos</h4>
+                                    <p>2-3 bedrooms, $400K-$600K</p>
+                                    <small>12 new results</small>
+                                </div>
+                                <div class="search-actions">
+                                    <button class="btn-icon" onclick="runSearch(1)">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn-icon" onclick="editSearch(1)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="search-item">
+                                <div class="search-info">
+                                    <h4>Investment Properties</h4>
+                                    <p>Houses, High ROI potential</p>
+                                    <small>5 new results</small>
+                                </div>
+                                <div class="search-actions">
+                                    <button class="btn-icon" onclick="runSearch(2)">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn-icon" onclick="editSearch(2)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Alerts -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h3>Price Alerts</h3>
+                        <button class="btn-icon" onclick="createAlert()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="widget-content">
+                        <div class="alerts-list" id="priceAlerts">
+                            <div class="alert-item">
+                                <div class="alert-info">
+                                    <h4>Downtown Condo</h4>
+                                    <p>Price dropped to $525,000</p>
+                                    <small class="alert-new">New</small>
+                                </div>
+                                <button class="btn-small btn-primary" onclick="viewProperty(123)">
+                                    View
+                                </button>
+                            </div>
+                            
+                            <div class="alert-item">
+                                <div class="alert-info">
+                                    <h4>Waterfront House</h4>
+                                    <p>Now within your budget range</p>
+                                    <small class="alert-time">2 hours ago</small>
+                                </div>
+                                <button class="btn-small btn-primary" onclick="viewProperty(456)">
+                                    View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Tools -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h3>Quick Tools</h3>
+                    </div>
+                    <div class="widget-content">
+                        <div class="tools-grid">
+                            <a href="#" class="tool-item" onclick="openMortgageCalculator()">
+                                <i class="fas fa-calculator"></i>
+                                <span>Mortgage Calculator</span>
+                            </a>
+                            <a href="#" class="tool-item" onclick="openROIAnalyzer()">
+                                <i class="fas fa-chart-line"></i>
+                                <span>ROI Analyzer</span>
+                            </a>
+                            <a href="#" class="tool-item" onclick="openCompareTool()">
+                                <i class="fas fa-balance-scale"></i>
+                                <span>Compare Properties</span>
+                            </a>
+                            <a href="#" class="tool-item" onclick="openMarketReport()">
+                                <i class="fas fa-file-alt"></i>
+                                <span>Market Report</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Economic Indicators -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h3>Economic Indicators</h3>
+                        <small class="last-updated">Updated 1 hour ago</small>
+                    </div>
+                    <div class="widget-content">
+                        <div class="indicators-list">
+                            <div class="indicator-item">
+                                <span class="indicator-label">Bank of Canada Rate</span>
+                                <span class="indicator-value">5.00%</span>
+                                <span class="indicator-change neutral">0.00%</span>
+                            </div>
+                            <div class="indicator-item">
+                                <span class="indicator-label">Prime Rate</span>
+                                <span class="indicator-value">7.20%</span>
+                                <span class="indicator-change neutral">0.00%</span>
+                            </div>
+                            <div class="indicator-item">
+                                <span class="indicator-label">Housing Price Index</span>
+                                <span class="indicator-value">178.3</span>
+                                <span class="indicator-change positive">+1.2%</span>
+                            </div>
+                            <div class="indicator-item">
+                                <span class="indicator-label">Unemployment Rate</span>
+                                <span class="indicator-value">5.1%</span>
+                                <span class="indicator-change negative">+0.1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Tools Modals -->
+<div class="modal fade" id="mortgageCalculatorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mortgage Calculator</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="calculator-form">
+                    <div class="form-group">
+                        <label>Home Price</label>
+                        <input type="number" class="form-control" id="calcHomePrice" placeholder="500000">
+                    </div>
+                    <div class="form-group">
+                        <label>Down Payment</label>
+                        <input type="number" class="form-control" id="calcDownPayment" placeholder="100000">
+                    </div>
+                    <div class="form-group">
+                        <label>Interest Rate (%)</label>
+                        <input type="number" class="form-control" id="calcInterestRate" placeholder="3.5" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Loan Term (years)</label>
+                        <select class="form-control" id="calcLoanTerm">
+                            <option value="25">25 years</option>
+                            <option value="30">30 years</option>
+                            <option value="20">20 years</option>
+                            <option value="15">15 years</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="calculateMortgage()">Calculate</button>
+                </div>
+                <div class="calculation-result" id="calculationResult"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-container {
+    padding: 2rem 0;
+    background: #f8f9fa;
+    min-height: calc(100vh - 140px);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.welcome-section h1 {
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.welcome-section p {
+    color: var(--text-muted);
+    margin-bottom: 0;
+}
+
+.quick-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.kpi-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.kpi-content h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+.kpi-content p {
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.kpi-change {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.kpi-change.positive {
+    color: var(--success-color);
+}
+
+.kpi-change.negative {
+    color: var(--danger-color);
+}
+
+.kpi-change.neutral {
+    color: var(--text-muted);
+}
+
+.dashboard-widget {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.widget-header {
+    padding: 1.5rem 1.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.widget-header h3 {
+    color: var(--text-color);
+    margin-bottom: 0;
+    font-size: 1.25rem;
+}
+
+.view-all {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.widget-content {
+    padding: 1.5rem;
+}
+
+.activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-content h4 {
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.activity-content p {
+    margin-bottom: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.activity-content time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.market-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.market-stat h4 {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.stat-change {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.stat-change.positive {
+    color: var(--success-color);
+}
+
+.stat-change.negative {
+    color: var(--danger-color);
+}
+
+.saved-searches,
+.alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-item,
+.alert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.search-info h4,
+.alert-info h4 {
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.search-info p,
+.alert-info p {
+    margin-bottom: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.search-info small,
+.alert-info small {
+    font-size: 0.8rem;
+}
+
+.alert-new {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: 10px;
+}
+
+.alert-time {
+    color: var(--text-muted);
+}
+
+.search-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.btn-small {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.tool-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.tool-item:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.tool-item i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.indicators-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.indicator-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.indicator-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.indicator-value {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.indicator-change {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.indicator-change.positive {
+    color: var(--success-color);
+}
+
+.indicator-change.negative {
+    color: var(--danger-color);
+}
+
+.indicator-change.neutral {
+    color: var(--text-muted);
+}
+
+.last-updated {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.loading-placeholder {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+.calculator-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.calculation-result {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .quick-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .market-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .tools-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Load recommended properties
+function loadRecommendedProperties() {
+    fetch('/api/properties/recommended')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('recommendedProperties');
+            container.innerHTML = data.map(property => `
+                <div class="property-mini-card">
+                    <img src="${property.image_url}" alt="${property.title}">
+                    <div class="property-mini-info">
+                        <h4>${property.title}</h4>
+                        <p>$${property.sold_price.toLocaleString()}</p>
+                        <small>${property.address}</small>
+                    </div>
+                    <a href="/properties/${property.listing_id}" class="btn btn-sm btn-primary">View</a>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            document.getElementById('recommendedProperties').innerHTML = 
+                '<p class="text-muted">Unable to load recommendations at this time.</p>';
+        });
+}
+
+// Update market data based on selected region
+function updateMarketData() {
+    const region = document.getElementById('marketRegion').value;
+    
+    fetch(`/api/market-data/${region}`)
+        .then(response => response.json())
+        .then(data => {
+            // Update market statistics
+            document.querySelector('.market-stat:nth-child(1) .stat-value').textContent = 
+                `$${data.average_price.toLocaleString()}`;
+            document.querySelector('.market-stat:nth-child(2) .stat-value').textContent = 
+                data.properties_sold.toLocaleString();
+            document.querySelector('.market-stat:nth-child(3) .stat-value').textContent = 
+                data.days_on_market;
+                
+            // Update chart
+            updateMarketChart(data.price_history);
+        });
+}
+
+// Update market trend chart
+function updateMarketChart(data) {
+    const canvas = document.getElementById('marketTrendChart');
+    const ctx = canvas.getContext('2d');
+    
+    // Simple line chart implementation
+    // In a real application, you would use Chart.js or similar library
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const points = data.map((value, index) => ({
+        x: (index / (data.length - 1)) * canvas.width,
+        y: canvas.height - ((value - Math.min(...data)) / (Math.max(...data) - Math.min(...data))) * canvas.height
+    }));
+    
+    ctx.strokeStyle = '#007bff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    points.forEach((point, index) => {
+        if (index === 0) {
+            ctx.moveTo(point.x, point.y);
+        } else {
+            ctx.lineTo(point.x, point.y);
+        }
+    });
+    ctx.stroke();
+}
+
+// Quick tool functions
+function openMortgageCalculator() {
+    const modal = new bootstrap.Modal(document.getElementById('mortgageCalculatorModal'));
+    modal.show();
+}
+
+function calculateMortgage() {
+    const homePrice = parseFloat(document.getElementById('calcHomePrice').value);
+    const downPayment = parseFloat(document.getElementById('calcDownPayment').value);
+    const interestRate = parseFloat(document.getElementById('calcInterestRate').value) / 100 / 12;
+    const loanTerm = parseInt(document.getElementById('calcLoanTerm').value) * 12;
+    
+    const loanAmount = homePrice - downPayment;
+    const monthlyPayment = (loanAmount * interestRate * Math.pow(1 + interestRate, loanTerm)) / 
+                          (Math.pow(1 + interestRate, loanTerm) - 1);
+    
+    const result = document.getElementById('calculationResult');
+    result.innerHTML = `
+        <h5>Calculation Results</h5>
+        <p><strong>Monthly Payment:</strong> $${monthlyPayment.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+        <p><strong>Total Interest:</strong> $${((monthlyPayment * loanTerm) - loanAmount).toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+        <p><strong>Total Amount:</strong> $${(monthlyPayment * loanTerm).toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+    `;
+    result.style.display = 'block';
+}
+
+function openROIAnalyzer() {
+    alert('ROI Analyzer coming soon!');
+}
+
+function openCompareTool() {
+    alert('Compare Properties tool coming soon!');
+}
+
+function openMarketReport() {
+    alert('Market Report generator coming soon!');
+}
+
+// Search and alert functions
+function createNewSearch() {
+    window.location.href = '/search';
+}
+
+function runSearch(searchId) {
+    // Run saved search
+    window.location.href = `/search?saved_search=${searchId}`;
+}
+
+function editSearch(searchId) {
+    // Edit saved search
+    window.location.href = `/search?edit=${searchId}`;
+}
+
+function createAlert() {
+    alert('Create price alert feature coming soon!');
+}
+
+function viewProperty(propertyId) {
+    window.location.href = `/properties/${propertyId}`;
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    loadRecommendedProperties();
+    updateMarketData();
+    
+    // Auto-refresh data every 5 minutes
+    setInterval(function() {
+        updateMarketData();
+    }, 300000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,676 @@
+{% extends "base.html" %}
+
+{% block title %}Properties - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/modern-properties.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/modern-home.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 mt-4">
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 col-md-4">
+            <div class="filters-sidebar bg-white rounded shadow-sm p-4 sticky-top" style="top: 100px;">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-filter me-2"></i>Filter Properties
+                </h5>
+                
+                <form id="propertyFilters" method="GET">
+                    <!-- Location Filter -->
+                    <div class="filter-group mb-4">
+                        <label class="form-label fw-semibold">Location</label>
+                        <select name="city" class="form-select mb-2">
+                            <option value="">All Cities</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}" {{ 'selected' if request.args.get('city') == city }}>
+                                {{ city }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" name="neighborhood" class="form-control" 
+                               placeholder="Neighborhood" 
+                               value="{{ request.args.get('neighborhood', '') }}">
+                    </div>
+                    
+                    <!-- Price Range -->
+                    <div class="filter-group mb-4">
+                        <label class="form-label fw-semibold">Price Range</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" name="min_price" class="form-control" 
+                                       placeholder="Min Price" 
+                                       value="{{ request.args.get('min_price', '') }}">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" name="max_price" class="form-control" 
+                                       placeholder="Max Price" 
+                                       value="{{ request.args.get('max_price', '') }}">
+                            </div>
+                        </div>
+                        <div class="price-range-slider mt-3">
+                            <input type="range" class="form-range" id="priceRange" 
+                                   min="0" max="2000000" step="50000">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">$0</small>
+                                <small class="text-muted">$2M+</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Property Type -->
+                    <div class="filter-group mb-4">
+                        <label class="form-label fw-semibold">Property Type</label>
+                        <select name="property_type" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="Single Family" {{ 'selected' if request.args.get('property_type') == 'Single Family' }}>Single Family</option>
+                            <option value="Condo" {{ 'selected' if request.args.get('property_type') == 'Condo' }}>Condo</option>
+                            <option value="Townhouse" {{ 'selected' if request.args.get('property_type') == 'Townhouse' }}>Townhouse</option>
+                            <option value="Multi-Family" {{ 'selected' if request.args.get('property_type') == 'Multi-Family' }}>Multi-Family</option>
+                            <option value="Commercial" {{ 'selected' if request.args.get('property_type') == 'Commercial' }}>Commercial</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Bedrooms & Bathrooms -->
+                    <div class="filter-group mb-4">
+                        <label class="form-label fw-semibold">Bedrooms</label>
+                        <select name="bedrooms" class="form-select mb-2">
+                            <option value="">Any</option>
+                            {% for i in range(1, 6) %}
+                            <option value="{{ i }}" {{ 'selected' if request.args.get('bedrooms') == i|string }}>
+                                {{ i }}{{ '+' if i == 5 else '' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <label class="form-label fw-semibold">Bathrooms</label>
+                        <select name="bathrooms" class="form-select">
+                            <option value="">Any</option>
+                            {% for i in range(1, 5) %}
+                            <option value="{{ i }}" {{ 'selected' if request.args.get('bathrooms') == i|string }}>
+                                {{ i }}{{ '+' if i == 4 else '' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Square Footage -->
+                    <div class="filter-group mb-4">
+                        <label class="form-label fw-semibold">Square Footage</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" name="min_sqft" class="form-control" 
+                                       placeholder="Min Sq Ft" 
+                                       value="{{ request.args.get('min_sqft', '') }}">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" name="max_sqft" class="form-control" 
+                                       placeholder="Max Sq Ft" 
+                                       value="{{ request.args.get('max_sqft', '') }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Features -->
+                    <div class="filter-group mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-robot me-1"></i>AI Features
+                        </label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="high_ai_score" 
+                                   id="highAiScore" {{ 'checked' if request.args.get('high_ai_score') }}>
+                            <label class="form-check-label" for="highAiScore">
+                                High AI Score (80+)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="investment_grade" 
+                                   id="investmentGrade" {{ 'checked' if request.args.get('investment_grade') }}>
+                            <label class="form-check-label" for="investmentGrade">
+                                Investment Grade
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="trending" 
+                                   id="trending" {{ 'checked' if request.args.get('trending') }}>
+                            <label class="form-check-label" for="trending">
+                                Trending Properties
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Year Built -->
+                    <div class="filter-group mb-4">
+                        <label class="form-label fw-semibold">Year Built</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" name="min_year" class="form-control" 
+                                       placeholder="From" 
+                                       value="{{ request.args.get('min_year', '') }}">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" name="max_year" class="form-control" 
+                                       placeholder="To" 
+                                       value="{{ request.args.get('max_year', '') }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Actions -->
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-search me-2"></i>Apply Filters
+                        </button>
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-times me-2"></i>Clear All
+                        </a>
+                    </div>
+                </form>
+                
+                <!-- Quick Stats -->
+                <div class="quick-stats mt-4 p-3 bg-light rounded">
+                    <h6 class="fw-bold mb-3">Quick Stats</h6>
+                    <div class="stat-item d-flex justify-content-between mb-2">
+                        <span class="text-muted">Total Properties:</span>
+                        <span class="fw-bold">{{ pagination.total if pagination else 0 }}</span>
+                    </div>
+                    <div class="stat-item d-flex justify-content-between mb-2">
+                        <span class="text-muted">Avg Price:</span>
+                        <span class="fw-bold">${{ "{:,.0f}".format(avg_price) if avg_price else "N/A" }}</span>
+                    </div>
+                    <div class="stat-item d-flex justify-content-between">
+                        <span class="text-muted">New This Week:</span>
+                        <span class="fw-bold text-success">{{ new_listings or 0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Properties Results -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Results Header -->
+            <div class="results-header d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Properties</h2>
+                    <p class="text-muted mb-0">
+                        {{ pagination.total if pagination else 0 }} properties found
+                        {% if request.args.get('city') %}in {{ request.args.get('city') }}{% endif %}
+                    </p>
+                </div>
+                
+                <div class="view-controls d-flex align-items-center">
+                    <!-- Sort Options -->
+                    <select name="sort" class="form-select me-3" style="width: auto;" onchange="updateSort(this.value)">
+                        <option value="price_desc" {{ 'selected' if request.args.get('sort') == 'price_desc' }}>Price: High to Low</option>
+                        <option value="price_asc" {{ 'selected' if request.args.get('sort') == 'price_asc' }}>Price: Low to High</option>
+                        <option value="newest" {{ 'selected' if request.args.get('sort') == 'newest' }}>Newest First</option>
+                        <option value="ai_score" {{ 'selected' if request.args.get('sort') == 'ai_score' }}>AI Score</option>
+                        <option value="sqft_desc" {{ 'selected' if request.args.get('sort') == 'sqft_desc' }}>Largest First</option>
+                    </select>
+                    
+                    <!-- View Toggle -->
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" id="gridView">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="listView">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="mapView">
+                            <i class="fas fa-map"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Properties Grid -->
+            <div id="propertiesContainer" class="properties-grid">
+                {% if properties %}
+                <div class="row g-4" id="propertiesGrid">
+                    {% for property in properties %}
+                    <div class="col-lg-6 col-xl-4">
+                        <div class="property-card-modern">
+                            <div class="property-image-container">
+                                <img src="{{ property.images[0].image_url if property.images else url_for('static', filename='images/property-placeholder.jpg') }}" 
+                                     alt="{{ property.address }}" 
+                                     class="property-image">
+                                
+                                <!-- Property Badges -->
+                                <div class="property-badges">
+                                    <span class="price-badge">${{ "{:,.0f}".format(property.sold_price) }}</span>
+                                    {% if property.status == 'New' %}
+                                    <span class="status-badge new">New</span>
+                                    {% endif %}
+                                    {% if property.ai_score and property.ai_score >= 80 %}
+                                    <span class="ai-score-badge">
+                                        <i class="fas fa-robot"></i>{{ property.ai_score }}
+                                    </span>
+                                    {% endif %}
+                                    {% if property.investment_grade %}
+                                    <span class="investment-badge">Investment Grade</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Property Overlay -->
+                                <div class="property-overlay">
+                                    <div class="property-actions">
+                                        <button class="action-btn favorite-btn" title="Add to favorites" 
+                                                onclick="addToWatchlist('{{ property.listing_id }}')">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                        <button class="action-btn share-btn" title="Share property">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <button class="action-btn analyze-btn" title="Analyze property" 
+                                                onclick="analyzeProperty('{{ property.listing_id }}')">
+                                            <i class="fas fa-calculator"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h6 class="property-title">{{ property.address }}</h6>
+                                    <p class="property-location">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ property.city }}, {{ property.province }} {{ property.postal_code }}
+                                    </p>
+                                </div>
+                                
+                                <!-- Property Details -->
+                                <div class="property-details-grid">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Beds</span>
+                                        <span class="detail-value">{{ property.bedrooms or 'N/A' }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Baths</span>
+                                        <span class="detail-value">{{ property.bathrooms or 'N/A' }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Sq Ft</span>
+                                        <span class="detail-value">{{ "{:,}".format(property.sqft) if property.sqft else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Investment Metrics -->
+                                {% if property.estimated_rental_income or property.roi_estimate %}
+                                <div class="property-metrics">
+                                    {% if property.estimated_rental_income %}
+                                    <div class="metric-item">
+                                        <span class="metric-label">Est. Rent:</span>
+                                        <span class="metric-value rental-income">${{ "{:,.0f}".format(property.estimated_rental_income) }}/mo</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if property.roi_estimate %}
+                                    <div class="metric-item">
+                                        <span class="metric-label">Est. ROI:</span>
+                                        <span class="metric-value roi-value">{{ "{:.1f}".format(property.roi_estimate) }}%</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Action Button -->
+                                <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}" 
+                                   class="btn-view-details">
+                                    <span>View Details</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if pagination and pagination.pages > 1 %}
+                <nav aria-label="Properties pagination" class="mt-5">
+                    <ul class="pagination justify-content-center">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.properties', page=pagination.prev_num, **request.args) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                        {% if page_num != pagination.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.properties', page=page_num, **request.args) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.properties', page=pagination.next_num, **request.args) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <!-- No Results -->
+                <div class="no-results text-center py-5">
+                    <i class="fas fa-home fa-4x text-muted mb-4"></i>
+                    <h4 class="text-muted mb-3">No properties found</h4>
+                    <p class="text-muted mb-4">
+                        Try adjusting your search criteria or 
+                        <a href="{{ url_for('main.properties') }}">view all properties</a>
+                    </p>
+                    <a href="{{ url_for('main.search') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Try Advanced Search
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Map View (Hidden by default) -->
+            <div id="mapContainer" class="d-none">
+                <div id="propertiesMap" style="height: 600px; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Property Analysis Modal -->
+<div class="modal fade" id="analysisModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calculator me-2"></i>Property Analysis
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="analysisContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Analyzing property...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/modern-interactions.js') }}"></script>
+<script>
+// Global variables
+let propertiesMap = null;
+let currentView = 'grid';
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters();
+    initializeViewToggle();
+    initializeFavorites();
+});
+
+// Filter functions
+function initializeFilters() {
+    const form = document.getElementById('propertyFilters');
+    const inputs = form.querySelectorAll('input, select');
+    
+    inputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.type !== 'submit') {
+                // Auto-submit after a short delay
+                clearTimeout(this.submitTimeout);
+                this.submitTimeout = setTimeout(() => {
+                    form.submit();
+                }, 1000);
+            }
+        });
+    });
+}
+
+function updateSort(value) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', value);
+    window.location.href = url.toString();
+}
+
+// View toggle functions
+function initializeViewToggle() {
+    const gridBtn = document.getElementById('gridView');
+    const listBtn = document.getElementById('listView');
+    const mapBtn = document.getElementById('mapView');
+    
+    gridBtn.addEventListener('click', () => switchView('grid'));
+    listBtn.addEventListener('click', () => switchView('list'));
+    mapBtn.addEventListener('click', () => switchView('map'));
+}
+
+function switchView(view) {
+    // Update button states
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (view === 'grid') {
+        document.getElementById('gridView').classList.add('active');
+        document.getElementById('propertiesContainer').classList.remove('d-none');
+        document.getElementById('mapContainer').classList.add('d-none');
+        currentView = 'grid';
+    } else if (view === 'list') {
+        document.getElementById('listView').classList.add('active');
+        document.getElementById('propertiesContainer').classList.remove('d-none');
+        document.getElementById('mapContainer').classList.add('d-none');
+        // Convert to list view
+        convertToListView();
+        currentView = 'list';
+    } else if (view === 'map') {
+        document.getElementById('mapView').classList.add('active');
+        document.getElementById('propertiesContainer').classList.add('d-none');
+        document.getElementById('mapContainer').classList.remove('d-none');
+        initializeMap();
+        currentView = 'map';
+    }
+}
+
+function convertToListView() {
+    const grid = document.getElementById('propertiesGrid');
+    if (grid) {
+        grid.className = 'properties-list';
+        grid.querySelectorAll('.col-lg-6').forEach(col => {
+            col.className = 'col-12 mb-3';
+        });
+    }
+}
+
+// Map functions
+function initializeMap() {
+    if (!propertiesMap) {
+        // Define Canada's geographic bounds
+        var canadaBounds = [
+            [41.7, -141.0], // Southwest corner
+            [83.5, -52.6]   // Northeast corner
+        ];
+        
+        propertiesMap = L.map('propertiesMap', {
+            center: [56.1304, -106.3468], // Canada center
+            zoom: 4,
+            maxBounds: canadaBounds,
+            maxBoundsViscosity: 1.0
+        });
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(propertiesMap);
+        
+        // Add property markers
+        addPropertyMarkers();
+    }
+    
+    // Resize map
+    setTimeout(() => {
+        propertiesMap.invalidateSize();
+    }, 100);
+}
+
+function addPropertyMarkers() {
+    // This would fetch property coordinates and add markers
+    // For now, we'll add sample markers
+    
+    {% if properties %}
+    {% for property in properties %}
+    {% if property.latitude and property.longitude %}
+    const marker{{ loop.index }} = L.marker([{{ property.latitude }}, {{ property.longitude }}])
+        .addTo(propertiesMap)
+        .bindPopup(`
+            <div class="property-popup">
+                <h6>{{ property.address }}</h6>
+                <p class="mb-1"><strong>\${{ "{:,.0f}".format(property.sold_price) }}</strong></p>
+                <p class="small text-muted mb-2">{{ property.bedrooms }} bed, {{ property.bathrooms }} bath</p>
+                <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}" 
+                   class="btn btn-primary btn-sm">View Details</a>
+            </div>
+        `);
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+}
+
+// Favorite functions
+function initializeFavorites() {
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const icon = this.querySelector('i');
+            
+            if (icon.classList.contains('far')) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                icon.style.color = '#dc3545';
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.style.color = '';
+            }
+        });
+    });
+}
+
+function addToWatchlist(propertyId) {
+    {% if current_user.is_authenticated %}
+    fetch(`/api/watchlist/${propertyId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Property added to watchlist', 'success');
+        } else {
+            showToast('Error adding to watchlist', 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error adding to watchlist', 'error');
+    });
+    {% else %}
+    showToast('Please login to save properties', 'warning');
+    setTimeout(() => {
+        window.location.href = "{{ url_for('auth.login') }}";
+    }, 2000);
+    {% endif %}
+}
+
+function analyzeProperty(propertyId) {
+    const modal = new bootstrap.Modal(document.getElementById('analysisModal'));
+    modal.show();
+    
+    // Fetch analysis data
+    fetch(`/api/properties/${propertyId}/analysis`)
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('analysisContent').innerHTML = `
+            <div class="analysis-results">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="metric-card bg-light p-3 rounded">
+                            <h6 class="text-primary mb-1">AI Score</h6>
+                            <h4 class="fw-bold">${data.ai_score}/100</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-card bg-light p-3 rounded">
+                            <h6 class="text-success mb-1">Est. ROI</h6>
+                            <h4 class="fw-bold">${data.roi_estimate}%</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-card bg-light p-3 rounded">
+                            <h6 class="text-info mb-1">Cash Flow</h6>
+                            <h4 class="fw-bold">$${data.cash_flow}/mo</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="metric-card bg-light p-3 rounded">
+                            <h6 class="text-warning mb-1">Cap Rate</h6>
+                            <h4 class="fw-bold">${data.cap_rate}%</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h6>Investment Summary</h6>
+                    <p class="text-muted">${data.summary}</p>
+                </div>
+            </div>
+        `;
+    })
+    .catch(error => {
+        document.getElementById('analysisContent').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Error loading analysis data. Please try again.
+            </div>
+        `;
+    });
+}
+
+function showToast(message, type) {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    toast.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}
