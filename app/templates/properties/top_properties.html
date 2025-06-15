@@ -478,7 +478,7 @@
                                 <span class="fw-bold">{{ "%.1f"|format(property.investment_potential * 100) }}%</span>
                             </div>
                             <div class="meter-bar">
-                                <div class="meter-fill" style="width: {{ min(property.investment_potential * 100, 100) }}%"></div>
+                                <div class="meter-fill" style="width: {{ [property.investment_potential * 100, 100]|min }}%"></div>
                             </div>
                         </div>
                         {% endif %}
@@ -555,4 +555,53 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Simple loading indicator for form submissions
+    const filterForm = document.querySelector('form');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Searching...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+    
+    // Loading indicator for pagination
+    const paginationLinks = document.querySelectorAll('.pagination a');
+    paginationLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        });
+    });
+    
+    console.log('Top Properties page loaded successfully');
+});
+</script>
+
+<style>
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    color: #495057;
+}
+
+.alert-warning {
+    border-left: 4px solid #ffc107;
+}
+</style>
 {% endblock %}
