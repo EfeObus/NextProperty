@@ -127,7 +127,7 @@
                                      class="property-img">
                                 
                                 <div class="property-badges">
-                                    <span class="price-badge">{{ property.sold_price|format_currency if property.sold_price else 'Price on request' }}</span>
+                                    <span class="price-badge">{{ (property.original_price|format_currency if property.original_price else property.sold_price|format_currency) if (property.original_price or property.sold_price) else 'Price on request' }}</span>
                                     {% if property.ai_prediction %}
                                     <span class="ai-badge">
                                         <i class="fas fa-robot me-1"></i>
@@ -348,7 +348,7 @@
                                          class="card-img-top" 
                                          style="height: 200px; object-fit: cover;">
                                     <div class="position-absolute top-0 end-0 m-2">
-                                        <span class="badge bg-primary">{{ property.sold_price|format_currency if property.sold_price else 'Price on request' }}</span>
+                                        <span class="badge bg-primary">{{ (property.original_price|format_currency if property.original_price else property.sold_price|format_currency) if (property.original_price or property.sold_price) else 'Price on request' }}</span>
                                     </div>
                                     {% if property.ai_prediction %}
                                     <div class="position-absolute top-0 start-0 m-2">

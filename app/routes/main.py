@@ -123,9 +123,19 @@ def properties():
         if property_type:
             query = query.filter(Property.property_type.ilike(f'%{property_type}%'))
         if min_price:
-            query = query.filter(Property.sold_price >= min_price)
+            query = query.filter(
+                db.or_(
+                    Property.original_price >= min_price,
+                    Property.sold_price >= min_price
+                )
+            )
         if max_price:
-            query = query.filter(Property.sold_price <= max_price)
+            query = query.filter(
+                db.or_(
+                    Property.original_price <= max_price,
+                    Property.sold_price <= max_price
+                )
+            )
         if bedrooms:
             query = query.filter(Property.bedrooms >= bedrooms)
         if bathrooms:
@@ -254,9 +264,19 @@ def search():
             if property_type:
                 query = query.filter(Property.property_type.ilike(f'%{property_type}%'))
             if min_price:
-                query = query.filter(Property.sold_price >= min_price)
+                query = query.filter(
+                    db.or_(
+                        Property.original_price >= min_price,
+                        Property.sold_price >= min_price
+                    )
+                )
             if max_price:
-                query = query.filter(Property.sold_price <= max_price)
+                query = query.filter(
+                    db.or_(
+                        Property.original_price <= max_price,
+                        Property.sold_price <= max_price
+                    )
+                )
             if bedrooms:
                 query = query.filter(Property.bedrooms >= bedrooms)
             if bathrooms:
@@ -368,6 +388,9 @@ def mapview():
         # Convert properties to dictionaries for JSON serialization
         properties_data = []
         for prop in properties:
+            # Calculate display price (use original_price if available, fallback to sold_price)
+            display_price = prop.original_price or prop.sold_price
+            
             prop_dict = {
                 'listing_id': prop.listing_id,
                 'address': prop.address,
@@ -378,6 +401,8 @@ def mapview():
                 'bathrooms': float(prop.bathrooms) if prop.bathrooms else None,
                 'sqft': prop.sqft,
                 'sold_price': float(prop.sold_price) if prop.sold_price else None,
+                'original_price': float(prop.original_price) if prop.original_price else None,
+                'display_price': float(display_price) if display_price else None,
                 'latitude': float(prop.latitude) if prop.latitude else None,
                 'longitude': float(prop.longitude) if prop.longitude else None
             }
@@ -389,9 +414,14 @@ def mapview():
         
         # Calculate map center
         if properties:
-            avg_lat = sum(float(p.latitude) for p in properties if p.latitude) / len(properties)
-            avg_lng = sum(float(p.longitude) for p in properties if p.longitude) / len(properties)
-            map_center = [avg_lat, avg_lng]
+            valid_coords = [(float(p.latitude), float(p.longitude)) for p in properties if p.latitude and p.longitude]
+            if valid_coords:
+                avg_lat = sum(coord[0] for coord in valid_coords) / len(valid_coords)
+                avg_lng = sum(coord[1] for coord in valid_coords) / len(valid_coords)
+                map_center = [avg_lat, avg_lng]
+            else:
+                # Default to Canada's geographic center if no valid coordinates
+                map_center = [56.1304, -106.3468]
         else:
             # Default to Canada's geographic center if no properties
             map_center = [56.1304, -106.3468]

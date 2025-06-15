@@ -238,7 +238,7 @@
                     
                     <div class="property-content">
                         <div class="property-price">
-                            ${{ "{:,.0f}".format(property.sold_price) }}
+                            ${{ "{:,.0f}".format(property.original_price if property.original_price else property.sold_price) if (property.original_price or property.sold_price) else 'Price on request' }}
                             {% if property.price_per_sqft %}
                             <span class="price-per-sqft">${{ "{:.0f}".format(property.price_per_sqft) }}/sq ft</span>
                             {% endif %}

@@ -79,7 +79,7 @@
             </p>
             
             <div class="property-price">
-                <span class="current-price">${{ "{:,.0f}".format(property.sold_price) }}</span>
+                <span class="current-price">${{ "{:,.0f}".format(property.original_price if property.original_price else property.sold_price) if (property.original_price or property.sold_price) else 'Price on request' }}</span>
                 {% if property.price_per_sqft %}
                 <span class="price-per-sqft">${{ "{:.0f}".format(property.price_per_sqft) }}/sq ft</span>
                 {% endif %}
@@ -285,13 +285,13 @@
                         <div class="form-group">
                             <label>Home Price</label>
                             <input type="number" class="form-control" id="homePrice" 
-                                   value="{{ property.sold_price }}" readonly>
+                                   value="{{ property.original_price if property.original_price else property.sold_price if property.sold_price else 0 }}" readonly>
                         </div>
                         <div class="form-group">
                             <label>Down Payment</label>
                             <div class="input-group">
                                 <input type="number" class="form-control" id="downPayment" 
-                                       value="{{ (property.sold_price|float * 0.2)|int }}">
+                                       value="{{ ((property.original_price if property.original_price else property.sold_price if property.sold_price else 0)|float * 0.2)|int }}">
                                 <span class="input-group-text">
                                     <span id="downPaymentPercent">20</span>%
                                 </span>

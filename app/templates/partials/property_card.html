@@ -13,7 +13,7 @@
             </div>
             {% endif %}
             <div class="price-badge">
-                {{ property.sold_price | format_price }}
+                {{ (property.original_price | format_price if property.original_price else property.sold_price | format_price) if (property.original_price or property.sold_price) else 'Price on request' }}
             </div>
         </div>
         

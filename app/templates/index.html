@@ -285,7 +285,7 @@
                              class="property-image">
                         
                         <div class="property-badges">
-                            <span class="price-badge">{{ property.sold_price|format_price if property.sold_price else 'N/A' }}</span>
+                            <span class="price-badge">{{ (property.original_price|format_price if property.original_price else property.sold_price|format_price) if (property.original_price or property.sold_price) else 'N/A' }}</span>
                             {% if property.ai_score %}
                             <span class="ai-score-badge">
                                 <i class="fas fa-robot"></i>{{ property.ai_score }}/100

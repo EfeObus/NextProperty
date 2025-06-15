@@ -238,7 +238,7 @@
                                 
                                 <!-- Property Badges -->
                                 <div class="property-badges">
-                                    <span class="price-badge">${{ "{:,.0f}".format(property.sold_price) }}</span>
+                                    <span class="price-badge">${{ "{:,.0f}".format(property.original_price if property.original_price else property.sold_price) if (property.original_price or property.sold_price) else 'Price on request' }}</span>
                                     {% if property.status == 'New' %}
                                     <span class="status-badge new">New</span>
                                     {% endif %}
@@ -545,7 +545,7 @@ function addPropertyMarkers() {
         .bindPopup(`
             <div class="property-popup">
                 <h6>{{ property.address }}</h6>
-                <p class="mb-1"><strong>\${{ "{:,.0f}".format(property.sold_price) }}</strong></p>
+                <p class="mb-1"><strong>\${{ "{:,.0f}".format(property.original_price if property.original_price else property.sold_price) if (property.original_price or property.sold_price) else 'Price on request' }}</strong></p>
                 <p class="small text-muted mb-2">{{ property.bedrooms }} bed, {{ property.bathrooms }} bath</p>
                 <a href="{{ url_for('main.property_detail', listing_id=property.listing_id) }}" 
                    class="btn btn-primary btn-sm">View Details</a>

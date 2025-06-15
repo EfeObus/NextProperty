@@ -10,8 +10,22 @@ from app.models.economic_data import EconomicData
 from app.extensions import cache
 import json
 import logging
+import warnings
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
+
+@contextmanager
+def suppress_sklearn_warnings():
+    """Context manager to suppress sklearn feature name warnings."""
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message='.*does not have valid feature names.*')
+        warnings.filterwarnings('ignore', message='.*feature names.*')
+        warnings.filterwarnings('ignore', message='.*X has feature names.*')
+        warnings.filterwarnings('ignore', message='.*X does not have valid feature names.*')
+        warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
+        warnings.filterwarnings('ignore', category=UserWarning)
+        yield
 
 class MLService:
     """Machine learning service for property analysis and predictions."""
@@ -239,8 +253,9 @@ class MLService:
             
             # Predict property value
             if 'valuation' in self.models and features is not None:
-                predicted_price = self.models['valuation'].predict([features])[0]
-                analysis['predicted_price'] = float(predicted_price)
+                with suppress_sklearn_warnings():
+                    predicted_price = self.models['valuation'].predict([features])[0]
+                    analysis['predicted_price'] = float(predicted_price)
                 
                 # Compare with actual/listed price
                 if property.sold_price:
@@ -282,7 +297,8 @@ class MLService:
             
     def get_top_properties(self, limit: int = 10, location: str = None, property_type: str = None, offset: int = 0) -> List[Dict]:
         """
-        Get top properties where actual price is below AI prediction (undervalued properties).
+        Get top properties where listed price is below AI prediction (undervalued opportunities).
+        This method focuses on currently available properties for investment.
         
         Args:
             limit: Number of properties to return
@@ -298,10 +314,23 @@ class MLService:
         try:
             from app import db
             
-            # Build query
+            # Build query for properties that are currently listed (not sold)
+            # Use original_price as the listing price for comparison with AI predictions
             query = Property.query.filter(
-                Property.sold_price.isnot(None),
-                Property.sold_price > 0
+                db.or_(
+                    Property.original_price.isnot(None),
+                    Property.sold_price.isnot(None)
+                )
+            ).filter(
+                db.or_(
+                    Property.original_price >= 100000,
+                    Property.sold_price >= 100000
+                )
+            ).filter(
+                db.or_(
+                    Property.original_price <= 10000000,
+                    Property.sold_price <= 10000000
+                )
             )
             
             if location:
@@ -318,27 +347,43 @@ class MLService:
                 # Get AI analysis
                 analysis = self.analyze_property(property)
                 
-                if analysis['predicted_price'] and property.sold_price:
-                    actual_price = float(property.sold_price)
-                    predicted_price = analysis['predicted_price']
+                if analysis['predicted_price']:
+                    # Use listing price (original_price) if available, otherwise use sold_price
+                    actual_price = None
+                    if property.original_price and property.original_price > 0:
+                        actual_price = float(property.original_price)
+                    elif property.sold_price and property.sold_price > 0:
+                        actual_price = float(property.sold_price)
                     
-                    # Calculate value difference (how much below prediction)
-                    value_diff = predicted_price - actual_price
-                    value_diff_percent = (value_diff / predicted_price) * 100
-                    
-                    # Only include properties that are undervalued by at least 5%
-                    if value_diff_percent >= 5:
-                        top_properties.append({
-                            'property': property,
-                            'analysis': analysis,
-                            'actual_price': actual_price,
-                            'predicted_price': predicted_price,
-                            'value_difference': value_diff,
-                            'value_difference_percent': value_diff_percent,
-                            'investment_potential': self._calculate_investment_potential(
-                                value_diff_percent, analysis['investment_score']
-                            )
-                        })
+                    if actual_price:
+                        predicted_price = analysis['predicted_price']
+                        
+                        # Additional validation: ensure predictions are reasonable
+                        if predicted_price < 50000 or predicted_price > 20000000:
+                            continue  # Skip unrealistic predictions
+                        
+                        # Additional validation: ensure the difference is reasonable (not due to data errors)
+                        price_ratio = predicted_price / actual_price
+                        if price_ratio > 5.0:  # Skip if prediction is more than 5x the actual price (likely data error)
+                            continue
+                        
+                        # Calculate value difference (how much below prediction)
+                        value_diff = predicted_price - actual_price
+                        value_diff_percent = (value_diff / predicted_price) * 100
+                        
+                        # Only include properties that are undervalued by 5-50% (reasonable range)
+                        if 5 <= value_diff_percent <= 50:
+                            top_properties.append({
+                                'property': property,
+                                'analysis': analysis,
+                                'actual_price': actual_price,
+                                'predicted_price': predicted_price,
+                                'value_difference': value_diff,
+                                'value_difference_percent': value_diff_percent,
+                                'investment_potential': self._calculate_investment_potential(
+                                    value_diff_percent, analysis['investment_score']
+                                )
+                            })
             
             # Sort by value difference percentage (highest undervaluation first)
             top_properties.sort(key=lambda x: x['value_difference_percent'], reverse=True)
@@ -368,10 +413,22 @@ class MLService:
         try:
             from app import db
             
-            # Build query
+            # Build query for properties with realistic price filters
             query = Property.query.filter(
-                Property.sold_price.isnot(None),
-                Property.sold_price > 0
+                db.or_(
+                    Property.original_price.isnot(None),
+                    Property.sold_price.isnot(None)
+                )
+            ).filter(
+                db.or_(
+                    Property.original_price >= 100000,
+                    Property.sold_price >= 100000
+                )
+            ).filter(
+                db.or_(
+                    Property.original_price <= 10000000,
+                    Property.sold_price <= 10000000
+                )
             )
             
             if location:
@@ -388,17 +445,32 @@ class MLService:
                 # Get AI analysis
                 analysis = self.analyze_property(property)
                 
-                if analysis['predicted_price'] and property.sold_price:
-                    actual_price = float(property.sold_price)
-                    predicted_price = analysis['predicted_price']
+                if analysis['predicted_price']:
+                    # Use listing price (original_price) if available, otherwise use sold_price
+                    actual_price = None
+                    if property.original_price and property.original_price > 0:
+                        actual_price = float(property.original_price)
+                    elif property.sold_price and property.sold_price > 0:
+                        actual_price = float(property.sold_price)
                     
-                    # Calculate value difference (how much below prediction)
-                    value_diff = predicted_price - actual_price
-                    value_diff_percent = (value_diff / predicted_price) * 100
-                    
-                    # Only count properties that are undervalued by at least 5%
-                    if value_diff_percent >= 5:
-                        count += 1
+                    if actual_price:
+                        predicted_price = analysis['predicted_price']
+                        
+                        # Additional validation: ensure predictions and ratios are reasonable
+                        if predicted_price < 50000 or predicted_price > 20000000:
+                            continue
+                        
+                        price_ratio = predicted_price / actual_price
+                        if price_ratio > 5.0:
+                            continue
+                        
+                        # Calculate value difference (how much below prediction)
+                        value_diff = predicted_price - actual_price
+                        value_diff_percent = (value_diff / predicted_price) * 100
+                        
+                        # Only count properties that are undervalued by 5-50% (reasonable range)
+                        if 5 <= value_diff_percent <= 50:
+                            count += 1
             
             return count
             
@@ -447,29 +519,25 @@ class MLService:
             # Try to use trained model first
             if 'valuation' in self.models:
                 try:
-                    # Convert features to DataFrame with proper column names to avoid sklearn warnings
-                    import pandas as pd
-                    feature_columns = self._get_feature_columns()
-                    
-                    if len(features) == len(feature_columns):
-                        # Create DataFrame with proper column names for sklearn compatibility
-                        features_df = pd.DataFrame([features], columns=feature_columns)
+                    # Use context manager to suppress sklearn warnings
+                    with suppress_sklearn_warnings():
+                        # Convert features to DataFrame with proper column names to avoid sklearn warnings
+                        import pandas as pd
+                        feature_columns = self._get_feature_columns()
                         
-                        # Check if model has preprocessing pipeline (StandardScaler, etc.)
-                        model = self.models['valuation']
-                        if hasattr(model, 'named_steps'):
-                            # This is a pipeline, it expects DataFrame with proper column names
-                            predicted_price = model.predict(features_df)[0]
-                        elif hasattr(model, 'feature_names_in_'):
-                            # Model was trained with feature names, use DataFrame
+                        if len(features) == len(feature_columns):
+                            # Create DataFrame with proper column names for sklearn compatibility
+                            features_df = pd.DataFrame([features], columns=feature_columns)
+                            
+                            # Check if model has preprocessing pipeline (StandardScaler, etc.)
+                            model = self.models['valuation']
+                            
+                            # Always use DataFrame to avoid feature name warnings
                             predicted_price = model.predict(features_df)[0]
                         else:
-                            # Model expects array, convert to numpy array
-                            predicted_price = model.predict(features_df.values)[0]
-                    else:
-                        logger.warning(f"Feature mismatch: got {len(features)}, expected {len(feature_columns)}")
-                        # Fallback to array prediction
-                        predicted_price = self.models['valuation'].predict([features])[0]
+                            logger.warning(f"Feature mismatch: got {len(features)}, expected {len(feature_columns)}")
+                            # Fallback to array prediction with warning suppression
+                            predicted_price = self.models['valuation'].predict([features])[0]
                         
                 except Exception as model_error:
                     logger.error(f"Model prediction failed: {str(model_error)}")

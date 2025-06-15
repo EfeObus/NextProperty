@@ -41,9 +41,19 @@ def get_properties():
         if property_type:
             query = query.filter(Property.property_type.ilike(f'%{property_type}%'))
         if min_price:
-            query = query.filter(Property.sold_price >= min_price)
+            query = query.filter(
+                db.or_(
+                    Property.original_price >= min_price,
+                    Property.sold_price >= min_price
+                )
+            )
         if max_price:
-            query = query.filter(Property.sold_price <= max_price)
+            query = query.filter(
+                db.or_(
+                    Property.original_price <= max_price,
+                    Property.sold_price <= max_price
+                )
+            )
         
         # Order by most recent
         query = query.order_by(Property.sold_date.desc())
@@ -272,9 +282,19 @@ def search_properties():
         if property_type:
             query = query.filter(Property.property_type.ilike(f'%{property_type}%'))
         if min_price:
-            query = query.filter(Property.sold_price >= min_price)
+            query = query.filter(
+                db.or_(
+                    Property.original_price >= min_price,
+                    Property.sold_price >= min_price
+                )
+            )
         if max_price:
-            query = query.filter(Property.sold_price <= max_price)
+            query = query.filter(
+                db.or_(
+                    Property.original_price <= max_price,
+                    Property.sold_price <= max_price
+                )
+            )
         if bedrooms:
             query = query.filter(Property.bedrooms >= bedrooms)
         if bathrooms:

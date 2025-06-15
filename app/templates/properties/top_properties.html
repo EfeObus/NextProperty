@@ -458,7 +458,7 @@
                                 <div class="col-6">
                                     <div class="price-item">
                                         <div class="price-label">Listed Price</div>
-                                        <div class="price-value listed">{{ property.sold_price|format_currency if property.sold_price else 'N/A' }}</div>
+                                        <div class="price-value listed">{{ (property.original_price|format_currency if property.original_price else property.sold_price|format_currency) if (property.original_price or property.sold_price) else 'N/A' }}</div>
                                     </div>
                                 </div>
                                 <div class="col-6">
