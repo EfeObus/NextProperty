@@ -944,7 +944,6 @@ def top_properties():
         for item in top_properties_data:
             try:
                 property_obj = item['property']
-                analysis = item['analysis']
                 
                 # Ensure property_obj is a Property object, not a dict
                 if isinstance(property_obj, dict):
@@ -979,7 +978,7 @@ def top_properties():
                     val = getattr(prop, 'predicted_price', 0)
                     return float(val) if val is not None and val != '' else 0.0
                 elif sort_by == 'actual_price':
-                    val = getattr(prop, 'sold_price', 0)
+                    val = getattr(prop, 'sold_price', 0) or getattr(prop, 'original_price', 0)
                     if val is None or val == '':
                         return 0.0
                     try:
@@ -991,12 +990,7 @@ def top_properties():
                     if val is None or val == '':
                         return 0
                     try:
-                        # Handle string values that might contain non-digits
-                        str_val = str(val).strip()
-                        if str_val.replace('.', '').replace('-', '').isdigit():
-                            return int(float(str_val))
-                        else:
-                            return 0
+                        return int(val) if str(val).isdigit() else 0
                     except (ValueError, TypeError):
                         return 0
                 elif sort_by == 'sqft':
@@ -1004,12 +998,7 @@ def top_properties():
                     if val is None or val == '':
                         return 0.0
                     try:
-                        # Handle string values that might contain non-digits
-                        str_val = str(val).strip()
-                        if str_val.replace('.', '').replace('-', '').replace(',', '').isdigit():
-                            return float(str_val.replace(',', ''))
-                        else:
-                            return 0.0
+                        return float(str(val).replace(',', '')) if val else 0.0
                     except (ValueError, TypeError):
                         return 0.0
                 else:
@@ -1022,18 +1011,27 @@ def top_properties():
         top_properties.sort(key=get_sort_key, reverse=True)
         
         # Get total count for pagination
-        total_count = ml_service.get_top_properties_count(
-            location=city if city else None,
-            property_type=property_type if property_type else None
-        )
+        try:
+            total_count = ml_service.get_top_properties_count(
+                location=city if city else None,
+                property_type=property_type if property_type else None
+            )
+        except Exception as count_error:
+            current_app.logger.warning(f"Error getting total count: {count_error}")
+            total_count = len(top_properties)
         
         # Calculate pagination info
         has_next = len(top_properties) == 20 and (page * 20) < total_count
         has_prev = page > 1
         
         # Get filter options
-        cities = data_service.get_unique_cities()
-        property_types = data_service.get_property_types()
+        try:
+            cities = data_service.get_unique_cities()
+            property_types = data_service.get_property_types()
+        except Exception as filter_error:
+            current_app.logger.warning(f"Error getting filter options: {filter_error}")
+            cities = []
+            property_types = []
         
         return render_template('properties/top_properties.html',
                              top_properties=top_properties,
