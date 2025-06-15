@@ -13,6 +13,7 @@ from werkzeug.utils import secure_filename
 import json
 import os
 import uuid
+import time
 
 bp = Blueprint('main', __name__)
 
@@ -924,22 +925,41 @@ def upload_property():
 @bp.route('/top-properties')
 def top_properties():
     """Top properties page showing undervalued properties (below AI prediction)."""
+    start_time = time.time()
+    
     try:
+        current_app.logger.info("Loading top properties page")
+        
         page = request.args.get('page', 1, type=int)
         city = request.args.get('city', '').strip()
         property_type = request.args.get('type', '').strip()
         sort_by = request.args.get('sort_by', 'investment_potential').strip()
         
-        # Get top properties from ML service
-        top_properties_data = ml_service.get_top_properties(
-            limit=20,
-            location=city if city else None,
-            property_type=property_type if property_type else None,
-            offset=(page - 1) * 20
-        )
+        current_app.logger.info(f"Filters - Page: {page}, City: {city}, Type: {property_type}, Sort: {sort_by}")
+        
+        # Get top properties from ML service with timing
+        ml_start = time.time()
+        try:
+            top_properties_data = ml_service.get_top_properties(
+                limit=20,
+                location=city if city else None,
+                property_type=property_type if property_type else None,
+                offset=(page - 1) * 20
+            )
+            ml_time = time.time() - ml_start
+            current_app.logger.info(f"ML service took {ml_time:.2f} seconds, returned {len(top_properties_data)} properties")
+            
+        except Exception as ml_error:
+            current_app.logger.error(f"ML service error: {str(ml_error)}")
+            flash('Error analyzing properties. Please try again later.', 'error')
+            return render_template('properties/top_properties.html',
+                                 top_properties=[],
+                                 cities=[],
+                                 property_types=[],
+                                 pagination={'page': 1, 'has_next': False, 'has_prev': False, 'total': 0},
+                                 current_filters={})
         
         # Transform data structure for template compatibility
-        # The template expects properties with direct attributes like property.sqft, property.predicted_price
         top_properties = []
         for item in top_properties_data:
             try:
@@ -947,17 +967,11 @@ def top_properties():
                 
                 # Ensure property_obj is a Property object, not a dict
                 if isinstance(property_obj, dict):
-                    # If it's a dict, we need to handle it differently
                     current_app.logger.warning(f"Property object is a dict instead of Property model: {property_obj.get('listing_id', 'unknown')}")
                     continue
                 
-                # Create a property object with additional analysis data as attributes
-                enhanced_property = property_obj
-                enhanced_property.predicted_price = float(item.get('predicted_price', 0))
-                enhanced_property.actual_price = float(item.get('actual_price', 0))
-                enhanced_property.value_difference = float(item.get('value_difference', 0))
-                enhanced_property.value_difference_percent = float(item.get('value_difference_percent', 0))
-                enhanced_property.investment_potential = float(item.get('investment_potential', 0))
+                # Ensure all required attributes exist
+                enhanced_property = ensure_property_attributes(property_obj, item)
                 
                 top_properties.append(enhanced_property)
                 
@@ -965,52 +979,40 @@ def top_properties():
                 current_app.logger.warning(f"Error processing property data: {str(e)}")
                 continue
         
-        # Apply sorting with safe type conversion
+        current_app.logger.info(f"Successfully processed {len(top_properties)} properties")
+        
+        # Optimized sorting function
         def get_sort_key(prop):
             try:
                 if sort_by == 'investment_potential':
-                    val = getattr(prop, 'investment_potential', 0)
-                    return float(val) if val is not None and val != '' else 0.0
+                    return getattr(prop, 'investment_potential', 0.0)
                 elif sort_by == 'value_difference':
-                    val = getattr(prop, 'value_difference', 0)
-                    return float(val) if val is not None and val != '' else 0.0
+                    return getattr(prop, 'value_difference', 0.0)
                 elif sort_by == 'predicted_price':
-                    val = getattr(prop, 'predicted_price', 0)
-                    return float(val) if val is not None and val != '' else 0.0
+                    return getattr(prop, 'predicted_price', 0.0)
                 elif sort_by == 'actual_price':
                     val = getattr(prop, 'sold_price', 0) or getattr(prop, 'original_price', 0)
-                    if val is None or val == '':
-                        return 0.0
-                    try:
-                        return float(val)
-                    except (ValueError, TypeError):
-                        return 0.0
+                    return float(val) if val and val != '' else 0.0
                 elif sort_by == 'bedrooms':
                     val = getattr(prop, 'bedrooms', 0)
-                    if val is None or val == '':
-                        return 0
-                    try:
-                        return int(val) if str(val).isdigit() else 0
-                    except (ValueError, TypeError):
-                        return 0
+                    return int(val) if val and str(val).isdigit() else 0
                 elif sort_by == 'sqft':
                     val = getattr(prop, 'sqft', 0)
-                    if val is None or val == '':
-                        return 0.0
-                    try:
-                        return float(str(val).replace(',', '')) if val else 0.0
-                    except (ValueError, TypeError):
-                        return 0.0
+                    if val:
+                        try:
+                            return float(str(val).replace(',', ''))
+                        except (ValueError, TypeError):
+                            return 0.0
+                    return 0.0
                 else:
-                    val = getattr(prop, 'investment_potential', 0)
-                    return float(val) if val is not None and val != '' else 0.0
-            except (ValueError, TypeError, AttributeError) as e:
-                current_app.logger.debug(f"Error in get_sort_key for property {getattr(prop, 'listing_id', 'unknown')}: {str(e)}")
+                    return getattr(prop, 'investment_potential', 0.0)
+            except Exception as e:
+                current_app.logger.debug(f"Sort key error for {getattr(prop, 'listing_id', 'unknown')}: {str(e)}")
                 return 0.0
         
         top_properties.sort(key=get_sort_key, reverse=True)
         
-        # Get total count for pagination
+        # Get total count with error handling
         try:
             total_count = ml_service.get_top_properties_count(
                 location=city if city else None,
@@ -1024,7 +1026,7 @@ def top_properties():
         has_next = len(top_properties) == 20 and (page * 20) < total_count
         has_prev = page > 1
         
-        # Get filter options
+        # Get filter options with error handling
         try:
             cities = data_service.get_unique_cities()
             property_types = data_service.get_property_types()
@@ -1032,6 +1034,9 @@ def top_properties():
             current_app.logger.warning(f"Error getting filter options: {filter_error}")
             cities = []
             property_types = []
+        
+        total_time = time.time() - start_time
+        current_app.logger.info(f"Top properties page loaded successfully in {total_time:.2f} seconds")
         
         return render_template('properties/top_properties.html',
                              top_properties=top_properties,
@@ -1050,7 +1055,9 @@ def top_properties():
                              })
     
     except Exception as e:
-        current_app.logger.error(f"Error loading top properties: {str(e)}")
+        current_app.logger.error(f"Critical error loading top properties: {str(e)}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
         flash('Error loading top properties. Please try again.', 'error')
         return render_template('properties/top_properties.html',
                              top_properties=[],
@@ -1240,3 +1247,32 @@ def api_economic_insights():
             'insights': [],
             'error': 'Unable to generate insights at this time'
         }), 500
+
+def ensure_property_attributes(property_obj, analysis_data):
+    """Ensure property object has all required attributes for template rendering."""
+    required_attrs = {
+        'predicted_price': analysis_data.get('predicted_price', 0),
+        'actual_price': analysis_data.get('actual_price', 0),
+        'value_difference': analysis_data.get('value_difference', 0),
+        'value_difference_percent': analysis_data.get('value_difference_percent', 0),
+        'investment_potential': analysis_data.get('investment_potential', 0),
+        'address': getattr(property_obj, 'address', ''),
+        'city': getattr(property_obj, 'city', ''),
+        'province': getattr(property_obj, 'province', ''),
+        'bedrooms': getattr(property_obj, 'bedrooms', 0),
+        'bathrooms': getattr(property_obj, 'bathrooms', 0),
+        'sqft': getattr(property_obj, 'sqft', 0),
+        'property_type': getattr(property_obj, 'property_type', ''),
+        'postal_code': getattr(property_obj, 'postal_code', ''),
+        'listing_id': getattr(property_obj, 'listing_id', ''),
+        'original_price': getattr(property_obj, 'original_price', 0),
+        'sold_price': getattr(property_obj, 'sold_price', 0),
+    }
+    
+    for attr_name, default_value in required_attrs.items():
+        if not hasattr(property_obj, attr_name):
+            setattr(property_obj, attr_name, default_value)
+        elif getattr(property_obj, attr_name) is None:
+            setattr(property_obj, attr_name, default_value)
+    
+    return property_obj
