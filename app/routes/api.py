@@ -344,11 +344,11 @@ def geospatial_search():
             return jsonify({'success': False, 'error': 'Latitude and longitude required'}), 400
         
         # Get nearby properties
-        properties = geo_service.find_nearby_properties(latitude, longitude, radius)
+        properties = geo_service.find_properties_within_radius(latitude, longitude, radius)
         
         return jsonify({
             'success': True,
-            'data': [prop.to_dict() for prop in properties],
+            'data': properties,
             'search_center': {
                 'latitude': latitude,
                 'longitude': longitude,

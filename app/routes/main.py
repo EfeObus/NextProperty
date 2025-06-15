@@ -307,18 +307,23 @@ def search():
                                  })
         else:
             # Just show the search form
-            # Create empty pagination object for template compatibility
-            from flask_sqlalchemy import Pagination
-            empty_properties = Pagination(
-                page=1,
-                per_page=20,
-                total=0,
-                items=[],
-                prev_num=None,
-                next_num=None,
-                has_prev=False,
-                has_next=False
-            )
+            # Create empty pagination-like object for template compatibility
+            class EmptyPagination:
+                def __init__(self):
+                    self.page = 1
+                    self.per_page = 20
+                    self.total = 0
+                    self.items = []
+                    self.pages = 0
+                    self.prev_num = None
+                    self.next_num = None
+                    self.has_prev = False
+                    self.has_next = False
+                    
+                def iter_pages(self):
+                    return []
+            
+            empty_properties = EmptyPagination()
             
             return render_template('properties/search.html',
                                  cities=cities,
@@ -331,17 +336,22 @@ def search():
         current_app.logger.error(f"Error loading search page: {str(e)}")
         flash('Error loading search page.', 'error')
         # Return minimal template to avoid template errors
-        from flask_sqlalchemy import Pagination
-        empty_properties = Pagination(
-            page=1,
-            per_page=20,
-            total=0,
-            items=[],
-            prev_num=None,
-            next_num=None,
-            has_prev=False,
-            has_next=False
-        )
+        class EmptyPagination:
+            def __init__(self):
+                self.page = 1
+                self.per_page = 20
+                self.total = 0
+                self.items = []
+                self.pages = 0
+                self.prev_num = None
+                self.next_num = None
+                self.has_prev = False
+                self.has_next = False
+                
+            def iter_pages(self):
+                return []
+        
+        empty_properties = EmptyPagination()
         return render_template('properties/search.html',
                              cities=[],
                              property_types=[],

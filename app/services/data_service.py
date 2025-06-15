@@ -501,7 +501,7 @@ class DataService:
                 .filter(Property.sold_price.isnot(None))\
                 .order_by(Property.sold_price)
             
-            prices = [p[0] for p in prices_query.all()]
+            prices = [float(p[0]) for p in prices_query.all()]  # Convert to float for numpy
             
             q1_price = 0
             q3_price = 0
