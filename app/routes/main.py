@@ -1276,3 +1276,81 @@ def ensure_property_attributes(property_obj, analysis_data):
             setattr(property_obj, attr_name, default_value)
     
     return property_obj
+
+
+# Footer pages
+@bp.route('/about')
+def about():
+    """About Us page."""
+    return render_template('pages/about.html')
+
+
+@bp.route('/contact')
+def contact():
+    """Contact page."""
+    return render_template('pages/contact.html')
+
+
+@bp.route('/careers')
+def careers():
+    """Careers page."""
+    return render_template('pages/careers.html')
+
+
+@bp.route('/privacy')
+def privacy():
+    """Privacy Policy page."""
+    return render_template('pages/privacy.html')
+
+
+@bp.route('/investment-guide')
+def investment_guide():
+    """Investment Guide page."""
+    return render_template('pages/investment_guide.html')
+
+
+@bp.route('/market-reports')
+def market_reports():
+    """Market Reports page."""
+    try:
+        # Get some sample market data
+        market_stats = {
+            'total_properties': Property.query.count(),
+            'avg_price': db.session.query(func.avg(Property.sold_price)).filter(
+                Property.sold_price.isnot(None)
+            ).scalar(),
+            'cities_covered': Property.query.with_entities(Property.city).distinct().count(),
+        }
+        
+        # Get top cities data
+        top_cities = db.session.query(
+            Property.city,
+            func.count(Property.listing_id).label('count'),
+            func.avg(Property.sold_price).label('avg_price')
+        ).filter(
+            Property.city.isnot(None),
+            Property.sold_price.isnot(None)
+        ).group_by(Property.city).order_by(
+            func.count(Property.listing_id).desc()
+        ).limit(10).all()
+        
+        return render_template('pages/market_reports.html', 
+                             market_stats=market_stats,
+                             top_cities=top_cities)
+    except Exception as e:
+        current_app.logger.error(f"Error loading market reports: {str(e)}")
+        return render_template('pages/market_reports.html', 
+                             market_stats={}, 
+                             top_cities=[])
+
+
+@bp.route('/api-docs')
+def api_documentation():
+    """API Documentation page."""
+    return render_template('pages/api_docs.html')
+
+
+@bp.route('/help')
+def help_center():
+    """Help Center page."""
+    return render_template('pages/help.html')

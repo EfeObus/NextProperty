@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - NextProperty AI{% endblock %}
+
+{% block meta_description %}Get in touch with NextProperty AI. Contact our team for support, partnerships, or inquiries about our AI-powered real estate platform.{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <!-- Header Section -->
+    <section class="contact-header text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-4">Contact Us</h1>
+        <p class="lead mb-4">
+            We're here to help you succeed in your real estate investment journey. 
+            Get in touch with our team of experts.
+        </p>
+    </section>
+
+    <div class="row g-5">
+        <!-- Contact Form -->
+        <div class="col-lg-8">
+            <div class="contact-form-card">
+                <h3 class="fw-bold mb-4">Send us a Message</h3>
+                <form id="contactForm" action="#" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="col-12">
+                            <label for="subject" class="form-label">Subject *</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Choose a subject...</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="support">Technical Support</option>
+                                <option value="partnership">Partnership Opportunities</option>
+                                <option value="feedback">Feedback & Suggestions</option>
+                                <option value="press">Press & Media</option>
+                                <option value="careers">Career Opportunities</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="message" class="form-label">Message *</label>
+                            <textarea class="form-control" id="message" name="message" rows="6" 
+                                    placeholder="Tell us how we can help you..." required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
+                                <label class="form-check-label" for="newsletter">
+                                    Subscribe to our newsletter for market insights and platform updates
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="col-lg-4">
+            <!-- Contact Details -->
+            <div class="contact-info-card mb-4">
+                <h4 class="fw-bold mb-4">Get in Touch</h4>
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h6 class="fw-bold">Email</h6>
+                        <p class="mb-0">info@nextproperty.ai</p>
+                        <p class="small text-muted">We respond within 24 hours</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h6 class="fw-bold">Phone</h6>
+                        <p class="mb-0">+1 (555) 123-4567</p>
+                        <p class="small text-muted">Mon-Fri, 9 AM - 6 PM EST</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-details">
+                        <h6 class="fw-bold">Address</h6>
+                        <p class="mb-0">
+                            123 Innovation Drive<br>
+                            Suite 400<br>
+                            Toronto, ON M5V 3A8
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Hours -->
+            <div class="contact-info-card mb-4">
+                <h4 class="fw-bold mb-4">Business Hours</h4>
+                <div class="hours-list">
+                    <div class="hours-item">
+                        <span class="day">Monday - Friday</span>
+                        <span class="time">9:00 AM - 6:00 PM</span>
+                    </div>
+                    <div class="hours-item">
+                        <span class="day">Saturday</span>
+                        <span class="time">10:00 AM - 4:00 PM</span>
+                    </div>
+                    <div class="hours-item">
+                        <span class="day">Sunday</span>
+                        <span class="time">Closed</span>
+                    </div>
+                </div>
+                <p class="small text-muted mt-3">
+                    <i class="fas fa-clock me-1"></i>
+                    All times are Eastern Standard Time (EST)
+                </p>
+            </div>
+
+            <!-- Social Media -->
+            <div class="contact-info-card">
+                <h4 class="fw-bold mb-4">Follow Us</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-twitter"></i>
+                        <span>Twitter</span>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-facebook"></i>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-instagram"></i>
+                        <span>Instagram</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <section class="faq-section mt-5">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="fw-bold">Frequently Asked Questions</h2>
+                <p class="lead">Quick answers to common questions</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                                How accurate are your AI property valuations?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Our AI models achieve 95% accuracy in property valuation by analyzing thousands of 
+                                data points including recent sales, market trends, economic indicators, and property 
+                                characteristics. We continuously update our models with new data to maintain accuracy.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                Is NextProperty AI free to use?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! Our basic features including property search, AI valuations, and market insights 
+                                are completely free. We also offer premium features for professional investors 
+                                who need advanced analytics and priority support.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                Which cities do you cover?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We currently cover major Canadian cities including Toronto, Vancouver, Calgary, 
+                                Ottawa, Montreal, Edmonton, Winnipeg, Quebec City, Hamilton, and Kitchener-Waterloo. 
+                                We're continuously expanding to new markets.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq4">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                Do you provide investment advice?
+                            </button>
+                        </h2>
+                        <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We provide data-driven insights and analysis tools, but we don't provide personalized 
+                                investment advice. Our platform helps you make informed decisions by providing 
+                                comprehensive property data, market trends, and AI-powered valuations.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section mt-5">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h2 class="fw-bold">Visit Our Office</h2>
+                <p class="lead">Located in the heart of Toronto's tech district</p>
+            </div>
+        </div>
+        <div class="map-container">
+            <div class="map-placeholder">
+                <i class="fas fa-map-marked-alt fa-5x text-muted"></i>
+                <h4 class="text-muted mt-3">Interactive Map</h4>
+                <p class="text-muted">123 Innovation Drive, Toronto, ON</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.contact-form-card,
+.contact-info-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    height: fit-content;
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.contact-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.contact-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.contact-icon i {
+    color: white;
+    font-size: 1.2rem;
+}
+
+.contact-details h6 {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.hours-list {
+    space-y: 1rem;
+}
+
+.hours-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.hours-item:last-child {
+    border-bottom: none;
+}
+
+.day {
+    font-weight: 600;
+    color: #333;
+}
+
+.time {
+    color: #666;
+}
+
+.social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    background: #f8f9fa;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.social-link i {
+    width: 20px;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+.map-container {
+    height: 400px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.map-placeholder {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.faq-section .accordion-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px !important;
+    margin-bottom: 1rem;
+}
+
+.faq-section .accordion-button {
+    border-radius: 8px !important;
+    font-weight: 600;
+}
+
+.faq-section .accordion-button:not(.collapsed) {
+    background: #f8f9fa;
+    color: #007bff;
+}
+
+@media (max-width: 768px) {
+    .contact-form-card,
+    .contact-info-card {
+        padding: 1.5rem;
+    }
+    
+    .social-links {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .social-link {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Simulate form submission
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+    submitBtn.disabled = true;
+    
+    setTimeout(() => {
+        alert('Thank you for your message! We\'ll get back to you within 24 hours.');
+        this.reset();
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 2000);
+});
+</script>
+{% endblock %}

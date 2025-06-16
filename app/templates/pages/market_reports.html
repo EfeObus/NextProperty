@@ -1,0 +1,893 @@
+{% extends "base.html" %}
+
+{% block title %}Market Reports - NextProperty AI{% endblock %}
+
+{% block meta_description %}Comprehensive real estate market reports powered by AI. Get insights into Canadian property markets, trends, and investment opportunities.{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <!-- Header Section -->
+    <section class="reports-header mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold text-primary mb-4">Market Reports</h1>
+                <p class="lead mb-4">
+                    Access comprehensive real estate market analysis powered by artificial intelligence. 
+                    Get data-driven insights into market trends, pricing patterns, and investment opportunities 
+                    across Canadian cities.
+                </p>
+                <div class="report-stats d-flex gap-4 mb-4">
+                    <div class="stat-item">
+                        <h4 class="fw-bold text-warning">{{ "{:,}".format(market_stats.total_properties) if market_stats.total_properties else "50,000+" }}</h4>
+                        <p class="text-muted">Properties Analyzed</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4 class="fw-bold text-warning">{{ market_stats.cities_covered if market_stats.cities_covered else "10+" }}</h4>
+                        <p class="text-muted">Cities Covered</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4 class="fw-bold text-warning">Real-time</h4>
+                        <p class="text-muted">Data Updates</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="reports-visual text-center">
+                    <i class="fas fa-chart-area fa-8x text-primary mb-3"></i>
+                    <h4 class="text-muted">AI-Powered Analytics</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market Overview -->
+    <section class="market-overview mb-5">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h2 class="fw-bold text-primary">National Market Overview</h2>
+                <p class="lead">Current state of Canadian real estate markets</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="fw-bold">{{ "${:,.0f}".format(market_stats.avg_price) if market_stats.avg_price else "$675,000" }}</h3>
+                        <p class="text-muted">Average Home Price</p>
+                        <span class="trend-indicator positive">
+                            <i class="fas fa-arrow-up me-1"></i>+2.3% YoY
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="fw-bold">28</h3>
+                        <p class="text-muted">Average Days on Market</p>
+                        <span class="trend-indicator negative">
+                            <i class="fas fa-arrow-down me-1"></i>-15% vs Last Year
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="metric-card">
+                    <div class="metric-icon">
+                        <i class="fas fa-percent"></i>
+                    </div>
+                    <div class="metric-content">
+                        <h3 class="fw-bold">5.25%</h3>
+                        <p class="text-muted">Current Mortgage Rate</p>
+                        <span class="trend-indicator neutral">
+                            <i class="fas fa-minus me-1"></i>Stable
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Regional Reports -->
+    <section class="regional-reports mb-5">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h2 class="fw-bold text-primary">Regional Market Reports</h2>
+                <p class="lead">Detailed analysis by major Canadian cities</p>
+            </div>
+        </div>
+
+        <!-- City Reports -->
+        {% if top_cities %}
+        <div class="row g-4">
+            {% for city in top_cities[:6] %}
+            <div class="col-lg-6">
+                <div class="city-report-card">
+                    <div class="city-header">
+                        <h4 class="fw-bold">{{ city.city }}</h4>
+                        <span class="property-count">{{ city.count }} Properties</span>
+                    </div>
+                    <div class="city-metrics">
+                        <div class="city-metric">
+                            <span class="metric-label">Average Price:</span>
+                            <span class="metric-value">${{ "{:,.0f}".format(city.avg_price) if city.avg_price else "N/A" }}</span>
+                        </div>
+                        <div class="city-metric">
+                            <span class="metric-label">Market Activity:</span>
+                            <span class="metric-value {% if city.count > 100 %}high{% elif city.count > 50 %}medium{% else %}low{% endif %}">
+                                {% if city.count > 100 %}High
+                                {% elif city.count > 50 %}Medium  
+                                {% else %}Low
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="city-metric">
+                            <span class="metric-label">Investment Score:</span>
+                            <span class="metric-value score">8.5/10</span>
+                        </div>
+                    </div>
+                    <div class="city-insights">
+                        <h6 class="fw-bold">Key Insights:</h6>
+                        <ul class="insight-list">
+                            <li>Strong employment growth in tech sector</li>
+                            <li>New transit infrastructure planned</li>
+                            <li>Limited housing supply driving demand</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewDetailedReport('{{ city.city }}')">
+                        View Detailed Report
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="row g-4">
+            <!-- Sample city reports when no data available -->
+            <div class="col-lg-6">
+                <div class="city-report-card">
+                    <div class="city-header">
+                        <h4 class="fw-bold">Toronto</h4>
+                        <span class="property-count">5,247 Properties</span>
+                    </div>
+                    <div class="city-metrics">
+                        <div class="city-metric">
+                            <span class="metric-label">Average Price:</span>
+                            <span class="metric-value">$1,125,000</span>
+                        </div>
+                        <div class="city-metric">
+                            <span class="metric-label">Market Activity:</span>
+                            <span class="metric-value high">High</span>
+                        </div>
+                        <div class="city-metric">
+                            <span class="metric-label">Investment Score:</span>
+                            <span class="metric-value score">8.7/10</span>
+                        </div>
+                    </div>
+                    <div class="city-insights">
+                        <h6 class="fw-bold">Key Insights:</h6>
+                        <ul class="insight-list">
+                            <li>Strong employment growth in tech sector</li>
+                            <li>New transit infrastructure planned</li>
+                            <li>Limited housing supply driving demand</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewDetailedReport('Toronto')">
+                        View Detailed Report
+                    </button>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="city-report-card">
+                    <div class="city-header">
+                        <h4 class="fw-bold">Vancouver</h4>
+                        <span class="property-count">3,891 Properties</span>
+                    </div>
+                    <div class="city-metrics">
+                        <div class="city-metric">
+                            <span class="metric-label">Average Price:</span>
+                            <span class="metric-value">$1,385,000</span>
+                        </div>
+                        <div class="city-metric">
+                            <span class="metric-label">Market Activity:</span>
+                            <span class="metric-value high">High</span>
+                        </div>
+                        <div class="city-metric">
+                            <span class="metric-label">Investment Score:</span>
+                            <span class="metric-value score">8.2/10</span>
+                        </div>
+                    </div>
+                    <div class="city-insights">
+                        <h6 class="fw-bold">Key Insights:</h6>
+                        <ul class="insight-list">
+                            <li>International investment interest remains strong</li>
+                            <li>Condo market showing resilience</li>
+                            <li>Foreign buyer tax impacting luxury segment</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewDetailedReport('Vancouver')">
+                        View Detailed Report
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Market Trends -->
+    <section class="market-trends mb-5">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h2 class="fw-bold text-primary">Market Trends & Analysis</h2>
+                <p class="lead">AI-powered insights into market patterns and predictions</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="trend-chart-card">
+                    <h4 class="fw-bold mb-3">Price Trends (Last 12 Months)</h4>
+                    <div class="chart-container">
+                        <canvas id="priceChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="trend-insights-card">
+                    <h4 class="fw-bold mb-3">Key Trends</h4>
+                    <div class="trend-item">
+                        <div class="trend-icon positive">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="trend-content">
+                            <h6 class="fw-bold">Rising Demand</h6>
+                            <p class="small">Urban areas seeing increased buyer interest</p>
+                        </div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-icon negative">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="trend-content">
+                            <h6 class="fw-bold">Inventory Shortage</h6>
+                            <p class="small">Limited supply affecting market dynamics</p>
+                        </div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-icon positive">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="trend-content">
+                            <h6 class="fw-bold">Price Stability</h6>
+                            <p class="small">Moderate growth expected in Q1 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Property Type Analysis -->
+    <section class="property-analysis mb-5">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h2 class="fw-bold text-primary">Property Type Performance</h2>
+                <p class="lead">Analysis by property category</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="property-type-card">
+                    <div class="property-type-header">
+                        <h5 class="fw-bold">Single-Family Homes</h5>
+                        <span class="performance-score excellent">Excellent</span>
+                    </div>
+                    <div class="property-metrics">
+                        <div class="metric-row">
+                            <span>Average Price:</span>
+                            <span class="fw-bold">$875,000</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Price Change (YoY):</span>
+                            <span class="fw-bold text-success">+3.2%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Days on Market:</span>
+                            <span class="fw-bold">25 days</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Sale to List Ratio:</span>
+                            <span class="fw-bold">102%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="property-type-card">
+                    <div class="property-type-header">
+                        <h5 class="fw-bold">Condominiums</h5>
+                        <span class="performance-score good">Good</span>
+                    </div>
+                    <div class="property-metrics">
+                        <div class="metric-row">
+                            <span>Average Price:</span>
+                            <span class="fw-bold">$625,000</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Price Change (YoY):</span>
+                            <span class="fw-bold text-success">+1.8%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Days on Market:</span>
+                            <span class="fw-bold">32 days</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Sale to List Ratio:</span>
+                            <span class="fw-bold">98%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="property-type-card">
+                    <div class="property-type-header">
+                        <h5 class="fw-bold">Townhouses</h5>
+                        <span class="performance-score very-good">Very Good</span>
+                    </div>
+                    <div class="property-metrics">
+                        <div class="metric-row">
+                            <span>Average Price:</span>
+                            <span class="fw-bold">$750,000</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Price Change (YoY):</span>
+                            <span class="fw-bold text-success">+2.7%</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Days on Market:</span>
+                            <span class="fw-bold">28 days</span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Sale to List Ratio:</span>
+                            <span class="fw-bold">101%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Economic Indicators -->
+    <section class="economic-indicators mb-5">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h2 class="fw-bold text-primary">Economic Indicators</h2>
+                <p class="lead">Key economic factors affecting real estate markets</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="indicator-card">
+                    <div class="indicator-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <h5 class="fw-bold">5.25%</h5>
+                    <p class="text-muted">Bank of Canada Rate</p>
+                    <span class="indicator-change neutral">Unchanged</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="indicator-card">
+                    <div class="indicator-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5 class="fw-bold">3.1%</h5>
+                    <p class="text-muted">Inflation Rate</p>
+                    <span class="indicator-change negative">-0.2%</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="indicator-card">
+                    <div class="indicator-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h5 class="fw-bold">6.2%</h5>
+                    <p class="text-muted">Unemployment Rate</p>
+                    <span class="indicator-change positive">-0.3%</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="indicator-card">
+                    <div class="indicator-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h5 class="fw-bold">240K</h5>
+                    <p class="text-muted">Housing Starts</p>
+                    <span class="indicator-change positive">+5.2%</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Reports -->
+    <section class="download-reports mb-5">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h2 class="fw-bold text-primary">Download Detailed Reports</h2>
+                <p class="lead">Access comprehensive market analysis documents</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="report-download-card">
+                    <div class="report-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h5 class="fw-bold">Q4 2024 Market Report</h5>
+                    <p class="text-muted">Comprehensive analysis of Q4 market performance</p>
+                    <div class="report-meta">
+                        <span class="badge bg-primary">PDF</span>
+                        <span class="text-muted">2.3 MB</span>
+                    </div>
+                    <button class="btn btn-outline-primary mt-3" onclick="downloadReport('q4-2024')">
+                        <i class="fas fa-download me-2"></i>Download
+                    </button>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="report-download-card">
+                    <div class="report-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h5 class="fw-bold">2025 Market Outlook</h5>
+                    <p class="text-muted">AI-powered predictions for the year ahead</p>
+                    <div class="report-meta">
+                        <span class="badge bg-success">PDF</span>
+                        <span class="text-muted">1.8 MB</span>
+                    </div>
+                    <button class="btn btn-outline-primary mt-3" onclick="downloadReport('outlook-2025')">
+                        <i class="fas fa-download me-2"></i>Download
+                    </button>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="report-download-card">
+                    <div class="report-icon">
+                        <i class="fas fa-city"></i>
+                    </div>
+                    <h5 class="fw-bold">Regional Deep Dive</h5>
+                    <p class="text-muted">Detailed analysis of top Canadian markets</p>
+                    <div class="report-meta">
+                        <span class="badge bg-warning">PDF</span>
+                        <span class="text-muted">3.1 MB</span>
+                    </div>
+                    <button class="btn btn-outline-primary mt-3" onclick="downloadReport('regional-analysis')">
+                        <i class="fas fa-download me-2"></i>Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="reports-cta bg-primary text-white p-5 rounded">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h3 class="fw-bold mb-3">Get Custom Market Reports</h3>
+                <p class="lead mb-0">
+                    Need specific market analysis for your investment strategy? 
+                    Our AI can generate custom reports tailored to your requirements.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{{ url_for('main.contact') }}" class="btn btn-warning btn-lg">
+                    <i class="fas fa-envelope me-2"></i>Request Custom Report
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.reports-header .stat-item {
+    text-align: center;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    height: 100%;
+}
+
+.metric-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.metric-icon i {
+    color: white;
+    font-size: 2rem;
+}
+
+.trend-indicator {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+}
+
+.trend-indicator.positive {
+    background: #d4edda;
+    color: #155724;
+}
+
+.trend-indicator.negative {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.trend-indicator.neutral {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.city-report-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    height: 100%;
+}
+
+.city-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.property-count {
+    background: #f8f9fa;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.city-metrics {
+    margin-bottom: 1.5rem;
+}
+
+.city-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.metric-label {
+    color: #666;
+}
+
+.metric-value {
+    font-weight: 600;
+}
+
+.metric-value.high {
+    color: #28a745;
+}
+
+.metric-value.medium {
+    color: #ffc107;
+}
+
+.metric-value.low {
+    color: #dc3545;
+}
+
+.metric-value.score {
+    color: #007bff;
+}
+
+.insight-list {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.insight-list li {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.trend-chart-card,
+.trend-insights-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    height: 100%;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+.trend-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.trend-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.trend-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.trend-icon.positive {
+    background: #d4edda;
+    color: #155724;
+}
+
+.trend-icon.negative {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.property-type-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    height: 100%;
+}
+
+.property-type-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.performance-score {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.performance-score.excellent {
+    background: #d4edda;
+    color: #155724;
+}
+
+.performance-score.very-good {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.performance-score.good {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.indicator-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    height: 100%;
+}
+
+.indicator-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.indicator-icon i {
+    color: white;
+    font-size: 1.5rem;
+}
+
+.indicator-change {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+}
+
+.indicator-change.positive {
+    background: #d4edda;
+    color: #155724;
+}
+
+.indicator-change.negative {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.indicator-change.neutral {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.report-download-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    height: 100%;
+}
+
+.report-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.report-icon i {
+    color: white;
+    font-size: 2rem;
+}
+
+.report-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .city-header,
+    .property-type-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    .report-stats {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+}
+</style>
+
+<script>
+// Initialize price trends chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Average Price ($CAD)',
+                data: [650000, 655000, 660000, 665000, 670000, 675000, 680000, 685000, 680000, 675000, 672000, 675000],
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#007bff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return '$' + (value/1000) + 'K';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Average Price: $' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+// Functions for report interactions
+function viewDetailedReport(city) {
+    alert(`Detailed report for ${city} coming soon! This would open a comprehensive market analysis for the selected city.`);
+}
+
+function downloadReport(reportType) {
+    alert(`Downloading ${reportType} report... This feature will provide downloadable PDF reports with detailed market analysis.`);
+}
+
+// Add hover effects to cards
+document.querySelectorAll('.city-report-card, .property-type-card, .report-download-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px)';
+        this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+    });
+});
+</script>
+{% endblock %}

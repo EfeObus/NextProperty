@@ -168,20 +168,20 @@
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h6 class="fw-bold mb-3 text-white">Resources</h6>
                     <ul class="list-unstyled footer-links">
-                        <li><a href="#" class="footer-link">Investment Guide</a></li>
-                        <li><a href="#" class="footer-link">Market Reports</a></li>
-                        <li><a href="#" class="footer-link">API Documentation</a></li>
-                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="{{ url_for('main.investment_guide') }}" class="footer-link">Investment Guide</a></li>
+                        <li><a href="{{ url_for('main.market_reports') }}" class="footer-link">Market Reports</a></li>
+                        <li><a href="{{ url_for('main.api_documentation') }}" class="footer-link">API Documentation</a></li>
+                        <li><a href="{{ url_for('main.help_center') }}" class="footer-link">Help Center</a></li>
                     </ul>
                 </div>
                 
                 <div class="col-lg-2 col-md-6 mb-4">
                     <h6 class="fw-bold mb-3 text-white">Company</h6>
                     <ul class="list-unstyled footer-links">
-                        <li><a href="#" class="footer-link">About Us</a></li>
-                        <li><a href="#" class="footer-link">Contact</a></li>
-                        <li><a href="#" class="footer-link">Careers</a></li>
-                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.about') }}" class="footer-link">About Us</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="footer-link">Contact</a></li>
+                        <li><a href="{{ url_for('main.careers') }}" class="footer-link">Careers</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}" class="footer-link">Privacy Policy</a></li>
                     </ul>
                 </div>
                 
