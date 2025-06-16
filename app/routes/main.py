@@ -1321,7 +1321,7 @@ def market_reports():
             ).scalar(),
             'cities_covered': Property.query.with_entities(Property.city).distinct().count(),
         }
-        
+
         # Get top cities data
         top_cities = db.session.query(
             Property.city,
@@ -1333,14 +1333,14 @@ def market_reports():
         ).group_by(Property.city).order_by(
             func.count(Property.listing_id).desc()
         ).limit(10).all()
-        
-        return render_template('pages/market_reports.html', 
+
+        return render_template('pages/market_reports.html',
                              market_stats=market_stats,
                              top_cities=top_cities)
     except Exception as e:
         current_app.logger.error(f"Error loading market reports: {str(e)}")
-        return render_template('pages/market_reports.html', 
-                             market_stats={}, 
+        return render_template('pages/market_reports.html',
+                             market_stats={},
                              top_cities=[])
 
 
