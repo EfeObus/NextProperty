@@ -7,7 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.1.0] - 2024-06-15
+## [2.1.1] - 2025-06-16
+
+### 🔧 **ML Service Enhancement & Documentation**
+
+This release includes critical improvements to the ML prediction service and comprehensive project documentation.
+
+### Fixed
+
+#### **ML Model Prediction Service**
+- **Feature Handling**: Fixed ML model prediction service with proper 26-feature handling
+- **Model Loading**: Improved model artifact loading and error handling
+- **Prediction Accuracy**: Enhanced prediction accuracy with proper feature alignment
+- **Error Recovery**: Added comprehensive error handling for prediction failures
+
+### Added
+
+#### **Comprehensive Documentation**
+- **Project Overview**: Added `NextProperty_AI_Progress_Presentation.md` with complete project overview
+- **ML Fix Documentation**: Added `ML_MODEL_FIX_COMPLETE.md` documenting the resolution process
+- **Progress Tracking**: Comprehensive documentation of project milestones and achievements
+
+#### **Technical Improvements**
+- **Model Training**: Enhanced model training pipeline with proper feature handling
+- **Service Layer**: Improved ML service architecture with better error handling
+- **Documentation**: Complete technical documentation for future development
+
+### Files Modified in v2.1.1
+
+#### **Core Service Files**
+- `app/services/ml_service.py` - Enhanced ML prediction service with proper feature handling
+
+#### **Documentation**
+- `ML_MODEL_FIX_COMPLETE.md` - New comprehensive ML fix documentation
+- `NextProperty_AI_Progress_Presentation.md` - New project overview and progress documentation
+
+## [2.1.0] - 2025-06-15
 
 ### 🛠️ **Critical Bug Fixes & Performance Improvements**
 
@@ -114,7 +149,7 @@ STATISTICS_CANADA_API = "https://www150.statcan.gc.ca/t1/wds/rest/"
 
 ---
 
-## [2.0.0] - 2024-06-12
+## [2.0.0] - 2025-06-12
 
 ### 🚀 **Major Release: Enhanced ML Pipeline & Economic Integration**
 
@@ -299,7 +334,7 @@ FILE_STRUCTURE.md              # Updated structure documentation
 
 ---
 
-## [1.2.1] - 2024-05-15
+## [1.2.1] - 2025-05-15
 
 ### Fixed
 - **Database Connection**: Resolved connection pool issues
@@ -312,7 +347,7 @@ FILE_STRUCTURE.md              # Updated structure documentation
 
 ---
 
-## [1.2.0] - 2024-04-20
+## [1.2.0] - 2025-05-20
 
 ### Added
 - **User Authentication**: JWT-based authentication system
@@ -327,7 +362,7 @@ FILE_STRUCTURE.md              # Updated structure documentation
 
 ---
 
-## [1.1.0] - 2024-03-10
+## [1.1.0] - 2025-06-10
 
 ### Added
 - **Property Analysis**: Basic ML model for property valuation
@@ -342,7 +377,7 @@ FILE_STRUCTURE.md              # Updated structure documentation
 
 ---
 
-## [1.0.0] - 2024-02-01
+## [1.0.0] - 2025-06-01
 
 ### Added
 - **Initial Release**: Basic property listing platform
@@ -363,7 +398,7 @@ FILE_STRUCTURE.md              # Updated structure documentation
 
 ---
 
-## Recent Commits (June 2024)
+## Recent Commits (June 2025)
 
 ### Latest Development Activity
 - **cb8f52d**: Documentation updates - comprehensive setup guide and progress documentation
