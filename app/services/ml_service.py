@@ -46,36 +46,86 @@ class MLService:
             return
             
         try:
+            # Get absolute paths to avoid working directory issues
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            
             # Try to import current_app only when needed
             try:
                 from flask import current_app
                 model_path = current_app.config.get('MODEL_PATH', 'models/trained_models/')
+                if not os.path.isabs(model_path):
+                    model_path = os.path.join(base_dir, model_path)
             except RuntimeError:
                 # Outside of app context, use default path
-                model_path = 'models/trained_models/'
+                model_path = os.path.join(base_dir, 'models/trained_models/')
             
-            # Load property valuation model
-            valuation_model_path = os.path.join(model_path, 'property_price_model.pkl')
-            if os.path.exists(valuation_model_path):
-                self.models['valuation'] = joblib.load(valuation_model_path)
-                print("Property valuation model loaded successfully")
-            else:
-                # Fallback to xgboost model if available
-                xgb_model_path = os.path.join(model_path, 'xgboost_price_model.pkl')
-                if os.path.exists(xgb_model_path):
-                    self.models['valuation'] = joblib.load(xgb_model_path)
-                    print("XGBoost valuation model loaded successfully")
+            # Ensure model directory exists
+            if not os.path.exists(model_path):
+                raise FileNotFoundError(f"Model directory not found: {model_path}")
+            
+            # Try loading models in order of preference
+            model_files = [
+                ('property_price_model.pkl', 'Property valuation'),
+                ('xgboost_price_model.pkl', 'XGBoost valuation'),
+                ('gradientboosting_price_model.pkl', 'GradientBoosting valuation'),
+                ('randomforest_price_model.pkl', 'RandomForest valuation'),
+                ('lightgbm_price_model.pkl', 'LightGBM valuation')
+            ]
+            
+            model_loaded = False
+            for model_file, model_name in model_files:
+                model_file_path = os.path.join(model_path, model_file)
+                if os.path.exists(model_file_path):
+                    try:
+                        # Test load the model with a dummy prediction to catch KeyError issues
+                        test_model = joblib.load(model_file_path)
+                        
+                        # Create a test feature array with the expected 26 features
+                        test_features = np.array([[3, 2, 1500, 0.25, 7, 50, 10, 3, 2010, 2025, 6, 30, 5000, 
+                                                 5.0, 7.2, 6.5, 2.3, 5.2, 1.37, 1.8, 0.5, 0.0, 0.3, 0.5, 0.6, 0.4]])
+                        
+                        # Test prediction
+                        _ = test_model.predict(test_features)
+                        
+                        # If we get here, the model works
+                        self.models['valuation'] = test_model
+                        logger.info(f"{model_name} model loaded and tested successfully")
+                        model_loaded = True
+                        break
+                        
+                    except Exception as model_error:
+                        logger.warning(f"Failed to load {model_name} model: {type(model_error).__name__}: {model_error}")
+                        continue
+            
+            if not model_loaded:
+                logger.error("No working valuation models found - using fallback pricing")
+                # Set a flag to use fallback pricing instead of raising an error
+                self.models['valuation'] = None
             
             # Load feature columns
-            feature_path = os.path.join(model_path, '../model_artifacts/feature_columns.json')
+            feature_path = os.path.join(base_dir, 'models/model_artifacts/feature_columns.json')
             if os.path.exists(feature_path):
                 with open(feature_path, 'r') as f:
                     self.feature_columns = json.load(f)
+                logger.info("Feature columns loaded successfully")
+            else:
+                logger.warning(f"Feature columns file not found: {feature_path}")
+                # Set default feature columns
+                self.feature_columns = [
+                    'size_sqft', 'bedrooms', 'bathrooms', 'lot_size', 'age',
+                    'property_type_encoded', 'city_encoded', 'neighbourhood_encoded'
+                ]
             
             self._models_loaded = True
+            logger.info("ML models loaded successfully")
             
         except Exception as e:
-            print(f"Error loading ML models: {str(e)}")
+            error_msg = f"Error loading ML models: {type(e).__name__}: {str(e)}"
+            logger.error(error_msg)
+            logger.error(f"Current working directory: {os.getcwd()}")
+            logger.error(f"Base directory: {base_dir if 'base_dir' in locals() else 'Not set'}")
+            logger.error(f"Model path: {model_path if 'model_path' in locals() else 'Not set'}")
+            print(error_msg)  # Keep for backward compatibility
     
     def _get_economic_indicators(self) -> Dict[str, float]:
         """Fetch current economic indicators with caching."""
@@ -252,20 +302,43 @@ class MLService:
             features = self._extract_features(property)
             
             # Predict property value
-            if 'valuation' in self.models and features is not None:
-                with suppress_sklearn_warnings():
-                    predicted_price = self.models['valuation'].predict([features])[0]
-                    analysis['predicted_price'] = float(predicted_price)
+            if 'valuation' in self.models and self.models['valuation'] is not None and features is not None:
+                try:
+                    with suppress_sklearn_warnings():
+                        predicted_price = self.models['valuation'].predict([features])[0]
+                        analysis['predicted_price'] = float(predicted_price)
+                except Exception as model_error:
+                    logger.warning(f"Model prediction failed in analyze_property: {model_error}")
+                    # Use statistical fallback
+                    property_dict = {
+                        'bedrooms': property.bedrooms,
+                        'bathrooms': property.bathrooms,
+                        'square_feet': property.sqft,
+                        'city': property.city,
+                        'property_type': property.property_type
+                    }
+                    analysis['predicted_price'] = self._statistical_price_prediction(property_dict)
+            else:
+                # Use statistical fallback when no model available
+                property_dict = {
+                    'bedrooms': property.bedrooms,
+                    'bathrooms': property.bathrooms,
+                    'square_feet': property.sqft,
+                    'city': property.city,
+                    'property_type': property.property_type
+                }
+                analysis['predicted_price'] = self._statistical_price_prediction(property_dict)
                 
-                # Compare with actual/listed price
-                if property.sold_price:
-                    price_diff = (predicted_price - float(property.sold_price)) / float(property.sold_price)
-                    if abs(price_diff) < 0.05:  # Within 5%
-                        analysis['insights'].append("AI valuation closely matches sold price")
-                    elif price_diff > 0.1:  # AI values higher
-                        analysis['insights'].append("Property may have been undervalued")
-                    elif price_diff < -0.1:  # AI values lower
-                        analysis['insights'].append("Property may have been overvalued")
+            # Compare with actual/listed price
+            if property.sold_price and analysis['predicted_price']:
+                predicted_price = analysis['predicted_price']
+                price_diff = (predicted_price - float(property.sold_price)) / float(property.sold_price)
+                if abs(price_diff) < 0.05:  # Within 5%
+                    analysis['insights'].append("AI valuation closely matches sold price")
+                elif price_diff > 0.1:  # AI values higher
+                    analysis['insights'].append("Property may have been undervalued")
+                elif price_diff < -0.1:  # AI values lower
+                    analysis['insights'].append("Property may have been overvalued")
             
             # Calculate investment score
             analysis['investment_score'] = self._calculate_investment_score(property, features)
@@ -767,31 +840,20 @@ class MLService:
             }
 
     def _get_feature_columns(self) -> List[str]:
-        """Get the expected feature column names for the ML model."""
-        try:
-            if hasattr(self, 'feature_columns') and self.feature_columns:
-                return self.feature_columns
-            
-            # Fallback: load from file if not already loaded
-            feature_path = os.path.join(os.path.dirname(__file__), 
-                                      '../../models/model_artifacts/feature_columns.json')
-            if os.path.exists(feature_path):
-                with open(feature_path, 'r') as f:
-                    return json.load(f)
-            
-            # Default 26 feature names matching our model
+        """Get the expected feature column names for the model."""
+        if self.feature_columns:
+            return self.feature_columns
+        else:
+            # Return default feature names if not loaded from file
             return [
-                'bedrooms', 'bathrooms', 'square_feet', 'lot_size', 'rooms',
-                'city_encoded', 'province_encoded', 'property_type_encoded',
-                'year_built', 'current_year', 'current_month', 'dom', 'taxes',
-                'policy_rate', 'prime_rate', 'mortgage_rate', 'inflation_rate',
-                'unemployment_rate', 'exchange_rate', 'gdp_growth', 'interest_environment',
-                'economic_momentum', 'affordability_pressure', 'property_affordability',
-                'economic_sensitivity', 'market_timing'
+                "bedrooms", "bathrooms", "square_feet", "lot_size", "rooms",
+                "city_encoded", "province_encoded", "property_type_encoded",
+                "year_built", "current_year", "current_month", "dom", "taxes",
+                "policy_rate", "prime_rate", "mortgage_rate", "inflation_rate",
+                "unemployment_rate", "exchange_rate", "gdp_growth",
+                "interest_environment", "economic_momentum", "affordability_pressure",
+                "property_affordability", "economic_sensitivity", "market_timing"
             ]
-        except Exception as e:
-            print(f"Error getting feature columns: {str(e)}")
-            return []
     
     def get_model_metadata(self) -> Dict[str, Any]:
         """Get metadata about the currently loaded model."""
