@@ -41,17 +41,24 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="city" class="form-label">City</label>
-                                    <select class="form-select" id="city" name="city" required>
-                                        <option value="">Select city</option>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="city" 
+                                           name="city" 
+                                           placeholder="Start typing city name..." 
+                                           value="{{ form_data.city if form_data else '' }}" 
+                                           required
+                                           autocomplete="off"
+                                           list="city-list">
+                                    <datalist id="city-list">
                                         {% for city in cities %}
-                                        <option value="{{ city }}" 
-                                                {{ 'selected' if form_data and form_data.city == city else '' }}>
-                                            {{ city }}
-                                        </option>
+                                        <option value="{{ city }}">{{ city }}</option>
                                         {% endfor %}
-                                        <option value="other">Other (Please specify in address)</option>
-                                    </select>
-                                    <div class="invalid-feedback">Please select a city.</div>
+                                    </datalist>
+                                    <div class="invalid-feedback">Please enter a valid Canadian city.</div>
+                                    <small class="form-text text-muted">
+                                        Start typing to see suggestions. All major Canadian cities are supported.
+                                    </small>
                                 </div>
                                 
                                 <div class="col-md-3 mb-3">
@@ -329,5 +336,51 @@ function previewPhotos(input) {
         }, 100);
     }
 }
+
+// Enhanced city autocomplete functionality
+document.getElementById('city').addEventListener('input', function() {
+    const input = this.value.toLowerCase();
+    const datalist = document.getElementById('city-list');
+    const options = datalist.querySelectorAll('option');
+    
+    // If input is empty, show all options
+    if (input === '') {
+        options.forEach(option => option.style.display = 'block');
+        return;
+    }
+    
+    // Filter options based on input
+    options.forEach(option => {
+        const cityName = option.value.toLowerCase();
+        if (cityName.includes(input)) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+});
+
+// Add validation for city input
+document.getElementById('city').addEventListener('blur', function() {
+    const input = this.value;
+    const datalist = document.getElementById('city-list');
+    const options = Array.from(datalist.querySelectorAll('option'));
+    const validCities = options.map(option => option.value);
+    
+    // Check if the entered city is in our list
+    if (input && !validCities.includes(input)) {
+        this.setCustomValidity('Please select a city from the list or enter a valid Canadian city.');
+        this.classList.add('is-invalid');
+    } else {
+        this.setCustomValidity('');
+        this.classList.remove('is-invalid');
+    }
+});
+
+// Clear validation on input
+document.getElementById('city').addEventListener('input', function() {
+    this.setCustomValidity('');
+    this.classList.remove('is-invalid');
+});
 </script>
 {% endblock %}

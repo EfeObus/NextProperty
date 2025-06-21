@@ -686,8 +686,11 @@ def predict_price():
     """Property price prediction page."""
     try:
         if request.method == 'GET':
+            # Import comprehensive Canadian cities list
+            from app.data.canadian_cities import get_all_canadian_cities
+            
             # Get form options
-            cities = data_service.get_unique_cities()
+            cities = get_all_canadian_cities()  # Use comprehensive list for better user experience
             property_types = data_service.get_property_types()
             
             return render_template('properties/price_prediction_form.html',
@@ -712,8 +715,11 @@ def predict_price():
         missing_fields = [field for field in required_fields if not property_features.get(field)]
         
         if missing_fields:
+            # Import comprehensive Canadian cities list
+            from app.data.canadian_cities import get_all_canadian_cities
+            
             flash(f'Please fill in all required fields: {", ".join(missing_fields)}', 'error')
-            cities = data_service.get_unique_cities()
+            cities = get_all_canadian_cities()  # Use comprehensive list
             property_types = data_service.get_property_types()
             return render_template('properties/price_prediction_form.html',
                                  cities=cities,
@@ -724,8 +730,11 @@ def predict_price():
         prediction_result = ml_service.predict_property_price(property_features)
         
         if prediction_result.get('error'):
+            # Import comprehensive Canadian cities list
+            from app.data.canadian_cities import get_all_canadian_cities
+            
             flash(f'Prediction error: {prediction_result["error"]}', 'error')
-            cities = data_service.get_unique_cities()
+            cities = get_all_canadian_cities()  # Use comprehensive list
             property_types = data_service.get_property_types()
             return render_template('properties/price_prediction_form.html',
                                  cities=cities,
@@ -751,8 +760,11 @@ def upload_property():
     """Property upload page for adding new properties."""
     try:
         if request.method == 'GET':
+            # Import comprehensive Canadian cities list
+            from app.data.canadian_cities import get_all_canadian_cities
+            
             # Get form options
-            cities = data_service.get_unique_cities()
+            cities = get_all_canadian_cities()  # Use comprehensive list instead of database cities
             property_types = data_service.get_property_types()
             
             return render_template('properties/upload_form.html',
@@ -781,8 +793,11 @@ def upload_property():
         missing_fields = [field for field in required_fields if not property_data.get(field)]
         
         if missing_fields:
+            # Import comprehensive Canadian cities list
+            from app.data.canadian_cities import get_all_canadian_cities
+            
             flash(f'Please fill in all required fields: {", ".join(missing_fields)}', 'error')
-            cities = data_service.get_unique_cities()
+            cities = get_all_canadian_cities()  # Use comprehensive list instead of database cities
             property_types = data_service.get_property_types()
             return render_template('properties/upload_form.html',
                                  cities=cities,
@@ -797,25 +812,158 @@ def upload_property():
         from datetime import datetime
         import random
         
-        # Generate coordinates for the city (simplified)
+        # Generate coordinates for the city (comprehensive mapping)
         city_coords = {
+            # Major Ontario Cities
             'toronto': (43.6532, -79.3832),
-            'vancouver': (49.2827, -123.1207),
-            'calgary': (51.0447, -114.0719),
             'ottawa': (45.4215, -75.6972),
-            'montreal': (45.5017, -73.5673)
+            'hamilton': (43.2501, -79.8496),
+            'london': (42.9849, -81.2453),
+            'markham': (43.8561, -79.3370),
+            'vaughan': (43.8361, -79.4985),
+            'kitchener': (43.4516, -80.4925),
+            'windsor': (42.3149, -83.0364),
+            'richmond hill': (43.8828, -79.4403),
+            'oakville': (43.4675, -79.6877),
+            'burlington': (43.3255, -79.7990),
+            'oshawa': (43.8971, -78.8658),
+            'barrie': (44.3894, -79.6903),
+            'sudbury': (46.4917, -80.9930),
+            'kingston': (44.2312, -76.4860),
+            'guelph': (43.5448, -80.2482),
+            'cambridge': (43.3616, -80.3144),
+            'mississauga': (43.5890, -79.6441),
+            'brampton': (43.7315, -79.7624),
+            'st. catharines': (43.1594, -79.2469),
+            'thunder bay': (48.3809, -89.2477),
+            'waterloo': (43.4643, -80.5204),
+            
+            # Major Quebec Cities
+            'montreal': (45.5017, -73.5673),
+            'quebec city': (46.8139, -71.2080),
+            'laval': (45.6066, -73.7124),
+            'gatineau': (45.4215, -75.6919),
+            'longueuil': (45.5312, -73.5185),
+            'sherbrooke': (45.4042, -71.8929),
+            'saguenay': (48.4279, -71.0654),
+            'levis': (46.8072, -71.1774),
+            'trois-rivieres': (46.3432, -72.5432),
+            'terrebonne': (45.7057, -73.6471),
+            
+            # Major British Columbia Cities
+            'vancouver': (49.2827, -123.1207),
+            'surrey': (49.1913, -122.8490),
+            'burnaby': (49.2488, -122.9805),
+            'richmond': (49.1666, -123.1336),
+            'abbotsford': (49.0504, -122.3045),
+            'coquitlam': (49.3956, -122.7851),
+            'langley': (49.0847, -122.6044),
+            'saanich': (48.4982, -123.3637),
+            'delta': (49.0847, -123.0587),
+            'north vancouver': (49.3163, -123.0693),
+            'kelowna': (49.8880, -119.4960),
+            'kamloops': (50.6745, -120.3273),
+            'nanaimo': (49.1659, -123.9401),
+            'victoria': (48.4284, -123.3656),
+            'chilliwack': (49.1579, -121.9514),
+            'prince george': (53.9171, -122.7497),
+            
+            # Major Alberta Cities
+            'calgary': (51.0447, -114.0719),
+            'edmonton': (53.5461, -113.4938),
+            'red deer': (52.2681, -113.8112),
+            'lethbridge': (49.6934, -112.8414),
+            'st. albert': (53.6341, -113.6136),
+            'medicine hat': (50.0412, -110.6765),
+            'grande prairie': (55.1707, -118.8034),
+            'airdrie': (51.2917, -114.0156),
+            'spruce grove': (53.5450, -113.9033),
+            
+            # Major Manitoba Cities
+            'winnipeg': (49.8951, -97.1384),
+            'brandon': (49.8481, -99.9493),
+            'steinbach': (49.5255, -96.6841),
+            'thompson': (55.7435, -97.8558),
+            
+            # Major Saskatchewan Cities
+            'saskatoon': (52.1579, -106.6702),
+            'regina': (50.4452, -104.6189),
+            'prince albert': (53.2034, -105.7531),
+            'moose jaw': (50.3927, -105.5346),
+            
+            # Major Nova Scotia Cities
+            'halifax': (44.6488, -63.5752),
+            'dartmouth': (44.6710, -63.5800),
+            'sydney': (46.1351, -60.1831),
+            'truro': (45.3668, -63.2759),
+            
+            # Major New Brunswick Cities
+            'saint john': (45.2734, -66.0633),
+            'moncton': (46.0878, -64.7782),
+            'fredericton': (45.9636, -66.6431),
+            
+            # Major Newfoundland Cities
+            "st. john's": (47.5615, -52.7126),
+            'corner brook': (48.9500, -57.9526),
+            
+            # Prince Edward Island
+            'charlottetown': (46.2382, -63.1311),
+            'summerside': (46.3950, -63.7892),
+            
+            # Northern Territories
+            'yellowknife': (62.4540, -114.3718),
+            'whitehorse': (60.7212, -135.0568),
+            'iqaluit': (63.7467, -68.5170),
         }
         
-        city_lower = property_data['city'].lower()
+        city_lower = property_data['city'].lower().strip()
+        
+        # Clean up city name variations
+        city_variations = {
+            'st.': 'saint',
+            'st ': 'saint ',
+            'ste.': 'sainte',
+            'ste ': 'sainte ',
+            'mt.': 'mount',
+            'mt ': 'mount ',
+        }
+        
+        for abbrev, full in city_variations.items():
+            city_lower = city_lower.replace(abbrev, full)
+        
         if city_lower in city_coords:
             lat, lng = city_coords[city_lower]
-            # Add small random offset
+            # Add small random offset for privacy
             latitude = lat + random.uniform(-0.05, 0.05)
             longitude = lng + random.uniform(-0.05, 0.05)
         else:
-            # Default Toronto area with random offset
-            latitude = 43.6532 + random.uniform(-0.1, 0.1)
-            longitude = -79.3832 + random.uniform(-0.1, 0.1)
+            # For unknown cities, try to place them in the correct province center
+            province_coords = {
+                'ON': (45.0, -79.0),    # Ontario center
+                'QC': (52.0, -72.0),    # Quebec center
+                'BC': (54.0, -126.0),   # British Columbia center
+                'AB': (54.0, -115.0),   # Alberta center
+                'MB': (55.0, -98.0),    # Manitoba center
+                'SK': (55.0, -106.0),   # Saskatchewan center
+                'NS': (45.0, -63.0),    # Nova Scotia center
+                'NB': (46.5, -66.0),    # New Brunswick center
+                'NL': (53.0, -60.0),    # Newfoundland center
+                'PE': (46.25, -63.13),  # PEI center
+                'NT': (64.0, -119.0),   # Northwest Territories center
+                'YT': (64.0, -135.0),   # Yukon center
+                'NU': (70.0, -85.0),    # Nunavut center
+            }
+            
+            province = property_data.get('province', 'ON')
+            if province in province_coords:
+                lat, lng = province_coords[province]
+                # Add larger random offset for unknown cities
+                latitude = lat + random.uniform(-2.0, 2.0)
+                longitude = lng + random.uniform(-3.0, 3.0)
+            else:
+                # Ultimate fallback to Toronto area
+                latitude = 43.6532 + random.uniform(-0.1, 0.1)
+                longitude = -79.3832 + random.uniform(-0.1, 0.1)
         
         # Create property
         property_obj = Property(
