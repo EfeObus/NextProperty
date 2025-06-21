@@ -142,8 +142,11 @@ def properties():
         if bathrooms:
             query = query.filter(Property.bathrooms >= bathrooms)
         
-        # Order by most recent
-        query = query.order_by(Property.sold_date.desc())
+        # Order by most recent - include both sold properties and new listings
+        query = query.order_by(
+            Property.created_at.desc(),  # New uploads first
+            Property.sold_date.desc().nullslast()  # Then sold properties, nulls last
+        )
         
         # Paginate
         properties = query.paginate(
@@ -774,7 +777,7 @@ def upload_property():
         }
         
         # Validate required fields
-        required_fields = ['address', 'city', 'province', 'property_type', 'bedrooms', 'bathrooms', 'sqft']
+        required_fields = ['address', 'city', 'province', 'property_type', 'bedrooms', 'bathrooms', 'sqft', 'listing_price']
         missing_fields = [field for field in required_fields if not property_data.get(field)]
         
         if missing_fields:
@@ -902,11 +905,41 @@ def upload_property():
         db.session.add(property_obj)
         db.session.commit()
         
-        # Create success message
+        # Check if property qualifies as a top deal
+        top_deal_status = None
+        investment_potential_percent = 0
+        if property_obj.ai_valuation and property_data['listing_price']:
+            listed_price = float(property_data['listing_price'])
+            predicted_price = float(property_obj.ai_valuation)
+            
+            # Calculate value difference percentage
+            value_diff = predicted_price - listed_price
+            value_diff_percent = (value_diff / predicted_price) * 100
+            investment_potential_percent = value_diff_percent
+            
+            # Check if it qualifies as a top deal (5% or more below prediction)
+            if value_diff_percent >= 5:
+                if value_diff_percent >= 25:
+                    top_deal_status = 'excellent'
+                elif value_diff_percent >= 15:
+                    top_deal_status = 'great'
+                else:
+                    top_deal_status = 'good'
+                
+                # Store investment score for future use
+                property_obj.investment_score = min(10.0, (value_diff_percent / 5.0))  # Scale to 0-10
+                db.session.commit()
+        
+        # Create success message with top deal status
         success_message = 'Property uploaded successfully! AI prediction has been generated.'
         if uploaded_photos and uploaded_photos[0].filename:
             photo_count = len([p for p in uploaded_photos if p and p.filename])
             success_message += f' {photo_count} photo(s) were also uploaded.'
+        
+        if top_deal_status:
+            success_message += f' 🎉 Great news! This property qualifies as a {top_deal_status} investment opportunity - it\'s listed {investment_potential_percent:.1f}% below our AI prediction!'
+        elif property_obj.ai_valuation:
+            success_message += f' Your property has been analyzed and priced competitively with the market.'
         
         flash(success_message, 'success')
         return redirect(url_for('main.property_detail', listing_id=listing_id))

@@ -134,6 +134,12 @@
                                         AI: {{ property.ai_prediction|format_currency }}
                                     </span>
                                     {% endif %}
+                                    {% if property.is_top_deal() %}
+                                    <span class="top-deal-badge {{ property.get_deal_quality() }}">
+                                        <i class="fas fa-trophy me-1"></i>
+                                        {% if property.get_deal_quality() == 'excellent' %}Excellent Deal{% elif property.get_deal_quality() == 'great' %}Great Deal{% else %}Good Deal{% endif %}
+                                    </span>
+                                    {% endif %}
                                 </div>
                                 
                                 <div class="property-overlay">

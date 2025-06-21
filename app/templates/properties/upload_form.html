@@ -161,11 +161,12 @@
                                 </div>
                                 
                                 <div class="col-md-6 mb-3">
-                                    <label for="listing_price" class="form-label">Listing Price (CAD)</label>
+                                    <label for="listing_price" class="form-label">Listing Price (CAD) <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="listing_price" name="listing_price" 
-                                           min="50000" max="50000000" step="1000"
+                                           min="50000" max="50000000" step="1000" required
                                            value="{{ form_data.listing_price if form_data else '' }}">
-                                    <small class="form-text text-muted">Optional - AI will predict if not provided</small>
+                                    <small class="form-text text-muted">Required - Used to check if property qualifies as a top deal</small>
+                                    <div class="invalid-feedback">Please enter a valid listing price.</div>
                                 </div>
                             </div>
                         </div>

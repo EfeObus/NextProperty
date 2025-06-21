@@ -133,6 +133,61 @@ class Property(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
     
+    def is_top_deal(self):
+        """Check if this property qualifies as a top deal (listed below AI prediction by 5%+)."""
+        if not self.ai_valuation:
+            return False
+            
+        # Use original_price as listing price, fallback to sold_price
+        listing_price = self.original_price or self.sold_price
+        if not listing_price:
+            return False
+            
+        predicted_price = float(self.ai_valuation)
+        listed_price = float(listing_price)
+        
+        # Calculate value difference percentage
+        value_diff = predicted_price - listed_price
+        value_diff_percent = (value_diff / predicted_price) * 100
+        
+        # Property qualifies as top deal if listed price is 5%+ below prediction
+        return value_diff_percent >= 5
+    
+    def get_deal_quality(self):
+        """Get the quality rating of the deal if it's a top deal."""
+        if not self.is_top_deal():
+            return None
+            
+        listing_price = self.original_price or self.sold_price
+        predicted_price = float(self.ai_valuation)
+        listed_price = float(listing_price)
+        
+        value_diff = predicted_price - listed_price
+        value_diff_percent = (value_diff / predicted_price) * 100
+        
+        if value_diff_percent >= 25:
+            return 'excellent'
+        elif value_diff_percent >= 15:
+            return 'great'
+        elif value_diff_percent >= 5:
+            return 'good'
+        else:
+            return None
+    
+    def get_investment_potential_percent(self):
+        """Get the investment potential as a percentage."""
+        if not self.is_top_deal():
+            return 0
+            
+        listing_price = self.original_price or self.sold_price
+        predicted_price = float(self.ai_valuation)
+        listed_price = float(listing_price)
+        
+        value_diff = predicted_price - listed_price
+        value_diff_percent = (value_diff / predicted_price) * 100
+        
+        return value_diff_percent
+    
     @classmethod
     def get_filtered(cls, city=None, property_type=None, min_price=None, max_price=None, 
                     limit=20, offset=0):
