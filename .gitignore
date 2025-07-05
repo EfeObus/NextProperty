@@ -165,12 +165,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Project specific
-# Database files
+# Database files - MySQL is the primary database
+# SQLite files (legacy/testing only)
 *.db
 *.sqlite
 *.sqlite3
 instance/*.db
+
+# MySQL dumps and backups
+*.sql
+*.dump
+mysql_backup/
 
 # Log files
 logs/

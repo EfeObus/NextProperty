@@ -578,10 +578,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Sample data - would be replaced with real data from the backend
     const chartData = {
-        labels: {{ trend_data.dates|safe if trend_data else "['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']" }},
+        labels: {% if trend_data and trend_data.dates %}{{ trend_data.dates|tojson }}{% else %}['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']{% endif %},
         datasets: [{
             label: 'Average Property Price',
-            data: {{ trend_data.avg_prices|safe if trend_data else "[580000, 595000, 610000, 625000, 640000, 655000]" }},
+            data: {% if trend_data and trend_data.avg_prices %}{{ trend_data.avg_prices|tojson }}{% else %}[580000, 595000, 610000, 625000, 640000, 655000]{% endif %},
             borderColor: '#007bff',
             backgroundColor: 'rgba(0, 123, 255, 0.1)',
             fill: true,

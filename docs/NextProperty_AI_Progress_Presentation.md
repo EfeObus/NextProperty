@@ -40,7 +40,7 @@
 ├── logs/
 ├── models/
 ```
-- **Backend:** Flask, SQLAlchemy, Redis, MySQL/SQLite
+- **Backend:** Flask, SQLAlchemy, Redis, MySQL (migrated from SQLite)
 - **Frontend:** HTML5, CSS3, JS, Bootstrap, Leaflet.js
 - **ML:** scikit-learn, XGBoost, LightGBM, ensemble stacking
 

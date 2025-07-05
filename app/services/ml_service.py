@@ -368,6 +368,7 @@ class MLService:
                 'risk_level': 'unknown'
             }
             
+    @cache.memoize(timeout=1800)  # Cache for 30 minutes
     def get_top_properties(self, limit: int = 10, location: str = None, property_type: str = None, offset: int = 0) -> List[Dict]:
         """
         Get top properties where listed price is below AI prediction (undervalued opportunities).
@@ -387,22 +388,22 @@ class MLService:
         try:
             from app import db
             
-            # Build query for properties that are currently listed (not sold)
-            # Use original_price as the listing price for comparison with AI predictions
+            # Build optimized query with indexes
             query = Property.query.filter(
-                db.or_(
-                    Property.original_price.isnot(None),
-                    Property.sold_price.isnot(None)
-                )
-            ).filter(
-                db.or_(
-                    Property.original_price >= 100000,
-                    Property.sold_price >= 100000
-                )
-            ).filter(
-                db.or_(
-                    Property.original_price <= 10000000,
-                    Property.sold_price <= 10000000
+                db.and_(
+                    db.or_(
+                        Property.original_price.isnot(None),
+                        Property.sold_price.isnot(None)
+                    ),
+                    db.or_(
+                        Property.original_price >= 100000,
+                        Property.sold_price >= 100000
+                    ),
+                    db.or_(
+                        Property.original_price <= 10000000,
+                        Property.sold_price <= 10000000
+                    ),
+                    Property.ai_valuation.isnot(None)  # Only properties with AI predictions
                 )
             )
             
@@ -411,8 +412,8 @@ class MLService:
             if property_type:
                 query = query.filter(Property.property_type.ilike(f'%{property_type}%'))
                 
-            # Get properties for analysis
-            properties = query.limit(500).all()  # Analyze up to 500 properties
+            # Limit initial query to reduce processing time
+            properties = query.limit(200).all()  # Reduced from 500
             
             top_properties = []
             

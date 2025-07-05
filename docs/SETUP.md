@@ -209,11 +209,11 @@ DEBUG=True  # Set to False in production
 
 #### Database Configuration
 ```env
-# SQLite (default, good for development)
-DATABASE_URL=sqlite:///instance/nextproperty_dev.db
+# MySQL (primary database - migrated from SQLite)
+DATABASE_URL=mysql+pymysql://username:password@localhost:3306/nextproperty_ai
 
-# MySQL (recommended for production)
-# DATABASE_URL=mysql://username:password@localhost/nextproperty_db
+# For development, you can still use SQLite
+# DATABASE_URL=sqlite:///instance/nextproperty_dev.db
 
 # PostgreSQL (alternative production option)
 # DATABASE_URL=postgresql://username:password@localhost/nextproperty_db
@@ -272,7 +272,7 @@ BCRYPT_LOG_ROUNDS=12
 ```env
 FLASK_ENV=development
 DEBUG=True
-DATABASE_URL=sqlite:///instance/nextproperty_dev.db
+DATABASE_URL=mysql+pymysql://root:yourpassword@localhost:3306/nextproperty_ai
 LOG_LEVEL=DEBUG
 ```
 
@@ -280,7 +280,7 @@ LOG_LEVEL=DEBUG
 ```env
 FLASK_ENV=testing
 TESTING=True
-DATABASE_URL=sqlite:///instance/test.db
+DATABASE_URL=sqlite:///instance/test.db  # SQLite is fine for testing
 LOG_LEVEL=INFO
 ```
 
@@ -296,22 +296,9 @@ SSL_REQUIRED=True
 
 ## Database Setup
 
-### 1. SQLite Setup (Default)
+### 1. MySQL Setup (Primary Database)
 
-SQLite is used by default and requires minimal setup:
-
-```bash
-# Create instance directory if it doesn't exist
-mkdir -p instance
-
-# Initialize database schema
-flask db upgrade
-
-# Verify database creation
-ls -la instance/
-```
-
-### 2. MySQL Setup (Production Recommended)
+NextProperty AI now uses MySQL as the primary database. Here's how to set it up:
 
 #### Install MySQL
 ```bash
@@ -324,36 +311,58 @@ sudo apt update
 sudo apt install mysql-server
 sudo systemctl start mysql
 
-# Configure MySQL
-sudo mysql_secure_installation
+# Windows - Download from MySQL website
+# https://dev.mysql.com/downloads/mysql/
 ```
 
 #### Create Database and User
-```sql
--- Connect to MySQL as root
+```bash
+# Connect to MySQL as root
 mysql -u root -p
 
--- Create database
-CREATE DATABASE nextproperty_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+# Create database
+CREATE DATABASE nextproperty_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Create user and grant privileges
-CREATE USER 'nextproperty_user'@'localhost' IDENTIFIED BY 'strong_password';
-GRANT ALL PRIVILEGES ON nextproperty_db.* TO 'nextproperty_user'@'localhost';
+# Create user (optional, you can use root)
+CREATE USER 'nextproperty'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT ALL PRIVILEGES ON nextproperty_ai.* TO 'nextproperty'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
 
-#### Update Environment Configuration
+#### Configure Environment
 ```env
-DATABASE_URL=mysql://nextproperty_user:strong_password@localhost/nextproperty_db
+DATABASE_URL=mysql+pymysql://root:your_password@localhost:3306/nextproperty_ai
 ```
 
-#### Install MySQL Python Driver
+#### Run Migration
 ```bash
-pip install PyMySQL
+# Initialize database schema
+flask db upgrade
+
+# Load sample data
+python migrate_to_mysql.py
 ```
 
-### 3. PostgreSQL Setup (Alternative)
+### 2. SQLite Setup (Development/Testing Alternative)
+
+If you prefer to use SQLite for development:
+
+```bash
+# Create instance directory if it doesn't exist
+mkdir -p instance
+
+# Configure SQLite in .env
+DATABASE_URL=sqlite:///instance/nextproperty_dev.db
+
+# Initialize database schema
+flask db upgrade
+
+# Verify database creation
+ls -la instance/
+```
+
+### 3. PostgreSQL Setup (Alternative Production Option)
 
 #### Install PostgreSQL
 ```bash
@@ -688,15 +697,26 @@ pip install -r requirements.txt
 
 **Problem**: Database connection fails
 ```
-sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table
+sqlalchemy.exc.OperationalError: Connection failed
 ```
 
 **Solution**:
 ```bash
-# Recreate database
-rm instance/nextproperty_dev.db  # For SQLite
+# For MySQL - ensure MySQL is running
+brew services start mysql  # macOS
+sudo systemctl start mysql  # Linux
+
+# Check connection
+mysql -u root -p -e "SELECT 1;"
+
+# Recreate database if needed
+mysql -u root -p -e "DROP DATABASE IF EXISTS nextproperty_ai; CREATE DATABASE nextproperty_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Run migrations
 flask db upgrade
-python scripts/load_data.py
+
+# Load data
+python migrate_to_mysql.py
 ```
 
 #### 3. Missing Model Files
@@ -882,17 +902,25 @@ grep -i "ml_service" logs/nextproperty-ai.log
 #### Database Debugging
 
 ```bash
-# Connect to SQLite database
-sqlite3 instance/nextproperty_dev.db
+# Connect to MySQL database
+mysql -u root -p nextproperty_ai
 
 # List tables
-.tables
+SHOW TABLES;
 
 # Check table structure
-.schema properties
+DESCRIBE properties;
 
 # View sample data
 SELECT * FROM properties LIMIT 5;
+
+# Check database size
+SELECT 
+    table_schema as 'Database', 
+    table_name as 'Table', 
+    round(((data_length + index_length) / 1024 / 1024), 2) 'Size in MB' 
+FROM information_schema.tables 
+WHERE table_schema='nextproperty_ai';
 ```
 
 ### Getting Help
@@ -992,7 +1020,7 @@ python scripts/load_data.py  # Load sample data
 FLASK_APP=app.py
 FLASK_ENV=development
 SECRET_KEY=dev-secret-key
-DATABASE_URL=sqlite:///instance/nextproperty_dev.db
+DATABASE_URL=mysql+pymysql://root:yourpassword@localhost:3306/nextproperty_ai
 DEBUG=True
 ```
 
@@ -1001,7 +1029,7 @@ DEBUG=True
 FLASK_APP=app.py
 FLASK_ENV=production
 SECRET_KEY=change-this-in-production
-DATABASE_URL=mysql://user:pass@db-server/nextproperty
+DATABASE_URL=mysql+pymysql://user:pass@db-server:3306/nextproperty_ai
 DEBUG=False
 CACHE_TYPE=redis
 CACHE_REDIS_HOST=redis-server

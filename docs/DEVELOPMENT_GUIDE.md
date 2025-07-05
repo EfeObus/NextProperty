@@ -17,7 +17,8 @@
 - Git
 - Virtual environment (venv, conda, or virtualenv)
 - Node.js (for frontend dependencies)
-- SQLite (development) / PostgreSQL (production)
+- MySQL 8.0+ (primary database)
+- SQLite (for testing only)
 
 ### Quick Start
 ```bash
@@ -54,8 +55,8 @@ SECRET_KEY=your-secret-key-here
 FLASK_ENV=development
 FLASK_DEBUG=1
 
-# Database
-DATABASE_URL=sqlite:///nextproperty_dev.db
+# Database - MySQL is now the primary database
+DATABASE_URL=mysql+pymysql://root:yourpassword@localhost:3306/nextproperty_ai
 
 # API Keys
 BANK_OF_CANADA_API_KEY=your-boc-api-key
@@ -89,7 +90,7 @@ Recommended extensions:
 - Pylance
 - Python Docstring Generator
 - GitLens
-- SQLite Viewer
+- MySQL Workbench (for database management)
 - Thunder Client (for API testing)
 
 #### Settings

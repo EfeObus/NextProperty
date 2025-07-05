@@ -769,6 +769,10 @@ docker-compose up -d
 - Secure session management
 - API authentication and authorization
 - Data encryption at rest and in transit
+- **Automated Secret Key Management**: 30-day rotation with cryptographically secure keys
+  - See `scripts/SECRET_KEY_MANAGEMENT.md` for details
+  - Automated expiry checking and regeneration
+  - Cron job setup for hands-free operation
 
 ## Roadmap & Changelog
 

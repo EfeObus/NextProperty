@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
-from app.extensions import db
+from app.extensions import db, cache
 from app.models.property import Property, PropertyPhoto
 from app.models.user import SavedProperty, User
 from app.services.ml_service import MLService
@@ -7,7 +7,8 @@ from app.services.data_service import DataService
 from app.services.external_apis import ExternalAPIsService
 from app.utils.validators import validate_property_photos
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import func, and_
+from sqlalchemy.orm import joinedload, selectinload
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import json
@@ -23,28 +24,35 @@ data_service = DataService()
 external_apis_service = ExternalAPIsService()
 
 @bp.route('/')
+@cache.cached(timeout=300)  # Cache for 5 minutes
 def index():
     """Homepage with featured properties, top properties, and market overview."""
     try:
-        # Get top properties (below AI prediction price - good deals)
-        top_properties = ml_service.get_top_properties(limit=6)
+        # Get top properties (below AI prediction price - good deals) - limit to reduce load time
+        top_properties = ml_service.get_top_properties(limit=3)
         
-        # Get featured properties (recent high-value properties)
+        # Get featured properties (recent high-value properties) - optimized query
         featured_properties = Property.query.filter(
             Property.sold_price.isnot(None)
-        ).order_by(Property.sold_price.desc()).limit(6).all()
+        ).order_by(Property.sold_price.desc()).limit(3).all()
         
-        # Get market statistics
+        # Get market statistics - use cached aggregations
         try:
-            total_properties = Property.query.count()
+            # Use more efficient queries with specific columns
+            total_properties = db.session.query(func.count(Property.listing_id)).scalar() or 0
             avg_price = db.session.query(func.avg(Property.sold_price)).filter(
                 Property.sold_price.isnot(None)
             ).scalar()
+            cities_covered = db.session.query(func.count(func.distinct(Property.city))).scalar() or 0
+            ai_analyzed = db.session.query(func.count(Property.listing_id)).filter(
+                Property.ai_valuation.isnot(None)
+            ).scalar() or 0
+            
             market_stats = {
                 'total_properties': total_properties,
                 'avg_price': float(avg_price) if avg_price else 0,
-                'cities_covered': Property.query.with_entities(Property.city).distinct().count(),
-                'ai_analyzed': Property.query.filter(Property.ai_valuation.isnot(None)).count()
+                'cities_covered': cities_covered,
+                'ai_analyzed': ai_analyzed
             }
         except Exception as stats_error:
             current_app.logger.warning(f"Could not get market stats: {str(stats_error)}")
@@ -55,35 +63,49 @@ def index():
                 'ai_analyzed': 0
             }
         
-        # Get top cities by property count
+        # Get top cities by property count - limit and optimize
         try:
             top_cities = db.session.query(
                 Property.city,
                 func.count(Property.listing_id).label('count'),
                 func.avg(Property.sold_price).label('avg_price')
             ).filter(
-                Property.city.isnot(None),
-                Property.sold_price.isnot(None)
+                and_(
+                    Property.city.isnot(None),
+                    Property.sold_price.isnot(None)
+                )
             ).group_by(Property.city).order_by(
                 func.count(Property.listing_id).desc()
-            ).limit(8).all()
+            ).limit(6).all()  # Reduced from 8
         except Exception as cities_error:
             current_app.logger.warning(f"Could not get top cities: {str(cities_error)}")
             top_cities = []
         
-        # Get market predictions summary
+        # Get market predictions summary - make this optional to speed up loading
+        market_predictions = {}
         try:
             market_predictions = ml_service.get_market_predictions()
         except Exception as pred_error:
             current_app.logger.warning(f"Could not get market predictions: {str(pred_error)}")
-            market_predictions = {}
+        
+        # Get trend data for chart
+        trend_data = {}
+        try:
+            trend_data = data_service.get_property_price_trends(period_days=180)
+        except Exception as trend_error:
+            current_app.logger.warning(f"Could not get trend data: {str(trend_error)}")
+            trend_data = {
+                'dates': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                'avg_prices': [580000, 595000, 610000, 625000, 640000, 655000]
+            }
         
         return render_template('index.html',
                              top_properties=top_properties,
                              featured_properties=featured_properties,
                              market_stats=market_stats,
                              top_cities=top_cities,
-                             market_predictions=market_predictions)
+                             market_predictions=market_predictions,
+                             trend_data=trend_data)
     
     except Exception as e:
         current_app.logger.error(f"Error loading homepage: {str(e)}")
@@ -99,7 +121,11 @@ def index():
                                  'ai_analyzed': 0
                              },
                              top_cities=[],
-                             market_predictions={})
+                             market_predictions={},
+                             trend_data={
+                                 'dates': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                 'avg_prices': [580000, 595000, 610000, 625000, 640000, 655000]
+                             })
 
 
 @bp.route('/properties')
@@ -143,9 +169,10 @@ def properties():
             query = query.filter(Property.bathrooms >= bathrooms)
         
         # Order by most recent - include both sold properties and new listings
+        # Note: MySQL doesn't support NULLS LAST, so we use a workaround
         query = query.order_by(
             Property.created_at.desc(),  # New uploads first
-            Property.sold_date.desc().nullslast()  # Then sold properties, nulls last
+            Property.sold_date.desc()  # Then sold properties (MySQL handles nulls automatically)
         )
         
         # Paginate
@@ -193,24 +220,46 @@ def properties():
 def property_detail(listing_id):
     """Property detail page."""
     try:
+        # Use basic loading to reduce complexity
         property_obj = Property.query.get_or_404(listing_id)
         
-        # Get AI analysis if available
+        # Ensure critical attributes have default values
+        if not hasattr(property_obj, 'price_per_sqft') or property_obj.price_per_sqft is None:
+            if property_obj.sqft and (property_obj.original_price or property_obj.sold_price):
+                price = property_obj.original_price or property_obj.sold_price
+                property_obj.price_per_sqft = price / property_obj.sqft
+            else:
+                property_obj.price_per_sqft = None
+        
+        # Get AI analysis if available - make this async/optional
         ai_analysis = None
         try:
             ai_analysis = ml_service.analyze_property(property_obj)
         except Exception as e:
             current_app.logger.warning(f"Could not get AI analysis for property {listing_id}: {str(e)}")
         
-        # Get nearby properties
+        # Get nearby properties - optimize with spatial query and limit
         nearby_properties = []
         if property_obj.latitude and property_obj.longitude:
             try:
+                # Use more efficient nearby query with proper distance calculation
+                lat_range = 0.045  # Approximately 5km
+                lng_range = 0.045
+                
                 nearby_properties = Property.query.filter(
-                    Property.listing_id != listing_id,
-                    Property.latitude.isnot(None),
-                    Property.longitude.isnot(None)
-                ).limit(10).all()  # Simplified - should use geospatial query
+                    and_(
+                        Property.listing_id != listing_id,
+                        Property.latitude.between(
+                            float(property_obj.latitude) - lat_range,
+                            float(property_obj.latitude) + lat_range
+                        ),
+                        Property.longitude.between(
+                            float(property_obj.longitude) - lng_range,
+                            float(property_obj.longitude) + lng_range
+                        ),
+                        Property.sold_price.isnot(None)
+                    )
+                ).limit(6).all()  # Reduced from 10
             except Exception as e:
                 current_app.logger.warning(f"Could not get nearby properties: {str(e)}")
         
@@ -618,7 +667,7 @@ def inject_global_vars():
     return {
         'current_year': 2025,
         'app_name': 'NextProperty AI',
-        'app_version': '1.0.0'
+        'app_version': '2.4.0'
     }
 
 

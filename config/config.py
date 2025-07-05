@@ -10,15 +10,31 @@ class Config:
     # Flask Configuration
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-    # Database Configuration - Using SQLite for development
+    # Database Configuration - Optimized for performance
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///nextproperty.db'
+        'mysql+pymysql://root:Jesutekevwe1@@localhost:3306/nextproperty_ai'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_size': 10,
-        'pool_recycle': 120,
-        'pool_pre_ping': True
+        'pool_size': 20,           # Increased from 10
+        'max_overflow': 30,        # Allow overflow connections
+        'pool_recycle': 300,       # Increased from 120 seconds
+        'pool_pre_ping': True,
+        'pool_timeout': 30,        # Connection timeout
+        'echo': False,             # Disable SQL logging in production
+        'connect_args': {
+            'charset': 'utf8mb4',
+            'connect_timeout': 30,
+            'read_timeout': 30,
+            'write_timeout': 30,
+            'autocommit': False,
+            'sql_mode': 'TRADITIONAL'
+        }
     }
+    
+    # Performance Configuration
+    PROPERTIES_PER_PAGE = 12      # Reduced from 20 for faster loading
+    MAX_SEARCH_RESULTS = 100      # Limit search results
+    QUERY_TIMEOUT = 30            # Query timeout in seconds
     
     # API Keys
     BANK_OF_CANADA_API_KEY = os.environ.get('BANK_OF_CANADA_API_KEY')

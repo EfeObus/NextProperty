@@ -12,10 +12,13 @@
 
 ## Overview
 
-NextProperty AI uses SQLAlchemy ORM with support for multiple database backends:
-- **Development**: SQLite (default)
-- **Production**: MySQL/PostgreSQL (recommended)
-- **Testing**: In-memory SQLite
+NextProperty AI uses MySQL as the primary database with SQLAlchemy ORM for database operations:
+- **Production**: MySQL 8.0+ (recommended)
+- **Development**: MySQL 8.0+ (migrated from SQLite)
+- **Testing**: SQLite (for simplicity and speed)
+
+### Database Migration Status
+🎉 **Successfully migrated from SQLite to MySQL** with 49,551 property records loaded.
 
 ## Database Schema
 

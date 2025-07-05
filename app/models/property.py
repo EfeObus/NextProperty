@@ -2,6 +2,7 @@ from app import db
 from datetime import datetime
 from sqlalchemy import Index, text
 from flask import current_app
+from functools import cached_property
 
 class Property(db.Model):
     """Property model representing real estate listings."""
@@ -63,12 +64,18 @@ class Property(db.Model):
     photos = db.relationship('PropertyPhoto', backref='property', lazy='dynamic', cascade='all, delete-orphan')
     rooms_detail = db.relationship('PropertyRoom', backref='property', lazy='dynamic', cascade='all, delete-orphan')
     
-    # Database indexes
+    # Database indexes - optimized for performance
     __table_args__ = (
         Index('idx_location', 'latitude', 'longitude'),
         Index('idx_price_range', 'sold_price'),
         Index('idx_property_search', 'city', 'property_type', 'sold_price'),
         Index('idx_date_type', 'sold_date', 'property_type'),
+        Index('idx_ai_valuation', 'ai_valuation'),  # For top deals queries
+        Index('idx_original_price', 'original_price'),  # For price comparisons
+        Index('idx_sqft_bedrooms', 'sqft', 'bedrooms'),  # For rental estimates
+        Index('idx_city_type_price', 'city', 'property_type', 'original_price'),  # Composite index
+        Index('idx_investment_score', 'investment_score'),  # For investment queries
+        Index('idx_year_built', 'year_built'),  # For age-based queries
         # Full-text search index for MySQL
         {'mysql_charset': 'utf8mb4'}
     )
@@ -95,6 +102,45 @@ class Property(db.Model):
     def status(self):
         """Property status - all properties are available for purchase."""
         return "Available"
+    
+    @cached_property
+    def estimated_rental_income(self):
+        """Estimate rental income based on property features."""
+        # Basic estimation - in production this would be more sophisticated
+        if self.sqft and self.bedrooms:
+            # Rough estimate: $2-4 per sq ft annually, divided by 12 for monthly
+            base_rate = 3.0  # per sq ft annually
+            annual_rent = self.sqft * base_rate
+            monthly_rent = annual_rent / 12
+            
+            # Adjust for bedrooms
+            bedroom_multiplier = 1 + (self.bedrooms - 2) * 0.1
+            return monthly_rent * bedroom_multiplier
+        return None
+    
+    @cached_property
+    def roi_estimate(self):
+        """Estimate return on investment."""
+        if self.estimated_rental_income and (self.original_price or self.sold_price):
+            price = self.original_price or self.sold_price
+            annual_rent = self.estimated_rental_income * 12
+            # Assume 80% occupancy and 30% expenses
+            net_annual_income = annual_rent * 0.8 * 0.7
+            roi = (net_annual_income / price) * 100
+            return roi
+        return None
+    
+    @cached_property
+    def cap_rate(self):
+        """Estimate capitalization rate."""
+        if self.estimated_rental_income and (self.original_price or self.sold_price):
+            price = self.original_price or self.sold_price
+            annual_rent = self.estimated_rental_income * 12
+            # Assume 25% expenses for cap rate calculation
+            net_operating_income = annual_rent * 0.75
+            cap_rate = (net_operating_income / price) * 100
+            return cap_rate
+        return None
     
     def to_dict(self):
         """Convert property to dictionary for JSON serialization."""

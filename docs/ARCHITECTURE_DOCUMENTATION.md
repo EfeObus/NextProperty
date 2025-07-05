@@ -28,7 +28,7 @@ NextProperty AI is a comprehensive real estate analytics platform that combines 
 
 ### Technology Stack
 - **Backend**: Python 3.8+, Flask, SQLAlchemy
-- **Database**: SQLite (dev), PostgreSQL (prod)
+- **Database**: MySQL 8.0+ (primary), SQLite (testing only)
 - **Machine Learning**: Scikit-learn, Pandas, NumPy
 - **Caching**: Redis (prod), Simple cache (dev)
 - **Frontend**: HTML5, CSS3, JavaScript, Bootstrap
@@ -86,8 +86,8 @@ NextProperty AI is a comprehensive real estate analytics platform that combines 
 │                         Data Layer                             │
 ├─────────────────────────────────────────────────────────────────┤
 │    Database     │     Cache      │   File Storage   │ External │
-│  - PostgreSQL   │   - Redis      │   - Local FS     │   APIs   │
-│  - SQLite       │   - Memory     │   - Cloud Storage│          │
+│  - MySQL 8.0+   │   - Redis      │   - Local FS     │   APIs   │
+│  - SQLite (test)│   - Memory     │   - Cloud Storage│          │
 │  - Models       │   - Sessions   │   - ML Models    │          │
 │  - Migrations   │   - Queries    │   - Images       │          │
 └─────────────────────────────────────────────────────────────────┘

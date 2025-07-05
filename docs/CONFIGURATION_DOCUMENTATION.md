@@ -57,11 +57,17 @@ FLASK_PORT=5000
 # DATABASE CONFIGURATION
 # =============================================================================
 
-# Database connection URL
-# Development (SQLite)
-DATABASE_URL=sqlite:///instance/nextproperty_dev.db
+# Database connection URL - MySQL is now the primary database
+# Production (MySQL - migrated from SQLite)
+DATABASE_URL=mysql+pymysql://username:password@localhost:3306/nextproperty_ai
 
-# Production (PostgreSQL example)
+# Development (MySQL recommended)
+# DATABASE_URL=mysql+pymysql://root:yourpassword@localhost:3306/nextproperty_ai
+
+# Testing (SQLite for speed)
+# DATABASE_URL=sqlite:///instance/test.db
+
+# PostgreSQL (alternative production option)
 # DATABASE_URL=postgresql://username:password@localhost:5432/nextproperty_prod
 
 # Database connection pool settings
@@ -327,9 +333,9 @@ class DevelopmentConfig(Config):
     DEBUG = True
     TESTING = False
     
-    # Development database
+    # Development database - MySQL is now primary
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///instance/nextproperty_dev.db'
+        'mysql+pymysql://root:yourpassword@localhost:3306/nextproperty_ai'
     
     # Relaxed security for development
     BCRYPT_LOG_ROUNDS = 4
@@ -467,14 +473,14 @@ CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization']
 
 ```python
 # Database URL examples
-# SQLite (Development)
-DATABASE_URL = 'sqlite:///instance/nextproperty.db'
+# MySQL (Primary - migrated from SQLite)
+DATABASE_URL = 'mysql+pymysql://user:password@localhost:3306/nextproperty_ai'
 
-# PostgreSQL (Production)
+# PostgreSQL (Alternative Production)
 DATABASE_URL = 'postgresql://user:password@localhost:5432/nextproperty'
 
-# MySQL (Alternative)
-DATABASE_URL = 'mysql://user:password@localhost:3306/nextproperty'
+# SQLite (Testing only)
+DATABASE_URL = 'sqlite:///instance/test.db'
 ```
 
 ### Connection Pool Configuration

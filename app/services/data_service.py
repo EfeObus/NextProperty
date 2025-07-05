@@ -18,7 +18,7 @@ class DataService:
     """Service for handling data operations and market analysis."""
     
     @staticmethod
-    # # @cache.memoize(timeout=3600)  # Cache temporarily disabled
+    @cache.memoize(timeout=3600)  # Cache for 1 hour
     def get_property_price_trends(city: str = None, property_type: str = None, 
                                  period_days: int = 365) -> Dict:
         """Get property price trends over specified period."""
@@ -30,6 +30,9 @@ class DataService:
                 func.DATE(Property.sold_date).label('date'),
                 func.avg(Property.sold_price).label('avg_price'),
                 func.count(Property.listing_id).label('transaction_count')
+            ).filter(
+                Property.sold_date.isnot(None),
+                Property.sold_price.isnot(None)
             )
             
             if city:
@@ -38,14 +41,29 @@ class DataService:
                 query = query.filter(Property.property_type == property_type)
                 
             query = query.filter(
-                Property.sold_date >= start_date
-            ).group_by(func.DATE(Property.sold_date))
+                Property.sold_date >= start_date.date()
+            ).group_by(func.DATE(Property.sold_date)).order_by(func.DATE(Property.sold_date))
             
             results = query.all()
             
+            # Ensure we have some data, even if empty
+            if not results:
+                # Return default data structure with empty arrays
+                return {
+                    'dates': [],
+                    'avg_prices': [],
+                    'transaction_counts': [],
+                    'period_days': period_days,
+                    'city': city,
+                    'property_type': property_type,
+                    'price_change': 0,
+                    'price_change_pct': 0,
+                    'trend_direction': 'stable'
+                }
+            
             trend_data = {
-                'dates': [r.date.strftime('%Y-%m-%d') for r in results],
-                'avg_prices': [float(r.avg_price) for r in results],
+                'dates': [r.date.strftime('%Y-%m-%d') if hasattr(r.date, 'strftime') else str(r.date) for r in results],
+                'avg_prices': [float(r.avg_price) if r.avg_price else 0 for r in results],
                 'transaction_counts': [r.transaction_count for r in results],
                 'period_days': period_days,
                 'city': city,
@@ -54,20 +72,40 @@ class DataService:
             
             # Calculate trend metrics
             if len(trend_data['avg_prices']) > 1:
-                price_change = trend_data['avg_prices'][-1] - trend_data['avg_prices'][0]
-                price_change_pct = (price_change / trend_data['avg_prices'][0]) * 100
-                trend_data['price_change'] = price_change
-                trend_data['price_change_pct'] = price_change_pct
-                trend_data['trend_direction'] = 'up' if price_change > 0 else 'down'
+                valid_prices = [p for p in trend_data['avg_prices'] if p > 0]
+                if len(valid_prices) > 1:
+                    price_change = valid_prices[-1] - valid_prices[0]
+                    price_change_pct = (price_change / valid_prices[0]) * 100
+                    trend_data['price_change'] = price_change
+                    trend_data['price_change_pct'] = price_change_pct
+                    trend_data['trend_direction'] = 'up' if price_change > 0 else 'down'
+                else:
+                    trend_data['price_change'] = 0
+                    trend_data['price_change_pct'] = 0
+                    trend_data['trend_direction'] = 'stable'
+            else:
+                trend_data['price_change'] = 0
+                trend_data['price_change_pct'] = 0
+                trend_data['trend_direction'] = 'stable'
             
             return trend_data
             
         except Exception as e:
             logger.error(f"Error getting price trends: {str(e)}")
-            return {}
+            return {
+                'dates': [],
+                'avg_prices': [],
+                'transaction_counts': [],
+                'period_days': period_days,
+                'city': city,
+                'property_type': property_type,
+                'price_change': 0,
+                'price_change_pct': 0,
+                'trend_direction': 'stable'
+            }
     
     @staticmethod
-    # @cache.memoize(timeout=1800)  # Cache for 30 minutes
+    @cache.memoize(timeout=1800)  # Cache for 30 minutes
     def get_market_statistics(city: str = None) -> Dict:
         """Get comprehensive market statistics."""
         try:

@@ -81,7 +81,7 @@
             <div class="property-price">
                 <span class="current-price">${{ "{:,.0f}".format(property.original_price if property.original_price else property.sold_price) if (property.original_price or property.sold_price) else 'Price on request' }}</span>
                 {% if property.price_per_sqft %}
-                <span class="price-per-sqft">${{ "{:.0f}".format(property.price_per_sqft) }}/sq ft</span>
+                <span class="price-per-sqft">${{ "{:.0f}".format(property.price_per_sqft) if property.price_per_sqft else '0' }}/sq ft</span>
                 {% endif %}
             </div>
             
@@ -96,12 +96,12 @@
                 </div>
                 <div class="feature">
                     <i class="fas fa-ruler-combined"></i>
-                    <span>{{ "{:,.0f}".format(property.sqft) }} sq ft</span>
+                    <span>{{ "{:,.0f}".format(property.sqft) if property.sqft else 'N/A' }} sq ft</span>
                 </div>
                 {% if property.lot_size %}
                 <div class="feature">
                     <i class="fas fa-map"></i>
-                    <span>{{ "{:,.0f}".format(property.lot_size) }} sq ft lot</span>
+                    <span>{{ "{:,.0f}".format(property.lot_size) if property.lot_size else 'N/A' }} sq ft lot</span>
                 </div>
                 {% endif %}
             </div>
