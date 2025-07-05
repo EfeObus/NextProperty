@@ -94,38 +94,38 @@ NextProperty AI revolutionizes real estate investment by leveraging advanced art
 ### **System Architecture Overview**
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Presentation Layer                       │
-├─────────────────────────────────────────────────────────────────┤
-│  Web Interface  │  REST API  │  Admin Dashboard  │  Mobile API │
-└─────────────────────────────────────────────────────────────────┘
-                                    │
-┌─────────────────────────────────────────────────────────────────┐
-│                        Application Layer                        │
-├─────────────────────────────────────────────────────────────────┤
-│    Route Handlers    │    Business Services    │   Middleware   │
-│  - Main Routes       │  - Property Service     │  - Auth        │
-│  - API Routes        │  - Prediction Service   │  - Validation  │
-│  - Admin Routes      │  - Economic Service     │  - Caching     │
-│  - Dashboard Routes  │  - User Service         │  - Logging     │
-└─────────────────────────────────────────────────────────────────┘
-                                    │
-┌─────────────────────────────────────────────────────────────────┐
-│                         Service Layer                          │
-├─────────────────────────────────────────────────────────────────┤
-│   ML Services   │  Data Services  │  Integration Services     │
-│  - Prediction   │  - Property     │  - Bank of Canada API    │
-│  - Training     │  - User         │  - Statistics Canada API │
-│  - Evaluation   │  - Agent        │  - Google Maps API       │
-│  - Features     │  - Economic     │  - Cache Service          │
-└─────────────────────────────────────────────────────────────────┘
-                                    │
-┌─────────────────────────────────────────────────────────────────┐
-│                         Data Layer                             │
-├─────────────────────────────────────────────────────────────────┤
-│    Database     │     Cache      │   File Storage   │ External │
-│    (MySQL)      │    (Redis)     │   (Models)       │   APIs   │
-└─────────────────────────────────────────────────────────────────┘
+
+                        Presentation Layer                       
+
+  Web Interface    REST API    Admin Dashboard    Mobile API 
+
+                                    
+
+                        Application Layer                        
+
+    Route Handlers        Business Services       Middleware   
+  - Main Routes         - Property Service       - Auth        
+  - API Routes          - Prediction Service     - Validation  
+  - Admin Routes        - Economic Service       - Caching     
+  - Dashboard Routes    - User Service           - Logging     
+
+                                    
+
+                         Service Layer                          
+
+   ML Services     Data Services    Integration Services     
+  - Prediction     - Property       - Bank of Canada API    
+  - Training       - User           - Statistics Canada API 
+  - Evaluation     - Agent          - Google Maps API       
+  - Features       - Economic       - Cache Service          
+
+                                    
+
+                         Data Layer                             
+
+    Database          Cache         File Storage    External 
+    (MySQL)          (Redis)        (Models)          APIs   
+
 ```
 
 ### **Technology Stack**
@@ -170,12 +170,12 @@ NextProperty AI revolutionizes real estate investment by leveraging advanced art
 
 | Rank | Model | R² Score | RMSE | MAPE | Training Time | Production Ready |
 |------|-------|----------|------|------|---------------|-----------------|
-| 🥇 | **Ensemble** | **0.883** | **$197K** | **9.87%** | 6.8s | ✅ **Active** |
-| 🥈 | XGBoost | 0.878 | $202K | 10.07% | 30.6s | ✅ Available |
-| 🥉 | LightGBM | 0.874 | $206K | 10.50% | 8.7s | ✅ Available |
-| 4 | GradientBoosting | 0.861 | $216K | 10.99% | 276.6s | ✅ Available |
-| 5 | RandomForest | 0.766 | $280K | 15.86% | 241.9s | ✅ Available |
-| 6 | Ridge | 0.714 | $310K | 17.45% | 0.6s | ✅ Available |
+| 1 | **Ensemble** | **0.883** | **$197K** | **9.87%** | 6.8s | **Active** |
+| 2 | XGBoost | 0.878 | $202K | 10.07% | 30.6s | Available |
+| 3 | LightGBM | 0.874 | $206K | 10.50% | 8.7s | Available |
+| 4 | GradientBoosting | 0.861 | $216K | 10.99% | 276.6s | Available |
+| 5 | RandomForest | 0.766 | $280K | 15.86% | 241.9s | Available |
+| 6 | Ridge | 0.714 | $310K | 17.45% | 0.6s | Available |
 
 ### **Feature Engineering Architecture (26 Features)**
 
@@ -654,7 +654,7 @@ NextProperty AI revolutionizes real estate investment by leveraging advanced art
 
 ---
 
-## 👥 **TEAM & ORGANIZATIONAL STRUCTURE**
+##  **TEAM & ORGANIZATIONAL STRUCTURE**
 
 ### **Core Development Team**
 
@@ -924,12 +924,12 @@ NextProperty AI revolutionizes real estate investment by leveraging advanced art
 
 | Metric | Current | Target | Trend |
 |--------|---------|---------|--------|
-| **Model Accuracy (R²)** | 88.3% | 90%+ | 📈 Improving |
-| **API Response Time** | <400ms | <300ms | 📈 Optimizing |
-| **System Uptime** | 99.9% | 99.95% | 📊 Stable |
-| **Database Performance** | <200ms | <150ms | 📈 Optimizing |
-| **Cache Hit Rate** | 85%+ | 90%+ | 📈 Improving |
-| **Code Coverage** | 80%+ | 90%+ | 📈 Improving |
+| **Model Accuracy (R²)** | 88.3% | 90%+ | Improving |
+| **API Response Time** | <400ms | <300ms | Optimizing |
+| **System Uptime** | 99.9% | 99.95% | Stable |
+| **Database Performance** | <200ms | <150ms | Optimizing |
+| **Cache Hit Rate** | 85%+ | 90%+ | Improving |
+| **Code Coverage** | 80%+ | 90%+ | Improving |
 
 ### **Business Performance KPIs**
 

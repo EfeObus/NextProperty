@@ -41,21 +41,21 @@ NextProperty AI implements a comprehensive machine learning system for real esta
 ### System Components
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Data Input    │───▶│ Feature Engineer │───▶│ Model Training  │
-│                 │    │                  │    │                 │
-│ • Property Data │    │ • 26 Features    │    │ • 6+ Algorithms │
-│ • Economic Data │    │ • Normalization  │    │ • Cross Valid.  │
-│ • Market Data   │    │ • Encoding       │    │ • Hyperparams   │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │                        │
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│ Model Serving   │◀───│ Model Selection  │◀───│ Model Ensemble  │
-│                 │    │                  │    │                 │
-│ • API Service   │    │ • Performance    │    │ • Stacking      │
-│ • Caching       │    │ • Validation     │    │ • Voting        │
-│ • Monitoring    │    │ • A/B Testing    │    │ • Blending      │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+        
+   Data Input     Feature Engineer  Model Training  
+                                                            
+ • Property Data      • 26 Features         • 6+ Algorithms 
+ • Economic Data      • Normalization       • Cross Valid.  
+ • Market Data        • Encoding            • Hyperparams   
+        
+                                                        
+        
+ Model Serving    Model Selection   Model Ensemble  
+                                                            
+ • API Service        • Performance         • Stacking      
+ • Caching            • Validation          • Voting        
+ • Monitoring         • A/B Testing         • Blending      
+        
 ```
 
 ### Service Architecture

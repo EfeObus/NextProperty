@@ -24,21 +24,21 @@
 
 ## Slide 3: Architecture Overview
 ```
-├── app/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── templates/
-│   ├── static/
-│   ├── utils/
-│   └── cache/
-├── config/
-├── migrations/
-├── scripts/
-├── tests/
-├── data/
-├── logs/
-├── models/
+ app/
+    models/
+    routes/
+    services/
+    templates/
+    static/
+    utils/
+    cache/
+ config/
+ migrations/
+ scripts/
+ tests/
+ data/
+ logs/
+ models/
 ```
 - **Backend:** Flask, SQLAlchemy, Redis, MySQL (migrated from SQLite)
 - **Frontend:** HTML5, CSS3, JS, Bootstrap, Leaflet.js

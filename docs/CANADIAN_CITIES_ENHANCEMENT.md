@@ -137,11 +137,11 @@ Potential improvements for future versions:
 ## Testing
 
 The implementation has been tested with:
-- ✅ Application startup successful
-- ✅ Upload property page loads with new city input
-- ✅ Autocomplete functionality works
-- ✅ All major Canadian cities accessible
-- ✅ Validation prevents invalid entries
-- ✅ Coordinate mapping handles city variations
+-  Application startup successful
+-  Upload property page loads with new city input
+-  Autocomplete functionality works
+-  All major Canadian cities accessible
+-  Validation prevents invalid entries
+-  Coordinate mapping handles city variations
 
 This enhancement significantly improves the property upload experience and ensures comprehensive coverage of the Canadian real estate market.

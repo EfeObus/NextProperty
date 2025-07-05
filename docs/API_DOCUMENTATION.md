@@ -27,7 +27,7 @@ NextProperty AI is a comprehensive real estate platform providing property listi
 
 ## Authentication
 
-Currently, most endpoints are publicly accessible. Authentication-required endpoints are marked with `🔒` and will return:
+Currently, most endpoints are publicly accessible. Authentication-required endpoints are marked with `` and will return:
 
 ```json
 {
@@ -764,7 +764,7 @@ All API endpoints are prefixed with `/api/`
 
 ## User Actions (Demo Mode)
 
-### `POST /api/save-property` 🔒
+### `POST /api/save-property` 
 **Save property to user's list (demo)**
 
 **Request Body**:
@@ -782,13 +782,13 @@ All API endpoints are prefixed with `/api/`
 }
 ```
 
-### `POST /api/update-saved-property` 🔒
+### `POST /api/update-saved-property` 
 **Update saved property notes (demo)**
 
-### `GET /api/check-saved-status/<listing_id>` 🔒
+### `GET /api/check-saved-status/<listing_id>` 
 **Check if property is saved (demo)**
 
-### `GET /api/saved-property/<saved_id>` 🔒
+### `GET /api/saved-property/<saved_id>` 
 **Get saved property details (demo)**
 
 ---
@@ -797,7 +797,7 @@ All API endpoints are prefixed with `/api/`
 
 All dashboard endpoints require authentication (currently in demo mode).
 
-### `GET /dashboard/` 🔒
+### `GET /dashboard/` 
 **Dashboard overview page**
 
 **Response**: Renders `dashboard/overview.html` with:
@@ -808,7 +808,7 @@ All dashboard endpoints require authentication (currently in demo mode).
 - Investment recommendations
 - Economic indicators
 
-### `GET /dashboard/portfolio` 🔒
+### `GET /dashboard/portfolio` 
 **User's property portfolio page**
 
 **Response**: Renders `dashboard/portfolio.html` with:
@@ -822,7 +822,7 @@ All dashboard endpoints require authentication (currently in demo mode).
 
 All admin endpoints are prefixed with `/admin/` and require admin authentication.
 
-### `GET /admin/` 🔒
+### `GET /admin/` 
 **Admin dashboard**
 
 **Response**: Renders `admin/dashboard.html` with:
@@ -831,12 +831,12 @@ All admin endpoints are prefixed with `/admin/` and require admin authentication
 - Database health
 - Recent activity
 
-### `GET /admin/bulk-operations` 🔒
+### `GET /admin/bulk-operations` 
 **Bulk operations management**
 
 **Response**: Renders `admin/bulk_operations.html` with operation status
 
-### `POST /admin/api/bulk-ai-analysis` 🔒
+### `POST /admin/api/bulk-ai-analysis` 
 **Generate AI valuations in bulk**
 
 **Request Body**:

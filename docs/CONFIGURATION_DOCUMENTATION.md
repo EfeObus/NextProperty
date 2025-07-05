@@ -22,11 +22,11 @@ NextProperty AI uses a flexible configuration system that supports different env
 ### Configuration Architecture
 ```
 config/
-├── config.py           # Main configuration classes
-├── .env                # Development environment variables
-├── .env.example        # Template for environment variables
-├── .env.production     # Production environment variables
-└── .env.testing        # Testing environment variables
+ config.py           # Main configuration classes
+ .env                # Development environment variables
+ .env.example        # Template for environment variables
+ .env.production     # Production environment variables
+ .env.testing        # Testing environment variables
 ```
 
 ## Environment Variables

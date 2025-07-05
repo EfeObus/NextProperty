@@ -18,7 +18,7 @@ NextProperty AI uses MySQL as the primary database with SQLAlchemy ORM for datab
 - **Testing**: SQLite (for simplicity and speed)
 
 ### Database Migration Status
-🎉 **Successfully migrated from SQLite to MySQL** with 49,551 property records loaded.
+ **Successfully migrated from SQLite to MySQL** with 49,551 property records loaded.
 
 ## Database Schema
 

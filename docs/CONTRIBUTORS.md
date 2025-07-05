@@ -21,7 +21,7 @@ Thank you to all the contributors who have helped make NextProperty AI a success
 
 We welcome contributions from the community! Here's how you can get involved:
 
-### 🚀 Quick Start for Contributors
+###  Quick Start for Contributors
 
 1. **Fork the repository**
 2. **Clone your fork**:
@@ -44,7 +44,7 @@ We welcome contributions from the community! Here's how you can get involved:
    ```
 7. **Create a Pull Request** from your fork to the main repository
 
-### 📋 Contribution Guidelines
+###  Contribution Guidelines
 
 #### Code Contributions
 - Follow the existing code style and patterns
@@ -53,14 +53,14 @@ We welcome contributions from the community! Here's how you can get involved:
 - Ensure all tests pass before submitting
 
 #### Areas for Contribution
-- 🤖 **Machine Learning**: Model improvements, new algorithms
-- 📊 **Data Processing**: ETL enhancements, data validation
-- 🎨 **Frontend**: UI/UX improvements, responsive design
-- 🔧 **Backend**: API enhancements, performance optimization
-- 📱 **Mobile**: Mobile-responsive features
-- 🧪 **Testing**: Test coverage improvements
-- 📚 **Documentation**: README updates, code comments
-- 🐛 **Bug Fixes**: Issue resolution and debugging
+-  **Machine Learning**: Model improvements, new algorithms
+-  **Data Processing**: ETL enhancements, data validation
+-  **Frontend**: UI/UX improvements, responsive design
+-  **Backend**: API enhancements, performance optimization
+-  **Mobile**: Mobile-responsive features
+-  **Testing**: Test coverage improvements
+-  **Documentation**: README updates, code comments
+-  **Bug Fixes**: Issue resolution and debugging
 
 #### Commit Message Format
 ```
@@ -74,46 +74,46 @@ Examples:
 - `Fix: Prediction API error handling for missing data`
 - `Update: Economic indicator refresh rate optimization`
 
-### 🔍 Code Review Process
+###  Code Review Process
 
 1. All pull requests require review from at least one core team member
 2. Automated tests must pass
 3. Code must follow project standards
 4. Documentation must be updated for new features
 
-### 🎯 Development Areas
+###  Development Areas
 
-#### 🏠 Property Management
+####  Property Management
 - Property CRUD operations
 - Advanced search and filtering
 - Property image management
 - Bulk operations
 
-#### 🤖 Machine Learning
+####  Machine Learning
 - Price prediction models
 - Market trend analysis
 - Investment opportunity detection
 - Model performance monitoring
 
-#### 📈 Economic Integration
+####  Economic Integration
 - Real-time economic data
 - Market indicators
 - Economic trend analysis
 - Affordability calculations
 
-#### 🗺️ Geospatial Features
+####  Geospatial Features
 - Interactive maps
 - Location-based search
 - Neighborhood analysis
 - Distance calculations
 
-#### 📊 Analytics & Reporting
+####  Analytics & Reporting
 - Market insights dashboard
 - Performance metrics
 - Export capabilities
 - Data visualization
 
-### 🏆 Recognition
+###  Recognition
 
 Contributors will be:
 - Listed in this CONTRIBUTORS.md file
@@ -121,20 +121,20 @@ Contributors will be:
 - Mentioned in project documentation
 - Given appropriate repository permissions
 
-### 📞 Getting Help
+###  Getting Help
 
 - **GitHub Issues**: For bug reports and feature requests
 - **Discussions**: For general questions and ideas
 - **Code Review**: Through pull request reviews
 - **Documentation**: Check README.md and SETUP.md
 
-### 🎉 Thank You!
+###  Thank You!
 
 Every contribution, no matter how small, helps make NextProperty AI better for everyone. We appreciate your time and effort in improving this project!
 
 ---
 
-## 📊 Contribution Stats
+##  Contribution Stats
 
 - **Total Contributors**: 5
 - **Core Team Members**: 5

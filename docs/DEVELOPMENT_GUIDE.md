@@ -189,21 +189,21 @@ def predict_property_price(property_data: Dict) -> Dict:
 
 ```
 Nextproperty Real Estate/
-├── app/                    # Main application package
-│   ├── __init__.py        # App factory
-│   ├── models/            # Database models
-│   ├── routes/            # Route blueprints
-│   ├── services/          # Business logic services
-│   ├── utils/             # Utility functions
-│   ├── cache/             # Caching implementation
-│   └── static/            # Static files (CSS, JS, images)
-├── config/                # Configuration files
-├── migrations/            # Database migrations
-├── models/                # ML models and artifacts
-├── tests/                 # Test suite
-├── docs/                  # Documentation
-├── scripts/               # Utility scripts
-└── requirements.txt       # Python dependencies
+ app/                    # Main application package
+    __init__.py        # App factory
+    models/            # Database models
+    routes/            # Route blueprints
+    services/          # Business logic services
+    utils/             # Utility functions
+    cache/             # Caching implementation
+    static/            # Static files (CSS, JS, images)
+ config/                # Configuration files
+ migrations/            # Database migrations
+ models/                # ML models and artifacts
+ tests/                 # Test suite
+ docs/                  # Documentation
+ scripts/               # Utility scripts
+ requirements.txt       # Python dependencies
 ```
 
 ### Component Guidelines
@@ -282,11 +282,11 @@ docs(readme): update installation instructions
 ### Test Structure
 ```
 tests/
-├── unit/              # Unit tests
-├── integration/       # Integration tests
-├── fixtures/          # Test data
-├── conftest.py       # Test configuration
-└── test_*.py         # Test files
+ unit/              # Unit tests
+ integration/       # Integration tests
+ fixtures/          # Test data
+ conftest.py       # Test configuration
+ test_*.py         # Test files
 ```
 
 ### Writing Tests

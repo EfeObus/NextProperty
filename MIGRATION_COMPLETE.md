@@ -1,8 +1,8 @@
-# SQLite to MySQL Migration Complete! 🎉
+# SQLite to MySQL Migration Complete! 
 
 ## Summary
 
-✅ **Migration Successfully Completed**
+ **Migration Successfully Completed**
 
 Your NextProperty AI application has been successfully migrated from SQLite to MySQL with all real estate data from the `realEstate.csv` file.
 
@@ -53,10 +53,10 @@ Your NextProperty AI application has been successfully migrated from SQLite to M
 
 ### Application Status:
 
-✅ Flask application is running successfully on port 5007
-✅ All database tables created and populated
-✅ MySQL connection verified and working
-✅ Data integrity confirmed
+ Flask application is running successfully on port 5007
+ All database tables created and populated
+ MySQL connection verified and working
+ Data integrity confirmed
 
 ### Next Steps:
 
@@ -101,4 +101,4 @@ If you encounter any issues:
 2. **Password Issues**: Verify the password in `.env` file is correct
 3. **Port Conflicts**: Check if port 3306 is available for MySQL
 
-**Migration completed successfully! Your application is now running on MySQL with full real estate data.** 🏠✨
+**Migration completed successfully! Your application is now running on MySQL with full real estate data.** 

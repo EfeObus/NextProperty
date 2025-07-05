@@ -56,41 +56,41 @@ NextProperty AI is a comprehensive real estate analytics platform that combines 
 ## High-Level Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Presentation Layer                       │
-├─────────────────────────────────────────────────────────────────┤
-│  Web Interface  │  REST API  │  Admin Dashboard  │  Mobile API │
-└─────────────────────────────────────────────────────────────────┘
-                                    │
-┌─────────────────────────────────────────────────────────────────┐
-│                        Application Layer                        │
-├─────────────────────────────────────────────────────────────────┤
-│    Route Handlers    │    Business Services    │   Middleware   │
-│  - Main Routes       │  - Property Service     │  - Auth        │
-│  - API Routes        │  - Prediction Service   │  - Validation  │
-│  - Admin Routes      │  - Economic Service     │  - Caching     │
-│  - Dashboard Routes  │  - User Service         │  - Logging     │
-└─────────────────────────────────────────────────────────────────┘
-                                    │
-┌─────────────────────────────────────────────────────────────────┐
-│                         Service Layer                          │
-├─────────────────────────────────────────────────────────────────┤
-│   ML Services   │  Data Services  │  Integration Services     │
-│  - Prediction   │  - Property     │  - Bank of Canada API    │
-│  - Training     │  - User         │  - Statistics Canada API │
-│  - Evaluation   │  - Agent        │  - Google Maps API       │
-│  - Features     │  - Economic     │  - Cache Service          │
-└─────────────────────────────────────────────────────────────────┘
-                                    │
-┌─────────────────────────────────────────────────────────────────┐
-│                         Data Layer                             │
-├─────────────────────────────────────────────────────────────────┤
-│    Database     │     Cache      │   File Storage   │ External │
-│  - MySQL 8.0+   │   - Redis      │   - Local FS     │   APIs   │
-│  - SQLite (test)│   - Memory     │   - Cloud Storage│          │
-│  - Models       │   - Sessions   │   - ML Models    │          │
-│  - Migrations   │   - Queries    │   - Images       │          │
-└─────────────────────────────────────────────────────────────────┘
+
+                        Presentation Layer                       
+
+  Web Interface    REST API    Admin Dashboard    Mobile API 
+
+                                    
+
+                        Application Layer                        
+
+    Route Handlers        Business Services       Middleware   
+  - Main Routes         - Property Service       - Auth        
+  - API Routes          - Prediction Service     - Validation  
+  - Admin Routes        - Economic Service       - Caching     
+  - Dashboard Routes    - User Service           - Logging     
+
+                                    
+
+                         Service Layer                          
+
+   ML Services     Data Services    Integration Services     
+  - Prediction     - Property       - Bank of Canada API    
+  - Training       - User           - Statistics Canada API 
+  - Evaluation     - Agent          - Google Maps API       
+  - Features       - Economic       - Cache Service          
+
+                                    
+
+                         Data Layer                             
+
+    Database          Cache         File Storage    External 
+  - MySQL 8.0+      - Redis         - Local FS        APIs   
+  - SQLite (test)   - Memory        - Cloud Storage          
+  - Models          - Sessions      - ML Models              
+  - Migrations      - Queries       - Images                 
+
 ```
 
 ## Component Architecture
@@ -131,25 +131,25 @@ def create_app(config_class=None):
 
 ```
 app/routes/
-├── main.py          # Main website routes
-├── api.py           # REST API endpoints
-├── dashboard.py     # User dashboard
-└── admin.py         # Administrative interface
+ main.py          # Main website routes
+ api.py           # REST API endpoints
+ dashboard.py     # User dashboard
+ admin.py         # Administrative interface
 
 Blueprints Structure:
-┌─────────────────┐
-│   Main Routes   │  -> Public website, property listings
-│   (/*)          │
-├─────────────────┤
-│   API Routes    │  -> RESTful API for external access
-│   (/api/*)      │
-├─────────────────┤
-│ Dashboard Routes│  -> User-specific functionality
-│ (/dashboard/*)  │
-└─────────────────┘
-│  Admin Routes   │  -> Administrative functions
-│  (/admin/*)     │
-└─────────────────┘
+
+   Main Routes     -> Public website, property listings
+   (/*)          
+
+   API Routes      -> RESTful API for external access
+   (/api/*)      
+
+ Dashboard Routes  -> User-specific functionality
+ (/dashboard/*)  
+
+  Admin Routes     -> Administrative functions
+  (/admin/*)     
+
 ```
 
 ### Service Layer Architecture
@@ -157,13 +157,13 @@ Blueprints Structure:
 ```python
 # Service Layer Structure
 app/services/
-├── property_service.py      # Property business logic
-├── prediction_service.py    # ML prediction logic
-├── economic_data_service.py # External API integration
-├── user_service.py          # User management
-├── validation_service.py    # Data validation
-├── security_service.py      # Security operations
-└── cache_service.py         # Caching operations
+ property_service.py      # Property business logic
+ prediction_service.py    # ML prediction logic
+ economic_data_service.py # External API integration
+ user_service.py          # User management
+ validation_service.py    # Data validation
+ security_service.py      # Security operations
+ cache_service.py         # Caching operations
 
 # Example Service Class
 class PropertyService:
@@ -191,13 +191,13 @@ class PropertyService:
 ```sql
 -- Core Tables
 Tables:
-├── users              # User accounts and profiles
-├── agents             # Real estate agents
-├── properties         # Property listings
-├── economic_data      # Economic indicators
-├── favourites         # User favorite properties
-├── user_sessions      # User session management
-└── prediction_cache   # Cached ML predictions
+ users              # User accounts and profiles
+ agents             # Real estate agents
+ properties         # Property listings
+ economic_data      # Economic indicators
+ favourites         # User favorite properties
+ user_sessions      # User session management
+ prediction_cache   # Cached ML predictions
 
 -- Relationships
 User 1:N Properties (owner)
@@ -212,12 +212,12 @@ Economic_Data 1:N Properties (via time periods)
 ```python
 # Data Model Hierarchy
 app/models/
-├── __init__.py         # Model exports
-├── user.py            # User model with authentication
-├── agent.py           # Agent model with specializations
-├── property.py        # Property model with features
-├── economic_data.py   # Economic indicators model
-└── favourite.py       # User favorites model
+ __init__.py         # Model exports
+ user.py            # User model with authentication
+ agent.py           # Agent model with specializations
+ property.py        # Property model with features
+ economic_data.py   # Economic indicators model
+ favourite.py       # User favorites model
 
 # Example Model Structure
 class Property(db.Model):
@@ -256,17 +256,17 @@ Data Flow Patterns:
 4. File Upload -> Validation -> Storage -> Database Reference
 
 Example: Property Price Prediction Flow
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ User Input  │ -> │ Validation  │ -> │   Service   │
-└─────────────┘    └─────────────┘    └─────────────┘
-                                              │
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Cache     │ <- │  ML Model   │ <- │  Features   │
-└─────────────┘    └─────────────┘    └─────────────┘
-       │
-┌─────────────┐    ┌─────────────┐
-│  Response   │ <- │   Format    │
-└─────────────┘    └─────────────┘
+        
+ User Input   ->  Validation   ->    Service   
+        
+                                              
+        
+   Cache      <-   ML Model    <-   Features   
+        
+       
+    
+  Response    <-    Format    
+    
 ```
 
 ## API Architecture
@@ -276,17 +276,17 @@ Example: Property Price Prediction Flow
 ```python
 # API Endpoint Structure
 /api/
-├── /properties              # Property resources
-│   ├── GET /               # List properties
-│   ├── POST /              # Create property
-│   ├── GET /{id}           # Get property
-│   ├── PUT /{id}           # Update property
-│   ├── DELETE /{id}        # Delete property
-│   └── POST /{id}/predict  # Predict price
-├── /users                  # User resources
-├── /agents                 # Agent resources
-├── /economic-data          # Economic data
-└── /predictions            # ML predictions
+ /properties              # Property resources
+    GET /               # List properties
+    POST /              # Create property
+    GET /{id}           # Get property
+    PUT /{id}           # Update property
+    DELETE /{id}        # Delete property
+    POST /{id}/predict  # Predict price
+ /users                  # User resources
+ /agents                 # Agent resources
+ /economic-data          # Economic data
+ /predictions            # ML predictions
 
 # API Response Format
 {
@@ -344,15 +344,15 @@ Request -> [Security] -> [Auth] -> [Validation] -> [Rate Limit] -> [Cache] -> Ha
 
 ```python
 # Security Layers
-┌─────────────────────────────────────────┐
-│            Security Layers              │
-├─────────────────────────────────────────┤
-│ 1. Network Security (HTTPS, Firewall)  │
-│ 2. Application Security (JWT, Sessions)│
-│ 3. Data Security (Encryption, Hashing) │
-│ 4. Input Validation (Sanitization)     │
-│ 5. Output Encoding (XSS Prevention)    │
-└─────────────────────────────────────────┘
+
+            Security Layers              
+
+ 1. Network Security (HTTPS, Firewall)  
+ 2. Application Security (JWT, Sessions)
+ 3. Data Security (Encryption, Hashing) 
+ 4. Input Validation (Sanitization)     
+ 5. Output Encoding (XSS Prevention)    
+
 
 # Authentication Flow
 User Login -> Credentials Validation -> JWT Generation -> Token Storage
@@ -364,10 +364,10 @@ API Request -> Token Extraction -> Token Validation -> User Context
 ```python
 # Security Service Components
 app/utils/
-├── security.py         # Core security functions
-├── validation.py       # Input validation
-├── encryption.py       # Data encryption
-└── audit.py           # Security auditing
+ security.py         # Core security functions
+ validation.py       # Input validation
+ encryption.py       # Data encryption
+ audit.py           # Security auditing
 
 # Example Security Functions
 def generate_password_hash(password):
@@ -390,25 +390,25 @@ def validate_jwt_token(token):
 ```python
 # ML Pipeline Structure
 models/
-├── model_artifacts/        # Trained model files
-├── feature_engineering/    # Feature processing
-├── training/              # Model training scripts
-├── evaluation/            # Model evaluation
-└── deployment/            # Model deployment
+ model_artifacts/        # Trained model files
+ feature_engineering/    # Feature processing
+ training/              # Model training scripts
+ evaluation/            # Model evaluation
+ deployment/            # Model deployment
 
 # ML Service Architecture
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ Data Collection │ -> │ Feature Engine  │ -> │ Model Training  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                                      │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Model Storage  │ <- │ Model Evaluate  │ <- │ Model Validate  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-        │
-┌─────────────────┐    ┌─────────────────┐
-│   Prediction    │ <- │  Model Loading  │
-│    Service      │    │    & Caching    │
-└─────────────────┘    └─────────────────┘
+        
+ Data Collection  ->  Feature Engine   ->  Model Training  
+        
+                                                      
+        
+  Model Storage   <-  Model Evaluate   <-  Model Validate  
+        
+        
+    
+   Prediction     <-   Model Loading  
+    Service              & Caching    
+    
 ```
 
 ### Feature Engineering Architecture
@@ -432,12 +432,12 @@ class FeatureEngineer:
 
 # Economic Data Integration
 Economic Features:
-├── Interest rates (Bank of Canada)
-├── Housing price index (Statistics Canada)
-├── Population growth
-├── Employment rates
-├── GDP indicators
-└── Market trends
+ Interest rates (Bank of Canada)
+ Housing price index (Statistics Canada)
+ Population growth
+ Employment rates
+ GDP indicators
+ Market trends
 ```
 
 ## Caching Architecture
@@ -446,31 +446,31 @@ Economic Features:
 
 ```python
 # Caching Strategy
-┌─────────────────────────────────────────┐
-│              Caching Layers             │
-├─────────────────────────────────────────┤
-│ 1. Application Cache (in-memory)        │
-│    - Frequently accessed data           │
-│    - Session data                       │
-│ 2. Redis Cache (distributed)           │
-│    - API responses                      │
-│    - ML predictions                     │
-│    - Database query results             │
-│ 3. Database Query Cache                 │
-│    - Complex query results              │
-│ 4. HTTP Cache (browser/CDN)             │
-│    - Static assets                      │
-│    - Public API responses               │
-└─────────────────────────────────────────┘
+
+              Caching Layers             
+
+ 1. Application Cache (in-memory)        
+    - Frequently accessed data           
+    - Session data                       
+ 2. Redis Cache (distributed)           
+    - API responses                      
+    - ML predictions                     
+    - Database query results             
+ 3. Database Query Cache                 
+    - Complex query results              
+ 4. HTTP Cache (browser/CDN)             
+    - Static assets                      
+    - Public API responses               
+
 
 # Cache Management
 Cache Keys:
-├── properties:{id}              # Individual properties
-├── properties:list:{filters}    # Property lists
-├── predictions:{hash}           # ML predictions
-├── economic_data:{date}         # Economic indicators
-├── user_sessions:{user_id}      # User sessions
-└── api_responses:{endpoint}     # API responses
+ properties:{id}              # Individual properties
+ properties:list:{filters}    # Property lists
+ predictions:{hash}           # ML predictions
+ economic_data:{date}         # Economic indicators
+ user_sessions:{user_id}      # User sessions
+ api_responses:{endpoint}     # API responses
 ```
 
 ### Cache Invalidation Strategy
@@ -505,10 +505,10 @@ FROM python:3.9-slim AS runtime
 
 # Container Structure
 nextproperty-app/
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── app/
+ Dockerfile
+ docker-compose.yml
+ requirements.txt
+ app/
 ```
 
 ### Microservices Considerations
@@ -529,30 +529,30 @@ services:
 
 ```python
 # Horizontal Scaling Components
-┌─────────────────────────────────────────┐
-│             Load Balancer               │
-│            (Nginx/HAProxy)              │
-└─────────────────────────────────────────┘
-                    │
-    ┌───────────────┼───────────────┐
-    │               │               │
-┌─────────┐    ┌─────────┐    ┌─────────┐
-│ App     │    │ App     │    │ App     │
-│ Server  │    │ Server  │    │ Server  │
-│   #1    │    │   #2    │    │   #3    │
-└─────────┘    └─────────┘    └─────────┘
-    │               │               │
-    └───────────────┼───────────────┘
-                    │
-        ┌───────────────────────────┐
-        │    Shared Database        │
-        │   (PostgreSQL Master)     │
-        └───────────────────────────┘
-                    │
-        ┌───────────────────────────┐
-        │     Shared Cache          │
-        │       (Redis)             │
-        └───────────────────────────┘
+
+             Load Balancer               
+            (Nginx/HAProxy)              
+
+                    
+    
+                                  
+        
+ App          App          App     
+ Server       Server       Server  
+   #1           #2           #3    
+        
+                                  
+    
+                    
+        
+            Shared Database        
+           (PostgreSQL Master)     
+        
+                    
+        
+             Shared Cache          
+               (Redis)             
+        
 ```
 
 ## Monitoring and Logging
@@ -561,24 +561,24 @@ services:
 
 ```python
 # Monitoring Stack
-┌─────────────────────────────────────────┐
-│              Application                │
-├─────────────────────────────────────────┤
-│ Metrics Collection  │  Log Aggregation  │
-│ - Performance       │  - Application    │
-│ - Business          │  - Security       │
-│ - Infrastructure    │  - Error          │
-└─────────────────────────────────────────┘
-           │                    │
-┌─────────────────┐    ┌─────────────────┐
-│   Monitoring    │    │   Log Storage   │
-│   (Prometheus)  │    │  (ELK Stack)    │
-└─────────────────┘    └─────────────────┘
-           │                    │
-┌─────────────────┐    ┌─────────────────┐
-│   Alerting      │    │   Log Analysis  │
-│  (AlertManager) │    │    (Kibana)     │
-└─────────────────┘    └─────────────────┘
+
+              Application                
+
+ Metrics Collection    Log Aggregation  
+ - Performance         - Application    
+ - Business            - Security       
+ - Infrastructure      - Error          
+
+                               
+    
+   Monitoring           Log Storage   
+   (Prometheus)        (ELK Stack)    
+    
+                               
+    
+   Alerting             Log Analysis  
+  (AlertManager)         (Kibana)     
+    
 ```
 
 ### Logging Strategy
@@ -586,12 +586,12 @@ services:
 ```python
 # Logging Configuration
 Loggers:
-├── app.main           # Main application logs
-├── app.api            # API request/response logs
-├── app.ml             # ML model logs
-├── app.security       # Security events
-├── app.performance    # Performance metrics
-└── app.errors         # Error tracking
+ app.main           # Main application logs
+ app.api            # API request/response logs
+ app.ml             # ML model logs
+ app.security       # Security events
+ app.performance    # Performance metrics
+ app.errors         # Error tracking
 
 # Log Levels and Destinations
 DEBUG   -> Development console
@@ -656,25 +656,25 @@ ML Service        | 4-8  | 8-16GB | 50GB    | 1Gbps
 
 ```python
 # Integration Architecture
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Bank of Canada │    │ Statistics Can. │    │  Google Maps    │
-│      API        │    │      API        │    │      API        │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-┌─────────────────────────────────────────────────────────────────┐
-│                  API Gateway / Service Mesh                    │
-├─────────────────────────────────────────────────────────────────┤
-│  - Rate limiting                                               │
-│  - Authentication                                              │
-│  - Request/Response transformation                             │
-│  - Error handling and retry logic                             │
-│  - Circuit breaker pattern                                    │
-└─────────────────────────────────────────────────────────────────┘
-         │
-┌─────────────────┐
-│   NextProperty  │
-│   Application   │
-└─────────────────┘
+        
+  Bank of Canada      Statistics Can.       Google Maps    
+      API                  API                  API        
+        
+                                                       
+
+                  API Gateway / Service Mesh                    
+
+  - Rate limiting                                               
+  - Authentication                                              
+  - Request/Response transformation                             
+  - Error handling and retry logic                             
+  - Circuit breaker pattern                                    
+
+         
+
+   NextProperty  
+   Application   
+
 ```
 
 ### Event-Driven Architecture
@@ -682,13 +682,13 @@ ML Service        | 4-8  | 8-16GB | 50GB    | 1Gbps
 ```python
 # Event Processing
 Events:
-├── property.created
-├── property.updated
-├── property.deleted
-├── prediction.requested
-├── prediction.completed
-├── user.registered
-└── economic_data.updated
+ property.created
+ property.updated
+ property.deleted
+ prediction.requested
+ prediction.completed
+ user.registered
+ economic_data.updated
 
 # Event Handlers
 class PropertyEventHandler:

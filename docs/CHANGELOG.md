@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.4.0] - 2025-07-05
 
-### 🔐 **Security Enhancement Release - Automated Secret Key Management**
+###  **Security Enhancement Release - Automated Secret Key Management**
 
 This release introduces a comprehensive secret key management system with automated rotation, enhancing the security posture of the NextProperty AI platform.
 
@@ -130,7 +130,7 @@ python3 scripts/generate_secret_key.py
 
 ## [2.3.0] - 2025-07-05
 
-### 🚀 **Performance Enhancement & Optimization Release**
+###  **Performance Enhancement & Optimization Release**
 
 This release focuses on comprehensive performance improvements across the entire application stack, resulting in significantly faster page load times and better user experience.
 
@@ -304,7 +304,7 @@ python scripts/optimize_performance.py
 
 ## [2.2.0] - 2025-07-05
 
-### 🗄️ **Major Database Migration: SQLite to MySQL**
+###  **Major Database Migration: SQLite to MySQL**
 
 This release includes a complete database infrastructure upgrade from SQLite to MySQL with full data migration from the comprehensive real estate dataset.
 
@@ -381,7 +381,7 @@ This release includes a complete database infrastructure upgrade from SQLite to 
 
 ## [2.1.1] - 2025-06-16
 
-### 🔧 **ML Service Enhancement & Documentation**
+###  **ML Service Enhancement & Documentation**
 
 This release includes critical improvements to the ML prediction service and comprehensive project documentation.
 
@@ -416,7 +416,7 @@ This release includes critical improvements to the ML prediction service and com
 
 ## [2.1.0] - 2025-06-15
 
-### 🛠️ **Critical Bug Fixes & Performance Improvements**
+###  **Critical Bug Fixes & Performance Improvements**
 
 This release addresses critical infrastructure issues and significantly improves application performance and reliability.
 
@@ -523,7 +523,7 @@ STATISTICS_CANADA_API = "https://www150.statcan.gc.ca/t1/wds/rest/"
 
 ## [2.0.0] - 2025-06-12
 
-### 🚀 **Major Release: Enhanced ML Pipeline & Economic Integration**
+###  **Major Release: Enhanced ML Pipeline & Economic Integration**
 
 This major release transforms NextProperty AI into a sophisticated real estate investment platform with industry-leading ML accuracy and comprehensive economic data integration.
 

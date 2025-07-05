@@ -2,7 +2,7 @@
 
 NextProperty AI revolutionizes property investment and management by leveraging advanced artificial intelligence solutions with comprehensive economic integration. The platform offers personalized, data-driven property analysis with real-time economic indicators to assist investors in making informed decisions.
 
-## 🚀 Latest Updates (v2.0)
+##  Latest Updates (v2.0)
 
 - **Enhanced ML Pipeline**: 6+ advanced models with ensemble stacking (88.3% accuracy)
 - **Economic Integration**: Real-time Bank of Canada and Statistics Canada data
@@ -60,27 +60,27 @@ Client ↔ API Gateway ↔ Backend Services ↔ MySQL Database
 
 ## Features
 
-### 🏠 **Property Analysis**
+###  **Property Analysis**
 - **AI-Powered Valuation**: Ensemble ML models with 88.3% accuracy
 - **Investment Scoring**: 0-10 scale with economic factor integration
 - **Risk Assessment**: Multi-factor risk analysis (Very Low to Very High)
 - **Market Trends**: City and property-type specific trend analysis
 - **Comparable Properties**: Intelligent matching within 20% size range
 
-### 📊 **Market Intelligence**
+###  **Market Intelligence**
 - **Real-time Economic Integration**: Bank of Canada + Statistics Canada data
 - **10 Economic Indicators**: Interest rates, inflation, unemployment, GDP growth
 - **Derived Economic Features**: Market timing, affordability pressure, momentum
 - **Market Predictions**: 6-month and 1-year trend forecasting
 - **Economic Insights**: AI-generated insights based on economic conditions
 
-### 🎯 **Investment Tools**
+###  **Investment Tools**
 - **Top Deals Detection**: Identifies undervalued properties (≥5% below prediction)
 - **Investment Potential Scoring**: Excellent, Very Good, Good, Fair ratings
 - **Portfolio Analytics**: Track and analyze property investments
 - **Economic Sensitivity Analysis**: Property-type specific economic impact
 
-### 🔧 **Model Management**
+###  **Model Management**
 - **6+ Trained Models**: Ridge, ElasticNet, RandomForest, GradientBoosting, XGBoost, LightGBM
 - **Ensemble Stacking**: Combines best-performing models for superior accuracy
 - **Model Switching**: Dynamic model selection via API/CLI
@@ -89,13 +89,13 @@ Client ↔ API Gateway ↔ Backend Services ↔ MySQL Database
 
 ## Enhanced ML Models
 
-### 🏆 **Model Performance Rankings**
+###  **Model Performance Rankings**
 
 | Rank | Model | R² Score | RMSE | MAPE | Training Time |
 |------|-------|----------|------|------|---------------|
-| 🥇 | **Ensemble** | **0.883** | **$197K** | **9.87%** | 6.8s |
-| 🥈 | XGBoost | 0.878 | $202K | 10.07% | 30.6s |
-| 🥉 | LightGBM | 0.874 | $206K | 10.50% | 8.7s |
+|  | **Ensemble** | **0.883** | **$197K** | **9.87%** | 6.8s |
+|  | XGBoost | 0.878 | $202K | 10.07% | 30.6s |
+|  | LightGBM | 0.874 | $206K | 10.50% | 8.7s |
 | 4 | GradientBoosting | 0.861 | $216K | 10.99% | 276.6s |
 | 5 | RandomForest | 0.766 | $280K | 15.86% | 241.9s |
 | 6 | Ridge | 0.714 | $310K | 17.45% | 0.6s |
@@ -131,7 +131,7 @@ Client ↔ API Gateway ↔ Backend Services ↔ MySQL Database
 
 ## Economic Integration
 
-### 📈 **Real-Time Data Sources**
+###  **Real-Time Data Sources**
 
 #### **Bank of Canada API**
 - Overnight Policy Rate
@@ -151,7 +151,7 @@ Client ↔ API Gateway ↔ Backend Services ↔ MySQL Database
 - **Economic Momentum**: GDP + employment combined score (-1 to 1)
 - **Affordability Pressure**: Mortgage rate + inflation pressure (0-1)
 
-### 🔄 **Economic Data Pipeline**
+###  **Economic Data Pipeline**
 
 1. **Caching Layer**: 1-hour TTL for economic indicators
 2. **Fallback System**: Default values when APIs unavailable
@@ -198,28 +198,28 @@ Client ↔ API Gateway ↔ Backend Services ↔ MySQL Database
 
 ```
 nextproperty-ai/
-├── app/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── templates/
-│   ├── static/
-│   ├── utils/
-│   └── cache/
-├── config/
-├── migrations/
-├── scripts/
-├── tests/
-├── data/
-├── logs/
-├── models/
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── app.py
-├── wsgi.py
-├── .env.example
-└── README.md
+ app/
+    models/
+    routes/
+    services/
+    templates/
+    static/
+    utils/
+    cache/
+ config/
+ migrations/
+ scripts/
+ tests/
+ data/
+ logs/
+ models/
+ Dockerfile
+ docker-compose.yml
+ requirements.txt
+ app.py
+ wsgi.py
+ .env.example
+ README.md
 ```
 
 ## Installation & Setup
@@ -438,7 +438,7 @@ Configurable third-party providers via `/api/auth/oauth/{provider}`
 
 ## Model Performance
 
-### 🎯 **Performance Metrics Overview**
+###  **Performance Metrics Overview**
 
 Our ensemble ML model achieves industry-leading accuracy with comprehensive validation:
 
@@ -449,22 +449,22 @@ Our ensemble ML model achieves industry-leading accuracy with comprehensive vali
 | **MAPE** | **9.87%** | 12-18% |
 | **Cross-Validation Score** | **0.879 ± 0.012** | 0.70-0.80 |
 
-### 📊 **Model Comparison Matrix**
+###  **Model Comparison Matrix**
 
 ```
 Performance by Property Type:
-┌─────────────────┬─────────┬─────────┬─────────┬─────────┐
-│ Property Type   │ R² Score│  RMSE   │  MAPE   │ Sample  │
-├─────────────────┼─────────┼─────────┼─────────┼─────────┤
-│ Detached        │  0.891  │ $185K   │  9.2%   │ 15,423  │
-│ Semi-Detached   │  0.886  │ $198K   │  9.8%   │  8,756  │
-│ Townhouse       │  0.878  │ $205K   │ 10.1%   │  6,834  │
-│ Condo Apt       │  0.865  │ $225K   │ 11.3%   │ 12,998  │
-│ Condo Townhouse│  0.872  │ $210K   │ 10.7%   │  3,445  │
-└─────────────────┴─────────┴─────────┴─────────┴─────────┘
+
+ Property Type    R² Score  RMSE     MAPE    Sample  
+
+ Detached          0.891   $185K     9.2%    15,423  
+ Semi-Detached     0.886   $198K     9.8%     8,756  
+ Townhouse         0.878   $205K    10.1%     6,834  
+ Condo Apt         0.865   $225K    11.3%    12,998  
+ Condo Townhouse  0.872   $210K    10.7%     3,445  
+
 ```
 
-### 🏆 **Feature Importance Rankings**
+###  **Feature Importance Rankings**
 
 1. **Square Footage** (18.2%) - Primary size indicator
 2. **Location (City)** (16.8%) - Geographic market value
@@ -477,7 +477,7 @@ Performance by Property Type:
 9. **Year Built** (5.1%) - Age and condition proxy
 10. **Affordability Pressure** (4.3%) - Economic constraint factor
 
-### 🔄 **Model Validation Process**
+###  **Model Validation Process**
 
 - **5-Fold Cross-Validation** with stratified sampling
 - **Temporal Validation** on 6-month holdout period

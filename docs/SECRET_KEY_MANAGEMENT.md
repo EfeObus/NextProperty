@@ -45,7 +45,7 @@ python3 scripts/generate_secret_key.py
 
 ## Features
 
-### 🔐 Security
+###  Security
 - Uses `secrets.token_hex()` for cryptographically secure key generation
 - 64-character (256-bit) secret keys
 - No key reuse or predictable patterns
@@ -55,12 +55,12 @@ python3 scripts/generate_secret_key.py
 - Automatic expiry checking before generation
 - ISO format date storage (YYYY-MM-DD)
 
-### 🔄 Smart Updates
+###  Smart Updates
 - Regex-based .env file updating
 - Preserves file structure and comments
 - Handles existing shell command formats
 
-### 📝 Logging
+###  Logging
 - Execution logs stored in `/tmp/nextproperty_secret_key.log`
 - Detailed status messages and error reporting
 - Cron job activity tracking

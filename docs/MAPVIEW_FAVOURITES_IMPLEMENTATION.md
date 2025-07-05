@@ -54,18 +54,18 @@
 ## Current Status
 
 ### Working Features
-✅ Map view with interactive map and property markers
-✅ Property filtering and search
-✅ Map clustering for performance
-✅ Favourites page in demo mode
-✅ Property cards and responsive design
-✅ Toast notifications
-✅ Navigation integration
+ Map view with interactive map and property markers
+ Property filtering and search
+ Map clustering for performance
+ Favourites page in demo mode
+ Property cards and responsive design
+ Toast notifications
+ Navigation integration
 
 ### Demo Mode (Authentication Required)
-🔄 Saving properties (shows "authentication required" message)
-🔄 Favourite toggling (shows demo message)
-🔄 Personal notes and tags (placeholder functionality)
+ Saving properties (shows "authentication required" message)
+ Favourite toggling (shows demo message)
+ Personal notes and tags (placeholder functionality)
 
 ### What's Next (When Authentication is Added)
 - Enable actual property saving/favouriting
@@ -97,14 +97,14 @@
 ## File Structure
 ```
 app/
-├── routes/main.py              # Added mapview and favourites routes
-├── templates/
-│   ├── base.html              # Updated navigation
-│   ├── mapview.html           # New map view page
-│   ├── favourites.html        # New favourites page
-│   └── partials/
-│       ├── property_card.html # Reusable property component
-│       └── toast.html         # Toast notification component
+ routes/main.py              # Added mapview and favourites routes
+ templates/
+    base.html              # Updated navigation
+    mapview.html           # New map view page
+    favourites.html        # New favourites page
+    partials/
+        property_card.html # Reusable property component
+        toast.html         # Toast notification component
 ```
 
 ## Usage

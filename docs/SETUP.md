@@ -1,4 +1,4 @@
-# 🏠 NextProperty AI - Complete Setup Guide
+#  NextProperty AI - Complete Setup Guide
 
 A comprehensive guide to set up and run the NextProperty AI Real Estate Investment Platform with advanced ML capabilities and economic integration.
 
@@ -140,7 +140,7 @@ pip install pytest pytest-flask pytest-cov black flake8 mypy
 pip install -r requirements-dev.txt
 ```
 
-## 📁 Missing Files (Due to GitHub Size Limits)
+##  Missing Files (Due to GitHub Size Limits)
 
 Some large files were excluded from the repository. Here's how to obtain them:
 
@@ -165,8 +165,8 @@ The following trained models are excluded:
 - `models/trained_models/xgboost_price_model.pkl` (413KB)
 
 **Available models** (included):
-- ✅ `elasticnet_price_model.pkl` (6.9KB)
-- ✅ `ridge_price_model.pkl` (6.8KB)
+-  `elasticnet_price_model.pkl` (6.9KB)
+-  `ridge_price_model.pkl` (6.8KB)
 
 **To recreate the missing models:**
 ```bash
@@ -435,8 +435,8 @@ The application includes multiple ML models for property price prediction. Some 
 
 ### Available Models (Included)
 
-✅ **ElasticNet Model** (`elasticnet_price_model.pkl`) - 6.9KB  
-✅ **Ridge Regression Model** (`ridge_price_model.pkl`) - 6.8KB
+ **ElasticNet Model** (`elasticnet_price_model.pkl`) - 6.9KB  
+ **Ridge Regression Model** (`ridge_price_model.pkl`) - 6.8KB
 
 ### Missing Models (Need Training)
 
@@ -965,7 +965,7 @@ print("\n=== Installed Packages ===")
 installed_packages = [d.project_name for d in pkg_resources.working_set]
 required_packages = ['flask', 'sqlalchemy', 'scikit-learn', 'pandas']
 for package in required_packages:
-    status = "✓" if package in installed_packages else "✗"
+    status = "" if package in installed_packages else ""
     print(f"{status} {package}")
 
 print("\n=== File Structure ===")
@@ -976,7 +976,7 @@ important_files = [
     'Dataset/sample_real_estate.csv'
 ]
 for file_path in important_files:
-    exists = "✓" if os.path.exists(file_path) else "✗"
+    exists = "" if os.path.exists(file_path) else ""
     print(f"{exists} {file_path}")
 ```
 
