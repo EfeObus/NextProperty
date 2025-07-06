@@ -1,0 +1,54 @@
+{
+  "repository": {
+    "remote_url": "https://github.com/EfeObus/NextProperty.git",
+    "branch": "main",
+    "auto_pull": true
+  },
+  "monitoring": {
+    "watch_enabled": true,
+    "update_delay": 30,
+    "ignore_patterns": [
+      "__pycache__/",
+      "*.pyc",
+      "*.pyo", 
+      "*.pyd",
+      ".Python",
+      "env/",
+      "venv/",
+      ".venv/",
+      ".env",
+      "instance/",
+      "logs/",
+      ".git/",
+      "*.log",
+      "*.log.*",
+      ".DS_Store",
+      "node_modules/",
+      ".npm/",
+      ".cache/",
+      "*.tmp",
+      "*.temp",
+      ".pytest_cache/",
+      ".coverage",
+      "htmlcov/",
+      ".tox/",
+      ".mypy_cache/",
+      ".idea/",
+      ".vscode/",
+      "*.db",
+      "*.sqlite",
+      "*.sqlite3"
+    ]
+  },
+  "commit_settings": {
+    "auto_generate_message": true,
+    "include_file_count": true,
+    "categorize_changes": true,
+    "default_message": "Auto-update: Project changes detected"
+  },
+  "notifications": {
+    "log_level": "INFO",
+    "log_file": "logs/git_auto_update.log",
+    "console_output": true
+  }
+}

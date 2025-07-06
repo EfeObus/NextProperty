@@ -1,0 +1,29 @@
+# SystemD Service File for NextProperty Auto Git Update
+# Place this file in /etc/systemd/system/nextproperty-auto-update.service
+# Then run: sudo systemctl enable nextproperty-auto-update.service
+
+[Unit]
+Description=NextProperty Auto Git Update Service
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/NextProperty
+ExecStart=/path/to/NextProperty/venv/bin/python /path/to/NextProperty/scripts/auto_git_update.py --watch --repo-path /path/to/NextProperty
+Restart=always
+RestartSec=10
+Environment=PATH=/path/to/NextProperty/venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONPATH=/path/to/NextProperty
+
+[Install]
+WantedBy=multi-user.target
+
+# Instructions:
+# 1. Replace YOUR_USERNAME with your actual username
+# 2. Replace /path/to/NextProperty with the actual path to your project
+# 3. Copy this file to /etc/systemd/system/nextproperty-auto-update.service
+# 4. Run: sudo systemctl daemon-reload
+# 5. Run: sudo systemctl enable nextproperty-auto-update.service
+# 6. Run: sudo systemctl start nextproperty-auto-update.service
+# 7. Check status: sudo systemctl status nextproperty-auto-update.service

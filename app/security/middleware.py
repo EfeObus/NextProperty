@@ -32,11 +32,11 @@ class SecurityMiddleware:
         # Register security headers
         app.after_request(add_security_headers)
         
-        # Register template filters and functions
-        app.jinja_env.filters['safe_html'] = safe_html_filter
-        app.jinja_env.filters['escape_js'] = escape_js_filter
-        app.jinja_env.globals['csrf_token'] = generate_csrf_token
-        app.jinja_env.globals['csrf_meta_tag'] = csrf_meta_tag
+        # Register template filters and functions (enhanced versions)
+        app.jinja_env.filters['safe_html'] = enhanced_safe_html_filter
+        app.jinja_env.filters['escape_js'] = enhanced_escape_js_filter
+        app.jinja_env.globals['csrf_token'] = generate_enhanced_csrf_token
+        app.jinja_env.globals['csrf_meta_tag'] = enhanced_csrf_meta_tag
 
 
 class XSSProtection:
@@ -331,7 +331,7 @@ def xss_protect(f):
 
 def add_security_headers(response):
     """
-    Add security headers to response.
+    Add security headers to response with enhanced CSP management.
     
     Args:
         response: Flask response object
@@ -348,25 +348,53 @@ def add_security_headers(response):
     # Frame Options
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     
-    # Content Security Policy
+    # Enhanced Content Security Policy
     if current_app.config.get('CONTENT_SECURITY_POLICY_ENABLED', True):
-        csp = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
-            "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
-            "https://unpkg.com https://maps.googleapis.com; "
-            "style-src 'self' 'unsafe-inline' "
-            "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
-            "https://unpkg.com https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com "
-            "https://cdnjs.cloudflare.com; "
-            "img-src 'self' data: https: blob:; "
-            "connect-src 'self' https://api.numlookupapi.com; "
-            "frame-src 'self' https://maps.google.com; "
-            "object-src 'none'; "
-            "base-uri 'self';"
-        )
-        response.headers['Content-Security-Policy'] = csp
+        # Check if enhanced CSP policy is available
+        if hasattr(g, 'csp_policy'):
+            try:
+                from .enhanced_csp import csp_manager
+                csp_header = csp_manager.policy_to_header(g.csp_policy)
+                header_name = csp_manager.get_header_name(g.csp_policy)
+                response.headers[header_name] = csp_header
+            except ImportError:
+                # Fallback to basic CSP
+                csp = (
+                    "default-src 'self'; "
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
+                    "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
+                    "https://unpkg.com https://maps.googleapis.com; "
+                    "style-src 'self' 'unsafe-inline' "
+                    "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
+                    "https://unpkg.com https://fonts.googleapis.com; "
+                    "font-src 'self' https://fonts.gstatic.com "
+                    "https://cdnjs.cloudflare.com; "
+                    "img-src 'self' data: https: blob:; "
+                    "connect-src 'self' https://api.numlookupapi.com; "
+                    "frame-src 'self' https://maps.google.com; "
+                    "object-src 'none'; "
+                    "base-uri 'self';"
+                )
+                response.headers['Content-Security-Policy'] = csp
+        else:
+            # Default CSP
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
+                "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
+                "https://unpkg.com https://maps.googleapis.com; "
+                "style-src 'self' 'unsafe-inline' "
+                "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
+                "https://unpkg.com https://fonts.googleapis.com; "
+                "font-src 'self' https://fonts.gstatic.com "
+                "https://cdnjs.cloudflare.com; "
+                "img-src 'self' data: https: blob:; "
+                "connect-src 'self' https://api.numlookupapi.com; "
+                "frame-src 'self' https://maps.google.com; "
+                "object-src 'none'; "
+                "base-uri 'self';"
+            )
+            response.headers['Content-Security-Policy'] = csp
     
     # Referrer Policy
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
@@ -380,6 +408,203 @@ def add_security_headers(response):
     return response
 
 
+def enhanced_xss_protect(f):
+    """
+    Enhanced XSS protection decorator using advanced threat analysis.
+    
+    Args:
+        f: Function to protect
+        
+    Returns:
+        Decorated function
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            from .enhanced_integration import enhanced_security
+            
+            # Perform enhanced security analysis
+            security_report = enhanced_security.analyze_request('public')
+            
+            # Store report in g for access in route
+            g.security_report = security_report
+            
+            # Block critical threats
+            if security_report.overall_threat_level.name == 'CRITICAL':
+                current_app.logger.error(f"Critical XSS threat blocked: {security_report.recommendation}")
+                if request.is_json:
+                    return jsonify({'error': 'Request blocked due to security policy'}), 403
+                else:
+                    abort(403)
+            
+            # Log high threats
+            if security_report.overall_threat_level.name == 'HIGH':
+                current_app.logger.warning(f"High XSS threat detected: {security_report.recommendation}")
+        
+        except ImportError:
+            # Fallback to standard XSS protection
+            return xss_protect(f)(*args, **kwargs)
+        except Exception as e:
+            current_app.logger.error(f"Enhanced XSS protection error: {e}")
+            # Continue with request but log the error
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
+
+
+def enhanced_csrf_protect(f):
+    """
+    Enhanced CSRF protection with behavioral analysis.
+    
+    Args:
+        f: Function to protect
+        
+    Returns:
+        Decorated function
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Standard CSRF validation first
+        if request.method in ['POST', 'PUT', 'DELETE', 'PATCH']:
+            # Get tokens
+            request_token = CSRFProtection.get_token_from_request()
+            session_token = session.get('csrf_token')
+            
+            # Validate token
+            if not CSRFProtection.validate_token(request_token, session_token):
+                current_app.logger.warning(f"CSRF token validation failed for IP: {request.remote_addr}")
+                
+                # Try enhanced behavioral analysis
+                try:
+                    from .enhanced_integration import enhanced_security
+                    
+                    # Check if this might be a legitimate request from behavioral perspective
+                    security_report = enhanced_security.analyze_request('api')
+                    
+                    # If behavioral analysis shows very low risk, log but allow (with caution)
+                    if (security_report.behavior_analysis and 
+                        security_report.behavior_analysis.risk_score < 1.0 and
+                        not security_report.behavior_analysis.patterns_detected):
+                        current_app.logger.info("CSRF failed but low behavioral risk - potential legitimate request")
+                    
+                except ImportError:
+                    pass
+                
+                if request.is_json:
+                    return jsonify({'error': 'CSRF token validation failed'}), 403
+                else:
+                    abort(403)
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
+
+
+# Enhanced template filters and functions
+def enhanced_safe_html_filter(content):
+    """
+    Enhanced Jinja2 filter for safe HTML content using advanced sanitization.
+    
+    Args:
+        content: Content to sanitize
+        
+    Returns:
+        Markup: Safe HTML content
+    """
+    if not content:
+        return Markup("")
+    
+    try:
+        from .advanced_xss import advanced_xss, Context
+        
+        # Use advanced XSS analysis for sanitization
+        analysis = advanced_xss.analyze_content(str(content), Context.HTML)
+        
+        if analysis.blocked:
+            # Content is too dangerous, return empty
+            return Markup("")
+        else:
+            # Use sanitized content
+            return Markup(analysis.sanitized_content)
+            
+    except ImportError:
+        # Fallback to standard sanitization
+        return safe_html_filter(content)
+
+
+def enhanced_escape_js_filter(content):
+    """
+    Enhanced Jinja2 filter for JavaScript-safe content.
+    
+    Args:
+        content: Content to escape
+        
+    Returns:
+        str: JavaScript-safe content
+    """
+    try:
+        from .advanced_xss import advanced_xss, Context
+        
+        # Use advanced XSS analysis for JavaScript context
+        analysis = advanced_xss.analyze_content(str(content), Context.JAVASCRIPT)
+        
+        if analysis.blocked:
+            return ""  # Block dangerous content
+        else:
+            return analysis.sanitized_content
+            
+    except ImportError:
+        # Fallback to standard escaping
+        return escape_js_filter(content)
+
+
+def generate_enhanced_csrf_token():
+    """
+    Generate CSRF token with enhanced tracking.
+    
+    Returns:
+        str: CSRF token
+    """
+    token = generate_csrf_token()
+    
+    # Track token generation for behavioral analysis
+    try:
+        from .behavioral_analysis import behavioral_analyzer
+        
+        # This helps track token generation patterns
+        if hasattr(g, 'security_report'):
+            g.security_report.actions_taken.append("csrf_token_generated")
+            
+    except ImportError:
+        pass
+    
+    return token
+
+
+def enhanced_csrf_meta_tag():
+    """
+    Generate CSRF meta tag with nonce if available.
+    
+    Returns:
+        Markup: CSRF meta tag
+    """
+    token = generate_enhanced_csrf_token()
+    
+    # Try to add nonce if CSP is active
+    nonce_attr = ""
+    try:
+        from .enhanced_csp import csp_manager
+        nonce = csp_manager.get_current_nonce()
+        if nonce:
+            nonce_attr = f' nonce="{nonce}"'
+    except ImportError:
+        pass
+    
+    return Markup(f'<meta name="csrf-token" content="{token}"{nonce_attr}>')
+
+
+# Original template filters and functions (now enhanced versions available)
 def safe_html_filter(content):
     """
     Jinja2 filter for safe HTML content.
