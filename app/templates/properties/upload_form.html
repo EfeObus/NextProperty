@@ -27,6 +27,7 @@
                     {% endwith %}
 
                     <form method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <!-- Property Location -->
                         <div class="mb-4">
                             <h6 class="text-primary mb-3">Property Location</h6>

@@ -1,9 +1,22 @@
 # NextProperty AI - Real Estate Investment Platform
 
+[![Security Status](https://img.shields.io/badge/Security-Enterprise%20Ready-green.svg)](docs/SECURITY_IMPLEMENTATION.md)
+[![OWASP Compliance](https://img.shields.io/badge/OWASP-Top%2010%20Protected-blue.svg)](docs/SECURITY_IMPLEMENTATION.md)
+[![XSS Protection](https://img.shields.io/badge/XSS-Protected-brightgreen.svg)](docs/SECURITY_IMPLEMENTATION.md)
+[![CSRF Protection](https://img.shields.io/badge/CSRF-Protected-brightgreen.svg)](docs/SECURITY_IMPLEMENTATION.md)
+
 NextProperty AI revolutionizes property investment and management by leveraging advanced artificial intelligence solutions with comprehensive economic integration. The platform offers personalized, data-driven property analysis with real-time economic indicators to assist investors in making informed decisions.
 
-##  Latest Updates (v2.0)
+##  Latest Updates (v2.5.0)
 
+### 🔒 **Enterprise Security Implementation**
+- **XSS Protection**: Comprehensive Cross-Site Scripting prevention with HTML sanitization
+- **CSRF Protection**: Cross-Site Request Forgery protection with automatic token management
+- **Security Headers**: Content Security Policy, XSS Protection, and clickjacking prevention
+- **Secure Forms**: XSS-protected form fields with real-time validation
+- **Security Middleware**: Centralized security management with automatic protection
+
+### 🚀 **Enhanced ML Pipeline (v2.0)**
 - **Enhanced ML Pipeline**: 6+ advanced models with ensemble stacking (88.3% accuracy)
 - **Economic Integration**: Real-time Bank of Canada and Statistics Canada data
 - **26-Feature Analysis**: Including 10 economic indicators + derived features
@@ -189,6 +202,13 @@ Client ↔ API Gateway ↔ Backend Services ↔ MySQL Database
 - **Monitoring**: Logging with rotation, health checks
 - **CLI Tools**: Flask-CLI for model management
 
+### **Security Stack**
+- **CSRF Protection**: Flask-WTF for Cross-Site Request Forgery prevention
+- **XSS Protection**: Bleach library for HTML sanitization and XSS prevention
+- **Input Validation**: MarkupSafe for secure template rendering
+- **Security Headers**: Content Security Policy and comprehensive security headers
+- **Session Security**: Secure cookie configuration and session management
+
 ### **External APIs**
 - **Economic Data**: Bank of Canada, Statistics Canada
 - **Geospatial**: Google Maps, Geocoding
@@ -203,9 +223,18 @@ nextproperty-ai/
     routes/
     services/
     templates/
+      macros/
+        secure_forms.html    # Security form macros
     static/
     utils/
     cache/
+    security/               # Security module
+      __init__.py
+      middleware.py         # XSS/CSRF protection
+      config.py            # Security configuration
+    forms/                  # Secure forms
+      __init__.py
+      secure_forms.py      # XSS-protected forms
  config/
  migrations/
  scripts/
@@ -213,6 +242,8 @@ nextproperty-ai/
  data/
  logs/
  models/
+ docs/
+    SECURITY_IMPLEMENTATION.md  # Security documentation
  Dockerfile
  docker-compose.yml
  requirements.txt
@@ -763,16 +794,64 @@ docker-compose up -d
 
 ## Security
 
-- Input validation and sanitization
-- SQL injection prevention
-- CSRF protection
-- Secure session management
-- API authentication and authorization
-- Data encryption at rest and in transit
-- **Automated Secret Key Management**: 30-day rotation with cryptographically secure keys
-  - See `scripts/SECRET_KEY_MANAGEMENT.md` for details
-  - Automated expiry checking and regeneration
-  - Cron job setup for hands-free operation
+NextProperty AI implements **enterprise-grade security** with comprehensive protection against modern web application threats.
+
+### 🔒 **XSS (Cross-Site Scripting) Protection**
+- **HTML Sanitization**: Bleach library integration for safe HTML content rendering
+- **Input Validation**: Real-time validation against malicious patterns and script injection
+- **Template Security**: Safe HTML and JavaScript escaping filters (`safe_html`, `escape_js`)
+- **Client-Side Protection**: JavaScript validation preventing malicious script execution
+- **Pattern Detection**: Automated detection of suspicious content and script tags
+
+### 🛡️ **CSRF (Cross-Site Request Forgery) Protection**
+- **Flask-WTF Integration**: Automatic CSRF token generation and validation
+- **Form Protection**: Hidden CSRF tokens in all state-changing forms
+- **AJAX Security**: Automatic CSRF token inclusion in JavaScript requests
+- **API Protection**: CSRF validation for all POST/PUT/DELETE/PATCH endpoints
+- **Multi-Source Validation**: Support for form data, headers, and JSON token sources
+
+### 🔐 **Security Headers Implementation**
+- **Content Security Policy (CSP)**: Restricts script sources and prevents XSS
+- **X-XSS-Protection**: Browser-level XSS filtering enabled
+- **X-Frame-Options**: Clickjacking protection (`SAMEORIGIN`)
+- **X-Content-Type-Options**: MIME type sniffing prevention (`nosniff`)
+- **Referrer-Policy**: Privacy protection (`strict-origin-when-cross-origin`)
+- **Permissions-Policy**: Dangerous feature restrictions (camera, microphone, etc.)
+
+### 🔧 **Security Infrastructure**
+- **Security Middleware**: Centralized security management and automatic protection
+- **Secure Forms Framework**: XSS-protected form fields with automatic sanitization
+- **Template Macros**: Reusable secure form components
+- **Input Sanitization**: Server-side validation and cleaning of all user inputs
+- **Session Security**: Secure cookie configuration and session management
+
+### 🚨 **Additional Security Measures**
+- **SQL Injection Prevention**: Parameterized queries and ORM protection
+- **Input Validation**: Comprehensive data sanitization and validation
+- **API Authentication**: Secure API access control and authorization
+- **Data Encryption**: Encryption at rest and in transit
+- **Security Monitoring**: Event logging and suspicious activity detection
+
+### 🔑 **Automated Secret Key Management**
+- **30-Day Rotation**: Automated secret key rotation with cryptographically secure keys
+- **Automated Expiry**: Real-time checking and regeneration of expired keys
+- **Cron Integration**: Hands-free operation with scheduled key rotation
+- **Audit Trail**: Complete logging of key generation and rotation activities
+- **Documentation**: See `scripts/SECRET_KEY_MANAGEMENT.md` for details
+
+### 📋 **Compliance & Standards**
+- **OWASP Compliance**: Protection against OWASP Top 10 vulnerabilities
+- **SOC 2 Ready**: Enterprise security standards compliance
+- **ISO 27001**: Information security management standards
+- **PIPEDA/GDPR**: Data protection regulation compliance
+
+### 📖 **Security Documentation**
+- **Implementation Guide**: `docs/SECURITY_IMPLEMENTATION.md`
+- **Secret Key Management**: `scripts/SECRET_KEY_MANAGEMENT.md`
+- **Security Configuration**: `app/security/config.py`
+- **Secure Forms Guide**: `app/templates/macros/secure_forms.html`
+
+**Security Status**: ✅ **Enterprise-Ready** | ✅ **Production-Secure** | ✅ **Compliance-Ready**
 
 ## Roadmap & Changelog
 

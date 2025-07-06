@@ -6,6 +6,7 @@ from app.services.ml_service import MLService
 from app.services.data_service import DataService
 from app.services.external_apis import ExternalAPIsService
 from app.utils.validators import validate_property_photos
+from app.security.middleware import csrf_protect, xss_protect
 from flask_login import login_required, current_user
 from sqlalchemy import func, and_
 from sqlalchemy.orm import joinedload, selectinload
@@ -555,6 +556,8 @@ def favourites():
 
 
 @bp.route('/api/save-property', methods=['POST'])
+@csrf_protect
+@xss_protect
 def save_property():
     """Demo save property endpoint - will require authentication when implemented."""
     try:
@@ -576,6 +579,8 @@ def save_property():
 
 
 @bp.route('/api/update-saved-property', methods=['POST'])
+@csrf_protect
+@xss_protect
 # @login_required  # Commented out until authentication is implemented
 def update_saved_property():
     """Update notes and tags for a saved property."""
@@ -731,6 +736,7 @@ def register():
 
 
 @bp.route('/predict-price', methods=['GET', 'POST'])
+@xss_protect  # Only add XSS protection, CSRF will be handled by Flask-WTF for POST requests
 def predict_price():
     """Property price prediction page."""
     try:

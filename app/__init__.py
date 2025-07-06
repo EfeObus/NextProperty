@@ -1,6 +1,7 @@
 from flask import Flask, g, request, render_template
 from flask_cors import CORS
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import uuid
 from datetime import datetime
@@ -10,7 +11,8 @@ import pymysql
 pymysql.install_as_MySQLdb()
 
 # Import extensions from the central location
-from app.extensions import db, migrate, login_manager, cache
+from app.extensions import db, migrate, login_manager, cache, csrf
+from app.security.middleware import security_middleware
 
 def create_app(config_name=None):
     """Application factory pattern."""
@@ -37,6 +39,10 @@ def create_app(config_name=None):
     migrate.init_app(app, db)
     login_manager.init_app(app)
     cache.init_app(app)
+    csrf.init_app(app)
+    
+    # Initialize security middleware
+    security_middleware.init_app(app)
     
     # Configure CORS
     CORS(app, resources={

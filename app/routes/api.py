@@ -7,6 +7,7 @@ from app.models.economic_data import EconomicData, EconomicIndicator
 from app.services.ml_service import MLService
 from app.services.data_service import DataService
 from app.services.geospatial_service import GeospatialService
+from app.security.middleware import csrf_protect, xss_protect
 # from app.utils.helpers import validate_request_args, paginate_query  # TODO: Implement these functions
 from sqlalchemy import func, text
 import json
@@ -162,6 +163,8 @@ def get_property_rooms(listing_id):
 
 
 @bp.route('/properties/<string:listing_id>/analyze', methods=['POST'])
+@csrf_protect
+@xss_protect
 def analyze_property(listing_id):
     """Get AI analysis for a property."""
     try:
@@ -481,6 +484,8 @@ def get_stats_summary():
 
 
 @bp.route('/property-prediction', methods=['POST'])
+@csrf_protect
+@xss_protect
 def predict_property_price():
     """API endpoint for property price prediction."""
     try:
