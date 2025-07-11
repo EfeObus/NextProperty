@@ -64,6 +64,29 @@ class Config:
     CACHE_REDIS_DB = int(os.environ.get('CACHE_REDIS_DB', 0))
     CACHE_DEFAULT_TIMEOUT = int(os.environ.get('CACHE_DEFAULT_TIMEOUT', 300))
     
+    # Redis Configuration for Rate Limiting
+    REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+    REDIS_PORT = int(os.environ.get('REDIS_PORT', 6379))
+    REDIS_DB = int(os.environ.get('REDIS_DB', 1))  # Use different DB for rate limiting
+    
+    # Rate Limiting Configuration
+    RATELIMIT_ENABLED = os.environ.get('RATELIMIT_ENABLED', 'true').lower() == 'true'
+    RATELIMIT_STORAGE_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+    RATELIMIT_STRATEGY = "fixed-window"
+    RATELIMIT_HEADERS_ENABLED = True
+    
+    # Import rate limiting configuration
+    from app.security.rate_limit_config import (
+        RATE_LIMIT_DEFAULTS, RATE_LIMIT_SENSITIVE, RATE_LIMIT_BURST,
+        ENDPOINT_SPECIFIC_LIMITS, ROLE_BASED_LIMITS
+    )
+    
+    RATE_LIMIT_DEFAULTS = RATE_LIMIT_DEFAULTS
+    RATE_LIMIT_SENSITIVE = RATE_LIMIT_SENSITIVE
+    RATE_LIMIT_BURST = RATE_LIMIT_BURST
+    ENDPOINT_SPECIFIC_LIMITS = ENDPOINT_SPECIFIC_LIMITS
+    ROLE_BASED_LIMITS = ROLE_BASED_LIMITS
+    
     # File Upload
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'app/static/images/properties')
     MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH', 64 * 1024 * 1024))  # 64MB (20 photos × 3MB each)

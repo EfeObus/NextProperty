@@ -26,16 +26,25 @@ nextproperty-ai/
        database_optimizer.py   # Database performance optimization
        etl_service.py          # ETL operations service
        export_service.py       # Enhanced export capabilities
-    security/                   #  SECURITY MODULE (NEW)
+    security/                   #  SECURITY MODULE (ENHANCED)
        __init__.py
        middleware.py           # Security middleware and decorators
        config.py               # Security configuration
+       rate_limiter.py         #  Advanced rate limiting engine (NEW)
+       rate_limit_config.py    #  Rate limiting configuration (NEW)
+       advanced_xss.py         # Advanced XSS protection
+       behavioral_analysis.py  # Behavioral security analysis
+       enhanced_csp.py         # Enhanced CSP management
+       advanced_validation.py  # ML-based input validation
+       enhanced_integration.py # Unified security framework
+       enhanced_config.py      # Enhanced security configuration
     forms/                      #  SECURE FORMS MODULE (NEW)
        __init__.py
        secure_forms.py         # XSS-protected form fields
     cli/                        # Command Line Interface
        __init__.py
        etl_commands.py         # ETL and model management CLI commands
+       rate_limit_commands.py  #  Rate limiting management CLI (NEW)
     cache/                      # Caching system
        __init__.py
        api_cache.py            # API response caching
@@ -72,6 +81,7 @@ nextproperty-ai/
           properties.html     # Property management
        errors/                 # Error pages
           404.html            # Not found page
+          429.html            #  Rate limit exceeded page (NEW)
           500.html            # Server error page
        pages/                  # Static pages
           contact.html        # Contact form
@@ -215,6 +225,8 @@ nextproperty-ai/
     MACHINE_LEARNING_DOCUMENTATION.md # ML models and algorithms
     PERFORMANCE_OPTIMIZATION.md # Performance tuning guide
     SECURITY_IMPLEMENTATION.md #  Security features guide (NEW)
+    RATE_LIMITING_IMPLEMENTATION.md #  Rate limiting implementation guide (NEW)
+    RATE_LIMITING_SUMMARY.md  #  Rate limiting executive summary (NEW)
     SECRET_KEY_MANAGEMENT.md  #  Secret key management (NEW)
     DOCUMENTATION_UPDATES_SUMMARY.md # Documentation change summary (NEW)
     ECONOMIC_INTEGRATION_COMPLETE.md # Economic integration guide
@@ -231,6 +243,8 @@ nextproperty-ai/
  retrain_model_26_features.py  # Specialized retraining script
  simple_retrain.py            # Quick model retraining utility
  migrate_to_mysql.py          # Database migration script
+ test_rate_limiting.py        #  Rate limiting testing suite (NEW)
+ demo_rate_limiting.py        #  Interactive rate limiting demo (NEW)
  Week Four Next Property AI.ipynb # Development notebook
  app.py                       # Flask application entry point
  requirements.txt              # Python dependencies
@@ -257,21 +271,35 @@ nextproperty-ai/
 - **models/**: Enhanced SQLAlchemy database models with economic data integration
 - **routes/**: Flask blueprints with expanded API endpoints for ML and analytics
 - **services/**: Enhanced business logic layer with 6+ ML models and economic integration
-- **security/**:  **Enterprise security module** with XSS/CSRF protection
+- **security/**:  **Enhanced enterprise security module** with comprehensive protection
+  - **rate_limiter.py**: Advanced multi-layer rate limiting engine
+  - **rate_limit_config.py**: Comprehensive rate limiting configuration
+  - **middleware.py**: CSRF protection, XSS prevention, security headers
+  - **advanced_xss.py**: ML-powered XSS detection and protection
+  - **behavioral_analysis.py**: User behavior analysis and anomaly detection
+  - **enhanced_csp.py**: Dynamic Content Security Policy management
 - **forms/**:  **Secure form fields** with automatic sanitization
-- **cli/**: Command line interface for ETL operations and model management
+- **cli/**: Enhanced command line interface for operations and security management
+  - **etl_commands.py**: ETL operations and model management
+  - **rate_limit_commands.py**: Rate limiting monitoring and management tools
 - **cache/**: Advanced caching system for API responses and ML predictions
 - **templates/**: Responsive Jinja2 HTML templates with economic dashboards
 - **static/**: Frontend assets with enhanced visualizations and charts
 - **utils/**: Utility functions for database operations, validation, and ML helpers
 
-###  Security Architecture (NEW - v2.5.0)
+###  Enhanced Security Architecture (v2.6.0)
+- **security/rate_limiter.py**: Advanced multi-layer rate limiting engine
+- **security/rate_limit_config.py**: Comprehensive rate limiting configuration system
 - **security/middleware.py**: CSRF protection, XSS prevention, security headers
 - **security/config.py**: Centralized security configuration and policies
+- **security/advanced_xss.py**: ML-powered XSS detection and behavioral analysis
 - **forms/secure_forms.py**: XSS-protected form fields with automatic validation
 - **templates/macros/secure_forms.html**: Reusable secure form components
+- **templates/errors/429.html**: User-friendly rate limit exceeded error page
+- **CLI Security Tools**: Real-time monitoring and management capabilities
 - **Enhanced Input Validation**: Server-side sanitization and client-side protection
 - **Security Headers**: CSP, X-XSS-Protection, X-Frame-Options, and more
+- **Rate Limiting Protection**: DDoS prevention, API abuse protection, brute force prevention
 
 ### Enhanced ML & Analytics
 - **ml_service.py**: Production ML service with ensemble stacking (6+ models)

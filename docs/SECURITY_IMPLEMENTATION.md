@@ -180,10 +180,12 @@ var propertyData = {
 - File signature verification (configurable)
 
 ### Rate Limiting
-- Global rate limit: 1000 requests per hour
-- API rate limit: 100 requests per minute
+- Global rate limit: 1000 requests per minute
+- API rate limit: 100 requests per minute  
 - Authentication rate limit: 10 requests per minute
-- Upload rate limit: 5 requests per minute
+- Property search rate limit: 200 requests per minute
+- ML prediction rate limit: 50 requests per minute
+- Upload rate limit: 10 requests per minute
 
 ## Testing
 

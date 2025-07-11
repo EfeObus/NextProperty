@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Register - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% if demo_mode %}
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Demo Mode</h5>
+                <p>Registration is not implemented in this demo version. You can explore all features without creating an account.</p>
+                <p>User accounts and authentication will be available in future versions.</p>
+            </div>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Register</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.register') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" {% if demo_mode %}disabled placeholder="Demo mode - registration disabled"{% else %}required{% endif %}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" {% if demo_mode %}disabled placeholder="Demo mode - registration disabled"{% else %}required{% endif %}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" {% if demo_mode %}disabled placeholder="Demo mode - registration disabled"{% else %}required{% endif %}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" {% if demo_mode %}disabled placeholder="Demo mode - registration disabled"{% else %}required{% endif %}>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary" {% if demo_mode %}disabled{% endif %}>
+                                {% if demo_mode %}Demo Mode - Registration Disabled{% else %}Register{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('main.login') }}">Already have an account? Login here</a>
+                    </div>
+                    {% if demo_mode %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-home"></i> Continue Exploring Demo
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

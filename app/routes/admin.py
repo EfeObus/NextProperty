@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify, current_app, flash, redirect, url_for
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models.property import Property
 from app.services.ml_service import MLService
 from app.services.data_service import DataService
 from app.services.database_optimizer import DatabaseOptimizer, BulkOperationManager
+from app.security.rate_limiter import rate_limit
 from datetime import datetime, timedelta
 from sqlalchemy import func, text
 import json
@@ -16,6 +17,8 @@ data_service = DataService()
 db_optimizer = DatabaseOptimizer()
 
 @bp.route('/')
+@limiter.limit("50 per hour")
+@rate_limit(requests=50, window=3600, category='admin')
 def dashboard():
     """Admin dashboard with system overview."""
     try:
@@ -75,6 +78,8 @@ def bulk_operations():
         return render_template('admin/bulk_operations.html', error=True)
 
 @bp.route('/api/bulk-ai-analysis', methods=['POST'])
+@limiter.limit("5 per hour")
+@rate_limit(requests=5, window=3600, category='admin')
 def bulk_ai_analysis():
     """Generate AI valuations for properties in bulk."""
     try:
@@ -156,6 +161,8 @@ def bulk_ai_analysis():
         }), 500
 
 @bp.route('/api/optimize-database', methods=['POST'])
+@limiter.limit("2 per hour")
+@rate_limit(requests=2, window=3600, category='admin')
 def optimize_database():
     """Optimize database for better performance."""
     try:
@@ -174,6 +181,8 @@ def optimize_database():
         }), 500
 
 @bp.route('/api/cleanup-data', methods=['POST'])
+@limiter.limit("3 per hour")
+@rate_limit(requests=3, window=3600, category='admin')
 def cleanup_data():
     """Clean up invalid or incomplete data."""
     try:

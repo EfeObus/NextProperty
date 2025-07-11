@@ -861,10 +861,63 @@ All admin endpoints are prefixed with `/admin/` and require admin authentication
 
 # Rate Limiting
 
-Currently, no rate limiting is implemented. In production, consider:
-- 100 requests per minute for general API
-- 10 requests per minute for ML prediction endpoints
-- 5 requests per minute for bulk operations
+**Enterprise-grade rate limiting is now implemented** to protect against abuse and ensure fair usage:
+
+## Rate Limit Configuration
+
+### Global Limits
+- **All endpoints**: 1000 requests per minute per IP address
+- **API endpoints**: 100 requests per minute
+- **Authentication**: 10 login attempts per minute
+- **Property search**: 200 requests per minute
+- **ML predictions**: 50 requests per minute
+- **File uploads**: 10 uploads per minute
+
+### User-Based Limits
+- **Authenticated users**: 2x higher limits
+- **Premium users**: 5x higher limits
+- **Admin users**: 10x higher limits
+
+### Rate Limit Headers
+
+All responses include rate limit information:
+
+```http
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+X-RateLimit-Retry-After: 60
+```
+
+### Rate Limit Exceeded Response
+
+When rate limits are exceeded, you'll receive a 429 status code:
+
+```json
+{
+  "success": false,
+  "error": "Rate limit exceeded",
+  "message": "Too many requests. Please try again in 60 seconds.",
+  "retry_after": 60,
+  "limit": 100,
+  "reset_time": "2025-01-01T12:00:00Z"
+}
+```
+
+### Best Practices
+
+1. **Check rate limit headers** before making requests
+2. **Implement exponential backoff** when hitting limits
+3. **Space out requests** appropriately
+4. **Use caching** to reduce API calls
+5. **Batch operations** when possible
+
+### Rate Limit Bypass
+
+For legitimate high-volume applications:
+- Contact support for rate limit increases
+- Consider premium API access
+- Implement proper request queuing
 
 # Caching
 

@@ -4,6 +4,7 @@
 [![OWASP Compliance](https://img.shields.io/badge/OWASP-Top%2010%20Protected-blue.svg)](docs/ENHANCED_XSS_PROTECTION_IMPLEMENTATION.md)
 [![Advanced XSS Protection](https://img.shields.io/badge/XSS-Advanced%20ML%20Protection-brightgreen.svg)](docs/ENHANCED_XSS_PROTECTION_IMPLEMENTATION.md)
 [![CSRF Protection](https://img.shields.io/badge/CSRF-Protected-brightgreen.svg)](docs/SECURITY_IMPLEMENTATION.md)
+[![Rate Limiting](https://img.shields.io/badge/Rate%20Limiting-Multi%20Layer-red.svg)](docs/RATE_LIMITING_IMPLEMENTATION.md)
 [![Behavioral Analysis](https://img.shields.io/badge/Behavioral-AI%20Monitoring-orange.svg)](docs/ENHANCED_XSS_PROTECTION_IMPLEMENTATION.md)
 [![ML Validation](https://img.shields.io/badge/ML%20Validation-Neural%20Networks-purple.svg)](docs/ENHANCED_XSS_PROTECTION_IMPLEMENTATION.md)
 
@@ -11,7 +12,15 @@ NextProperty AI revolutionizes property investment and management by leveraging 
 
 ##  Latest Updates (v2.6.0)
 
-###  **Enhanced Multi-Layer XSS Protection** 
+###  **Comprehensive Rate Limiting Security (v2.6.0)** 
+- **Multi-Layer Rate Limiting**: Global, IP, user, endpoint, and category-based protection
+- **DDoS Protection**: High-volume attack mitigation and traffic shaping
+- **API Abuse Prevention**: Protection against automated scraping and excessive usage
+- **Intelligent Detection**: Pattern recognition and progressive penalties for repeat offenders
+- **Redis-Based Distribution**: Production-ready distributed rate limiting with in-memory fallback
+- **CLI Management Tools**: Real-time monitoring, alerting, and management capabilities
+
+###  **Enhanced Multi-Layer XSS Protection (v2.5.0)** 
 - **Advanced XSS Detection**: ML-powered threat detection with 20+ attack patterns
 - **Behavioral Analysis**: AI-driven anomaly detection and user behavior monitoring
 - **Dynamic CSP Management**: Real-time Content Security Policy with nonce generation
@@ -804,6 +813,39 @@ docker-compose up -d
 ## Security
 
 NextProperty AI implements **state-of-the-art multi-layer security** with advanced machine learning-powered threat detection and comprehensive protection against modern web application threats.
+
+###  **Comprehensive Rate Limiting Security (v2.6.0)**
+
+#### **Multi-Layer Rate Limiting Protection**
+- **Global Rate Limiting**: System-wide protection with 1,000 requests per hour across all users
+- **IP-Based Limiting**: 100 requests per hour per IP address with burst protection (10/minute)
+- **User-Based Limiting**: 500 requests per hour for authenticated users with role-based adjustments
+- **Endpoint-Specific Limiting**: Custom limits for sensitive operations (5-50 requests per timeframe)
+- **Category-Based Protection**: Specialized limits for authentication, ML predictions, admin operations
+
+#### **Intelligent Attack Prevention**
+- **DDoS Protection**: High-volume attack mitigation with traffic shaping and progressive penalties
+- **Brute Force Prevention**: Login attempt limiting (5 attempts per 5 minutes) with exponential backoff
+- **API Abuse Prevention**: Protection against automated scraping and excessive API usage
+- **Resource Protection**: CPU and memory protection through intelligent request limiting
+- **Progressive Penalties**: Increasing restrictions for repeat offenders with behavioral analysis
+
+#### **Advanced Rate Limiting Features**
+- **Redis-Based Distribution**: Production-ready distributed rate limiting with automatic failover
+- **In-Memory Fallback**: Development-friendly local storage when Redis unavailable
+- **Pattern Recognition**: Anomaly detection and suspicious behavior identification
+- **Geographic Awareness**: Optional location-based rate limiting capabilities
+- **Real-Time Monitoring**: Live usage tracking with comprehensive analytics
+
+#### **Rate Limiting Management & Monitoring**
+- **CLI Management Suite**: Comprehensive command-line tools for monitoring and management
+  - `flask rate-limit status`: Real-time usage monitoring and statistics
+  - `flask rate-limit alerts`: Violation detection and alert management
+  - `flask rate-limit details`: Client-specific usage analysis and forensics
+  - `flask rate-limit health`: System health monitoring and diagnostics
+- **Custom 429 Error Pages**: User-friendly rate limit exceeded pages with countdown timers
+- **Informative Headers**: Clear rate limit information in response headers
+- **Performance Optimization**: <1ms latency overhead with optimized algorithms
 
 ###  **Enhanced Multi-Layer XSS Protection (v2.6.0)**
 

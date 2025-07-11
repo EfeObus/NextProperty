@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Limit Exceeded - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Rate Limit Exceeded
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-tachometer-alt fa-4x text-warning mb-3"></i>
+                        <h5>Too Many Requests</h5>
+                        <p class="text-muted">
+                            You've exceeded the rate limit for {{ limit_type }} requests. 
+                            Please wait before making additional requests.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <strong>Please try again in {{ retry_after }} seconds</strong>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>Rate Limiting Information:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Limit Type:</strong></td>
+                                            <td class="text-capitalize">{{ limit_type }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Retry After:</strong></td>
+                                            <td>{{ retry_after }} seconds</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Time:</strong></td>
+                                            <td>{{ current_time }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button class="btn btn-primary me-2" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Go Back
+                        </button>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-home me-1"></i>
+                            Home Page
+                        </a>
+                    </div>
+
+                    <div class="mt-4 text-muted small">
+                        <p>
+                            <strong>Why do we have rate limits?</strong><br>
+                            Rate limits help protect our service from abuse and ensure fair usage for all users.
+                            They help maintain system performance and reliability.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto-refresh countdown -->
+            <div class="card mt-3 border-light">
+                <div class="card-body text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Page will automatically refresh in <span id="countdown">{{ retry_after }}</span> seconds
+                    </small>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-info" role="progressbar" id="progress-bar" 
+                             style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let timeLeft = {{ retry_after }};
+    const totalTime = timeLeft;
+    const countdownElement = document.getElementById('countdown');
+    const progressBar = document.getElementById('progress-bar');
+    
+    const timer = setInterval(function() {
+        timeLeft--;
+        countdownElement.textContent = timeLeft;
+        
+        // Update progress bar
+        const progress = (timeLeft / totalTime) * 100;
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            window.location.reload();
+        }
+    }, 1000);
+});
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.fa-tachometer-alt {
+    opacity: 0.8;
+}
+
+.table td {
+    border: none;
+    padding: 0.5rem;
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 1s linear;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .fa-tachometer-alt {
+        font-size: 3rem !important;
+    }
+}
+</style>
+{% endblock %}

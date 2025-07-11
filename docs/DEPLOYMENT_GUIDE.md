@@ -81,7 +81,12 @@ JWT_REFRESH_TOKEN_EXPIRES=2592000  # 30 days
 
 # Rate Limiting
 RATE_LIMIT_STORAGE_URL=redis://redis-server:6379/1
-RATE_LIMIT_DEFAULT=100 per hour
+RATE_LIMIT_DEFAULT=1000 per minute
+RATE_LIMIT_API=100 per minute
+RATE_LIMIT_AUTH=10 per minute
+RATE_LIMIT_SEARCH=200 per minute
+RATE_LIMIT_PREDICTION=50 per minute
+RATE_LIMIT_UPLOAD=10 per minute
 
 # CORS Settings
 CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com

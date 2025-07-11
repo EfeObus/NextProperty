@@ -11,8 +11,9 @@ import pymysql
 pymysql.install_as_MySQLdb()
 
 # Import extensions from the central location
-from app.extensions import db, migrate, login_manager, cache, csrf
+from app.extensions import db, migrate, login_manager, cache, csrf, limiter
 from app.security.middleware import security_middleware
+from app.security.rate_limiter import rate_limiter
 
 def create_app(config_name=None):
     """Application factory pattern."""
@@ -40,6 +41,28 @@ def create_app(config_name=None):
     login_manager.init_app(app)
     cache.init_app(app)
     csrf.init_app(app)
+    
+    # Initialize rate limiter
+    limiter.init_app(app)
+    
+    # Initialize custom rate limiter
+    try:
+        import redis
+        redis_client = redis.Redis(
+            host=app.config.get('REDIS_HOST', 'localhost'),
+            port=app.config.get('REDIS_PORT', 6379),
+            db=app.config.get('REDIS_DB', 0),
+            decode_responses=True
+        )
+        # Test Redis connection
+        redis_client.ping()
+        rate_limiter.redis_client = redis_client
+        app.logger.info("Rate limiter initialized with Redis backend")
+    except Exception as e:
+        app.logger.warning(f"Redis not available for rate limiting: {e}")
+        app.logger.info("Rate limiter will use in-memory backend")
+    
+    rate_limiter.init_app(app)
     
     # Initialize security middleware
     security_middleware.init_app(app)

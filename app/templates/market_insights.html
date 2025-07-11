@@ -13,6 +13,33 @@
         </div>
     </div>
 
+    <!-- Auto-Refresh Controls -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <button id="refreshBtn" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Refresh Now
+                    </button>
+                    <button id="analyzeBtn" class="btn btn-success btn-sm ms-2">
+                        <i class="fas fa-robot me-1"></i>
+                        Trigger AI Analysis
+                    </button>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="autoRefreshToggle" checked>
+                    <label class="form-check-label" for="autoRefreshToggle">
+                        Auto-refresh (30s)
+                    </label>
+                </div>
+                <small class="text-muted">
+                    Last updated: <span id="lastUpdated">Never</span>
+                </small>
+            </div>
+        </div>
+    </div>
+
     <!-- Market Overview Cards -->
     <div class="row mb-4">
         <div class="col-md-3">
@@ -25,6 +52,7 @@
                         <div class="flex-grow-1 ms-3">
                             <h5 class="card-title mb-0">Total Properties</h5>
                             <p class="card-text text-muted" id="total-properties">Loading...</p>
+                            <small class="text-success" id="new-properties-indicator"></small>
                         </div>
                     </div>
                 </div>
@@ -35,26 +63,11 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-dollar-sign text-success fa-2x"></i>
+                            <i class="fas fa-clock text-info fa-2x"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h5 class="card-title mb-0">Avg Price</h5>
-                            <p class="card-text text-muted" id="avg-price">Loading...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-chart-area text-info fa-2x"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h5 class="card-title mb-0">Market Trend</h5>
-                            <p class="card-text text-muted" id="market-trend">Loading...</p>
+                            <h5 class="card-title mb-0">New (24h)</h5>
+                            <p class="card-text text-muted" id="new-properties-24h">Loading...</p>
                         </div>
                     </div>
                 </div>
@@ -68,8 +81,24 @@
                             <i class="fas fa-robot text-warning fa-2x"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h5 class="card-title mb-0">AI Analyzed</h5>
+                            <h5 class="card-title mb-0">AI Analysis</h5>
                             <p class="card-text text-muted" id="ai-analyzed">Loading...</p>
+                            <small class="text-warning" id="pending-analysis"></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-map-marker-alt text-success fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title mb-0">Active Markets</h5>
+                            <p class="card-text text-muted" id="active-markets">Loading...</p>
                         </div>
                     </div>
                 </div>
@@ -82,10 +111,11 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Price Trends</h5>
+                    <h5 class="card-title mb-0">City Market Analysis</h5>
+                    <small class="text-muted">All cities with listed properties</small>
                 </div>
                 <div class="card-body">
-                    <canvas id="priceChart" height="100"></canvas>
+                    <canvas id="cityChart" height="100"></canvas>
                 </div>
             </div>
         </div>
@@ -96,6 +126,64 @@
                 </div>
                 <div class="card-body">
                     <canvas id="typeChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Insights Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Deep Market Insights by City</h5>
+                    <small class="text-muted">Comprehensive analysis for all markets</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="cityInsightsTable">
+                            <thead>
+                                <tr>
+                                    <th>City</th>
+                                    <th>Province</th>
+                                    <th>Total Properties</th>
+                                    <th>Avg Price</th>
+                                    <th>Price Range</th>
+                                    <th>Market Activity</th>
+                                    <th>Recent Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cityInsightsBody">
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Province Summary -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Province Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="province-summary">
+                        <div class="col-12 text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,55 +212,355 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+let autoRefreshInterval;
+let cityChart;
+let typeChart;
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Load market data
-    loadMarketData();
-    loadEconomicIndicators();
+    // Initialize page
+    loadRealTimeAnalytics();
+    setupAutoRefresh();
+    setupEventListeners();
 });
 
-function loadMarketData() {
-    // This would typically fetch from your API
-    // For now, showing placeholder data
-    fetch('/api/market-summary')
+function setupEventListeners() {
+    // Manual refresh button
+    document.getElementById('refreshBtn').addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Refreshing...';
+        loadRealTimeAnalytics().finally(() => {
+            this.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Refresh Now';
+        });
+    });
+
+    // Trigger analysis button
+    document.getElementById('analyzeBtn').addEventListener('click', function() {
+        triggerAnalysis();
+    });
+
+    // Auto-refresh toggle
+    document.getElementById('autoRefreshToggle').addEventListener('change', function() {
+        if (this.checked) {
+            setupAutoRefresh();
+        } else {
+            clearInterval(autoRefreshInterval);
+        }
+    });
+}
+
+function setupAutoRefresh() {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = setInterval(() => {
+        if (document.getElementById('autoRefreshToggle').checked) {
+            loadRealTimeAnalytics();
+        }
+    }, 30000); // 30 seconds
+}
+
+function loadRealTimeAnalytics() {
+    return fetch('/api/analytics/real-time-updates')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('total-properties').textContent = data.total_properties || 'N/A';
-            document.getElementById('avg-price').textContent = data.avg_price ? '$' + Number(data.avg_price).toLocaleString() : 'N/A';
-            document.getElementById('market-trend').textContent = data.market_condition || 'N/A';
-            document.getElementById('ai-analyzed').textContent = data.ai_analyzed || 'N/A';
-            
-            // Initialize charts
-            initializeCharts(data);
+            if (data.success) {
+                updateDashboard(data.data);
+                updateLastRefreshTime();
+            } else {
+                console.error('API error:', data.error);
+                showError('Failed to load analytics data');
+            }
         })
         .catch(error => {
-            console.error('Error loading market data:', error);
-            // Show fallback data
-            document.getElementById('total-properties').textContent = 'N/A';
-            document.getElementById('avg-price').textContent = 'N/A';
-            document.getElementById('market-trend').textContent = 'N/A';
-            document.getElementById('ai-analyzed').textContent = 'N/A';
+            console.error('Error loading analytics:', error);
+            showError('Connection error - retrying in 30 seconds');
         });
 }
 
+function updateDashboard(data) {
+    // Update overview cards
+    document.getElementById('total-properties').textContent = data.recent_activity.total_properties.toLocaleString();
+    document.getElementById('new-properties-24h').textContent = data.recent_activity.new_properties_24h.toLocaleString();
+    document.getElementById('ai-analyzed').textContent = data.recent_activity.analysis_completion;
+    document.getElementById('active-markets').textContent = data.market_overview.active_markets.toLocaleString();
+
+    // Update pending analysis indicator
+    const pendingElement = document.getElementById('pending-analysis');
+    if (data.recent_activity.properties_needing_analysis > 0) {
+        pendingElement.textContent = `${data.recent_activity.properties_needing_analysis} pending`;
+        pendingElement.className = 'text-warning';
+    } else {
+        pendingElement.textContent = 'All up to date';
+        pendingElement.className = 'text-success';
+    }
+
+    // Update charts
+    updateCityChart(data.city_insights);
+    updateTypeChart(data.property_types);
+    
+    // Update city insights table
+    updateCityInsightsTable(data.city_insights);
+    
+    // Update province summary
+    updateProvinceSummary(data.province_summary);
+}
+
+function updateCityChart(cityData) {
+    const ctx = document.getElementById('cityChart').getContext('2d');
+    
+    if (cityChart) {
+        cityChart.destroy();
+    }
+
+    const topCities = cityData.slice(0, 15); // Show top 15 cities
+    
+    cityChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: topCities.map(city => `${city.city}, ${city.province}`),
+            datasets: [{
+                label: 'Average Price',
+                data: topCities.map(city => city.avg_price),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Property Count',
+                data: topCities.map(city => city.total_properties),
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Average Price ($)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + (value / 1000).toFixed(0) + 'K';
+                        }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Property Count'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateTypeChart(typeData) {
+    const ctx = document.getElementById('typeChart').getContext('2d');
+    
+    if (typeChart) {
+        typeChart.destroy();
+    }
+
+    typeChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: typeData.map(type => type.type),
+            datasets: [{
+                data: typeData.map(type => type.count),
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40',
+                    '#FF6384',
+                    '#C9CBCF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function updateCityInsightsTable(cityData) {
+    const tbody = document.getElementById('cityInsightsBody');
+    
+    if (cityData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No city data available</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = cityData.map(city => `
+        <tr>
+            <td><strong>${city.city}</strong></td>
+            <td><span class="badge bg-secondary">${city.province}</span></td>
+            <td>${city.total_properties.toLocaleString()}</td>
+            <td>$${city.avg_price.toLocaleString()}</td>
+            <td>
+                <small class="text-muted">
+                    $${city.min_price.toLocaleString()} - $${city.max_price.toLocaleString()}
+                </small>
+            </td>
+            <td>
+                <span class="badge ${getMarketActivityBadgeClass(city.market_activity)}">
+                    ${city.market_activity}
+                </span>
+            </td>
+            <td>
+                ${city.recent_activity} <small class="text-muted">in 30 days</small>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateProvinceSummary(provinceData) {
+    const container = document.getElementById('province-summary');
+    
+    if (provinceData.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center text-muted">No province data available</div>';
+        return;
+    }
+
+    container.innerHTML = provinceData.map(province => `
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="text-center p-3 border rounded">
+                <h5 class="mb-1">${province.province}</h5>
+                <p class="text-muted mb-1">${province.property_count.toLocaleString()} properties</p>
+                <p class="h6 text-success mb-0">Avg: $${province.avg_price.toLocaleString()}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getMarketActivityBadgeClass(activity) {
+    switch (activity.toLowerCase()) {
+        case 'high': return 'bg-success';
+        case 'moderate': return 'bg-warning';
+        case 'low': return 'bg-secondary';
+        default: return 'bg-light text-dark';
+    }
+}
+
+function triggerAnalysis() {
+    const btn = document.getElementById('analyzeBtn');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Analyzing...';
+    btn.disabled = true;
+    
+    fetch('/api/analytics/trigger-analysis', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess(`Analyzed ${data.analyzed_count} properties successfully!`);
+            loadRealTimeAnalytics(); // Refresh data
+        } else {
+            showError('Analysis failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Analysis error:', error);
+        showError('Failed to trigger analysis');
+    })
+    .finally(() => {
+        btn.innerHTML = '<i class="fas fa-robot me-1"></i>Trigger AI Analysis';
+        btn.disabled = false;
+    });
+}
+
+function updateLastRefreshTime() {
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+}
+
+function showSuccess(message) {
+    // Create and show success toast/alert
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 5000);
+}
+
+function showError(message) {
+    // Create and show error toast/alert
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    setTimeout(() => alert.remove(), 5000);
+}
+
+function getCsrfToken() {
+    return document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || '';
+}
+
+// Legacy function compatibility
+function loadMarketData() {
+    loadRealTimeAnalytics();
+}
+
 function loadEconomicIndicators() {
-    fetch('/api/economic-indicators')
+    fetch('/api/market/economic-indicators')
         .then(response => response.json())
         .then(data => {
-            const container = document.getElementById('economic-indicators');
-            container.innerHTML = '';
-            
-            // Display economic indicators
-            Object.entries(data).forEach(([key, value]) => {
-                const col = document.createElement('div');
-                col.className = 'col-md-2 col-sm-4 col-6 mb-3';
-                col.innerHTML = `
-                    <div class="text-center">
-                        <h6 class="text-muted small">${formatIndicatorName(key)}</h6>
-                        <p class="h5 mb-0">${formatIndicatorValue(key, value)}</p>
-                    </div>
-                `;
-                container.appendChild(col);
-            });
+            if (data.success) {
+                const container = document.getElementById('economic-indicators');
+                container.innerHTML = '';
+                
+                data.data.forEach(indicator => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-2 col-sm-4 col-6 mb-3';
+                    col.innerHTML = `
+                        <div class="text-center">
+                            <h6 class="text-muted small">${indicator.display_name || indicator.indicator_name}</h6>
+                            <p class="h5 mb-0">${formatIndicatorValue(indicator)}</p>
+                        </div>
+                    `;
+                    container.appendChild(col);
+                });
+            }
         })
         .catch(error => {
             console.error('Error loading economic indicators:', error);
@@ -181,77 +569,19 @@ function loadEconomicIndicators() {
         });
 }
 
-function formatIndicatorName(key) {
-    const names = {
-        'policy_rate': 'Policy Rate',
-        'prime_rate': 'Prime Rate',
-        'mortgage_rate': 'Mortgage Rate',
-        'inflation_rate': 'Inflation',
-        'unemployment_rate': 'Unemployment',
-        'exchange_rate': 'USD/CAD',
-        'gdp_growth': 'GDP Growth'
-    };
-    return names[key] || key.replace('_', ' ').toUpperCase();
-}
-
-function formatIndicatorValue(key, value) {
-    if (value === null || value === undefined) return 'N/A';
+function formatIndicatorValue(indicator) {
+    if (!indicator.latest_value || indicator.latest_value.value === null) {
+        return 'N/A';
+    }
     
-    const percentageKeys = ['policy_rate', 'prime_rate', 'mortgage_rate', 'inflation_rate', 'unemployment_rate', 'gdp_growth'];
+    const value = indicator.latest_value.value;
+    const unit = indicator.unit || '';
     
-    if (percentageKeys.includes(key)) {
+    if (unit === '%' || indicator.indicator_name.toLowerCase().includes('rate')) {
         return Number(value).toFixed(2) + '%';
     }
     
-    if (key === 'exchange_rate') {
-        return Number(value).toFixed(4);
-    }
-    
-    return Number(value).toFixed(2);
-}
-
-function initializeCharts(data) {
-    // Price Chart (placeholder)
-    const priceCtx = document.getElementById('priceChart').getContext('2d');
-    new Chart(priceCtx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-                label: 'Average Price',
-                data: [650000, 655000, 660000, 665000, 670000, 675000],
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-
-    // Type Chart (placeholder)
-    const typeCtx = document.getElementById('typeChart').getContext('2d');
-    new Chart(typeCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['House', 'Condo', 'Townhouse', 'Other'],
-            datasets: [{
-                data: [45, 30, 20, 5],
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
+    return Number(value).toFixed(2) + (unit ? ' ' + unit : '');
 }
 </script>
 {% endblock %}

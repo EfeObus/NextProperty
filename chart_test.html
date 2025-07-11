@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chart.js Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Chart.js Test</h1>
+    <div style="width: 400px; height: 300px;">
+        <canvas id="testChart"></canvas>
+    </div>
+    
+    <script>
+        console.log('Testing Chart.js functionality...');
+        
+        const ctx = document.getElementById('testChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Feature 1', 'Feature 2', 'Feature 3'],
+                datasets: [{
+                    label: 'Test Data',
+                    data: [12, 19, 3],
+                    backgroundColor: ['red', 'green', 'blue']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        console.log('Chart created:', chart);
+    </script>
+</body>
+</html>

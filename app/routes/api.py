@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from app import db, cache
+from app.extensions import limiter
 from app.models.property import Property, PropertyPhoto, PropertyRoom
 from app.models.agent import Agent
 from app.models.economic_data import EconomicData, EconomicIndicator
@@ -8,6 +9,7 @@ from app.services.ml_service import MLService
 from app.services.data_service import DataService
 from app.services.geospatial_service import GeospatialService
 from app.security.middleware import csrf_protect, xss_protect
+from app.security.rate_limiter import rate_limit
 # from app.utils.helpers import validate_request_args, paginate_query  # TODO: Implement these functions
 from sqlalchemy import func, text
 import json
@@ -20,7 +22,156 @@ ml_service = MLService()
 data_service = DataService()
 geo_service = GeospatialService()
 
+@bp.route('/health', methods=['GET'])
+@cache.cached(timeout=60)
+def health_check():
+    """Health check endpoint for monitoring."""
+    try:
+        # Simple database check
+        db.session.execute(text('SELECT 1'))
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'service': 'nextproperty-ai',
+            'version': '1.0'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 503
+
+@bp.route('/statistics', methods=['GET'])
+@limiter.limit("50 per hour")
+@cache.cached(timeout=300)
+def get_statistics():
+    """Get general platform statistics."""
+    try:
+        total_properties = Property.query.count()
+        total_agents = Agent.query.count()
+        
+        # Get average price
+        avg_price = db.session.query(func.avg(Property.original_price)).scalar() or 0
+        
+        # Get property types distribution
+        property_types = db.session.query(
+            Property.property_type,
+            func.count(Property.listing_id)
+        ).group_by(Property.property_type).all()
+        
+        return jsonify({
+            'total_properties': total_properties,
+            'total_agents': total_agents,
+            'average_price': round(avg_price, 2),
+            'property_types': dict(property_types),
+            'updated_at': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        current_app.logger.error(f"Statistics error: {e}")
+        return jsonify({'error': 'Failed to fetch statistics'}), 500
+
+@bp.route('/agents', methods=['GET'])
+@limiter.limit("100 per hour")
+@cache.cached(timeout=300, query_string=True)
+def get_agents():
+    """Get list of agents."""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = min(request.args.get('per_page', 20, type=int), 100)
+        
+        agents = Agent.query.paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        return jsonify({
+            'agents': [{
+                'id': agent.id,
+                'name': agent.name,
+                'email': agent.email,
+                'phone': agent.phone,
+                'properties_count': agent.properties.count() if hasattr(agent, 'properties') else 0
+            } for agent in agents.items],
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': agents.total,
+                'pages': agents.pages
+            }
+        })
+    except Exception as e:
+        current_app.logger.error(f"Agents error: {e}")
+        return jsonify({'error': 'Failed to fetch agents'}), 500
+
+@bp.route('/cities', methods=['GET'])
+@limiter.limit("100 per hour")
+@cache.cached(timeout=600)
+def get_cities():
+    """Get list of cities with property counts."""
+    try:
+        cities = db.session.query(
+            Property.city,
+            func.count(Property.listing_id).label('property_count'),
+            func.avg(Property.original_price).label('avg_price')
+        ).filter(
+            Property.city.isnot(None)
+        ).group_by(Property.city).order_by(
+            func.count(Property.listing_id).desc()
+        ).limit(100).all()
+        
+        return jsonify({
+            'cities': [{
+                'name': city[0],
+                'property_count': city[1],
+                'average_price': round(city[2] or 0, 2)
+            } for city in cities]
+        })
+    except Exception as e:
+        current_app.logger.error(f"Cities error: {e}")
+        return jsonify({'error': 'Failed to fetch cities'}), 500
+
+@bp.route('/market-data', methods=['GET'])
+@limiter.exempt
+@cache.cached(timeout=300, query_string=True)
+def get_market_data():
+    """Get market data and trends."""
+    try:
+        city = request.args.get('city')
+        
+        query = Property.query
+        if city:
+            query = query.filter(Property.city.ilike(f'%{city}%'))
+        
+        # Get price statistics
+        price_stats = db.session.query(
+            func.min(Property.original_price).label('min_price'),
+            func.max(Property.original_price).label('max_price'),
+            func.avg(Property.original_price).label('avg_price'),
+            func.count(Property.listing_id).label('total_properties')
+        ).filter(query.whereclause).first()
+        
+        # Get recent listings
+        recent_count = query.filter(
+            Property.sold_date >= datetime.utcnow() - timedelta(days=30)
+        ).count()
+        
+        return jsonify({
+            'market_summary': {
+                'min_price': price_stats.min_price or 0,
+                'max_price': price_stats.max_price or 0,
+                'average_price': round(price_stats.avg_price or 0, 2),
+                'total_properties': price_stats.total_properties or 0,
+                'recent_listings_30d': recent_count
+            },
+            'city': city,
+            'updated_at': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        current_app.logger.error(f"Market data error: {e}")
+        return jsonify({'error': 'Failed to fetch market data'}), 500
+
 @bp.route('/properties', methods=['GET'])
+@limiter.limit("100 per hour")
 @cache.cached(timeout=300, query_string=True)
 def get_properties():
     """Get filtered property listings."""
@@ -251,6 +402,7 @@ def get_agent_properties(agent_id):
 
 
 @bp.route('/search', methods=['GET'])
+@limiter.exempt
 @cache.cached(timeout=300, query_string=True)
 def search_properties():
     """Advanced property search."""
@@ -386,6 +538,7 @@ def get_market_trends():
 
 
 @bp.route('/market/economic-indicators', methods=['GET'])
+@limiter.exempt
 @cache.cached(timeout=3600)
 def get_economic_indicators():
     """Get economic indicators."""
@@ -415,6 +568,7 @@ def get_economic_indicators():
 
 
 @bp.route('/market/predictions', methods=['GET'])
+@limiter.exempt
 @cache.cached(timeout=1800, query_string=True)
 def get_market_predictions():
     """Get market predictions."""
@@ -484,6 +638,7 @@ def get_stats_summary():
 
 
 @bp.route('/property-prediction', methods=['POST'])
+@limiter.exempt
 @csrf_protect
 @xss_protect
 def predict_property_price():
@@ -842,3 +997,264 @@ def get_model_performance_history():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@bp.route('/analytics/real-time-updates', methods=['GET'])
+@limiter.limit("20 per minute")
+def get_real_time_analytics():
+    """Get real-time analytics updates for the dashboard."""
+    try:
+        # Check if we should force refresh (bypass cache)
+        force_refresh = request.args.get('force_refresh', '').lower() == 'true'
+        
+        # If force refresh, clear relevant caches first
+        if force_refresh:
+            try:
+                cache.delete('analytics_real_time_updates')
+                cache.delete('market_summary')
+                cache.delete('stats_summary')
+            except:
+                pass  # Ignore cache errors
+        
+        # Try to get from cache first (unless forced refresh)
+        cache_key = 'analytics_real_time_updates'
+        if not force_refresh:
+            cached_data = cache.get(cache_key)
+            if cached_data:
+                return jsonify({
+                    'success': True,
+                    'timestamp': datetime.utcnow().isoformat(),
+                    'data': cached_data,
+                    'cached': True
+                })
+        
+        # Get recent activity (last 24 hours)
+        recent_date = datetime.utcnow() - timedelta(hours=24)
+        
+        # Recent properties count
+        recent_properties = Property.query.filter(Property.created_at >= recent_date).count()
+        
+        # Properties requiring AI analysis
+        properties_needing_analysis = Property.query.filter(
+            db.or_(
+                Property.ai_valuation.is_(None),
+                Property.investment_score.is_(None)
+            )
+        ).count()
+        
+        # Get city distribution with all cities having properties
+        city_stats = db.session.query(
+            Property.city,
+            Property.province,
+            func.count(Property.listing_id).label('property_count'),
+            func.avg(
+                func.coalesce(Property.sold_price, Property.original_price)
+            ).label('avg_price'),
+            func.min(
+                func.coalesce(Property.sold_price, Property.original_price)
+            ).label('min_price'),
+            func.max(
+                func.coalesce(Property.sold_price, Property.original_price)
+            ).label('max_price')
+        ).filter(
+            Property.city.isnot(None),
+            Property.province.isnot(None),
+            db.or_(
+                Property.sold_price.isnot(None),
+                Property.original_price.isnot(None)
+            )
+        ).group_by(Property.city, Property.province)\
+         .having(func.count(Property.listing_id) >= 1)\
+         .order_by(func.count(Property.listing_id).desc()).all()
+        
+        # Get market trends for top cities
+        market_trends = []
+        for city_stat in city_stats[:20]:  # Top 20 cities
+            city_name = city_stat.city
+            province = city_stat.province
+            
+            # Get 30-day trend
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            recent_city_properties = Property.query.filter(
+                Property.city == city_name,
+                Property.province == province,
+                Property.sold_date >= thirty_days_ago,
+                db.or_(
+                    Property.sold_price.isnot(None),
+                    Property.original_price.isnot(None)
+                )
+            ).count()
+            
+            market_trends.append({
+                'city': city_name,
+                'province': province,
+                'total_properties': city_stat.property_count,
+                'avg_price': round(float(city_stat.avg_price), 2) if city_stat.avg_price else 0,
+                'min_price': float(city_stat.min_price) if city_stat.min_price else 0,
+                'max_price': float(city_stat.max_price) if city_stat.max_price else 0,
+                'recent_activity': recent_city_properties,
+                'market_activity': 'High' if recent_city_properties > 5 else 'Moderate' if recent_city_properties > 2 else 'Low'
+            })
+        
+        # Get property type distribution
+        type_distribution = db.session.query(
+            Property.property_type,
+            func.count(Property.listing_id).label('count'),
+            func.avg(
+                func.coalesce(Property.sold_price, Property.original_price)
+            ).label('avg_price')
+        ).filter(
+            Property.property_type.isnot(None),
+            db.or_(
+                Property.sold_price.isnot(None),
+                Property.original_price.isnot(None)
+            )
+        ).group_by(Property.property_type)\
+         .order_by(func.count(Property.listing_id).desc()).all()
+        
+        # Get price range distribution using raw SQL for MySQL compatibility
+        price_ranges_query = text("""
+            SELECT 
+                CASE 
+                    WHEN COALESCE(sold_price, original_price) < 300000 THEN 'Under $300K'
+                    WHEN COALESCE(sold_price, original_price) < 500000 THEN '$300K - $500K'
+                    WHEN COALESCE(sold_price, original_price) < 750000 THEN '$500K - $750K'
+                    WHEN COALESCE(sold_price, original_price) < 1000000 THEN '$750K - $1M'
+                    WHEN COALESCE(sold_price, original_price) < 1500000 THEN '$1M - $1.5M'
+                    ELSE 'Over $1.5M'
+                END as price_range,
+                COUNT(listing_id) as count
+            FROM properties 
+            WHERE COALESCE(sold_price, original_price) IS NOT NULL 
+            GROUP BY price_range 
+            ORDER BY count DESC
+        """)
+        price_ranges = db.session.execute(price_ranges_query).fetchall()
+        
+        # Overall market statistics
+        total_properties = Property.query.count()
+        total_analyzed = Property.query.filter(Property.ai_valuation.isnot(None)).count()
+        analysis_percentage = round((total_analyzed / total_properties * 100), 2) if total_properties > 0 else 0
+        
+        # Average prices by province
+        province_stats = db.session.query(
+            Property.province,
+            func.count(Property.listing_id).label('count'),
+            func.avg(
+                func.coalesce(Property.sold_price, Property.original_price)
+            ).label('avg_price')
+        ).filter(
+            Property.province.isnot(None),
+            db.or_(
+                Property.sold_price.isnot(None),
+                Property.original_price.isnot(None)
+            )
+        ).group_by(Property.province)\
+         .having(func.count(Property.listing_id) >= 1)\
+         .order_by(func.avg(func.coalesce(Property.sold_price, Property.original_price)).desc()).all()
+        
+        analytics_data = {
+            'recent_activity': {
+                'new_properties_24h': recent_properties,
+                'properties_needing_analysis': properties_needing_analysis,
+                'total_properties': total_properties,
+                'analysis_completion': f"{analysis_percentage}%"
+            },
+            'market_overview': {
+                'total_cities': len(city_stats),
+                'total_provinces': len(province_stats),
+                'active_markets': len([c for c in city_stats if c.property_count >= 5])
+            },
+            'city_insights': market_trends,
+            'property_types': [
+                {
+                    'type': pt.property_type,
+                    'count': pt.count,
+                    'avg_price': round(float(pt.avg_price), 2) if pt.avg_price else 0
+                }
+                for pt in type_distribution
+            ],
+            'price_distribution': [
+                {
+                    'range': pr.price_range,
+                    'count': pr.count
+                }
+                for pr in price_ranges
+            ],
+            'province_summary': [
+                {
+                    'province': ps.province,
+                    'property_count': ps.count,
+                    'avg_price': round(float(ps.avg_price), 2) if ps.avg_price else 0
+                }
+                for ps in province_stats
+            ]
+        }
+        
+        # Cache the data for 60 seconds
+        cache.set(cache_key, analytics_data, timeout=60)
+        
+        return jsonify({
+            'success': True,
+            'timestamp': datetime.utcnow().isoformat(),
+            'data': analytics_data,
+            'cached': False
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error fetching real-time analytics: {str(e)}")
+        return jsonify({'success': False, 'error': 'Internal server error'}), 500
+
+@bp.route('/analytics/trigger-analysis', methods=['POST'])
+@csrf_protect
+@xss_protect
+@login_required
+def trigger_analytics_analysis():
+    """Trigger analysis for properties that need AI valuation."""
+    try:
+        # Get properties that need analysis
+        properties_to_analyze = Property.query.filter(
+            db.or_(
+                Property.ai_valuation.is_(None),
+                Property.investment_score.is_(None)
+            ),
+            Property.bedrooms.isnot(None),
+            Property.city.isnot(None)
+        ).limit(50).all()  # Process in batches
+        
+        analyzed_count = 0
+        errors = []
+        
+        for property_obj in properties_to_analyze:
+            try:
+                # Generate AI analysis
+                analysis = ml_service.analyze_property(property_obj)
+                
+                if analysis and not analysis.get('error'):
+                    property_obj.ai_valuation = analysis.get('predicted_price')
+                    property_obj.investment_score = analysis.get('investment_score')
+                    property_obj.risk_assessment = analysis.get('risk_level')
+                    property_obj.market_trend = analysis.get('market_trend')
+                    analyzed_count += 1
+                    
+            except Exception as prop_error:
+                errors.append({
+                    'listing_id': property_obj.listing_id,
+                    'error': str(prop_error)
+                })
+                current_app.logger.warning(f"Error analyzing property {property_obj.listing_id}: {str(prop_error)}")
+                continue
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'analyzed_count': analyzed_count,
+            'total_processed': len(properties_to_analyze),
+            'errors': errors[:5]  # Return first 5 errors only
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error triggering analysis: {str(e)}")
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Internal server error'}), 500

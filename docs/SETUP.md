@@ -763,7 +763,7 @@ OSError: [Errno 48] Address already in use
 lsof -ti:5007 | xargs kill -9
 
 # Or run on different port
-python app.py --port 5008
+python app.py --port 5007
 ```
 
 #### 6. API Key Issues

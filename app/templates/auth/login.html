@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Login - NextProperty AI{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% if demo_mode %}
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Demo Mode</h5>
+                <p>Authentication is not implemented in this demo version. You can explore all features without logging in.</p>
+                <p>Features like saving properties and personalized dashboard will be available when user accounts are implemented.</p>
+            </div>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Login</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.login') }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" {% if demo_mode %}disabled placeholder="Demo mode - authentication disabled"{% else %}required{% endif %}>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" {% if demo_mode %}disabled placeholder="Demo mode - authentication disabled"{% else %}required{% endif %}>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary" {% if demo_mode %}disabled{% endif %}>
+                                {% if demo_mode %}Demo Mode - Login Disabled{% else %}Login{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('main.register') }}">Don't have an account? Register here</a>
+                    </div>
+                    {% if demo_mode %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-home"></i> Continue Exploring Demo
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

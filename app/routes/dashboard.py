@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, jsonify, current_app
-from flask_login import login_required, current_user
 from app import db
 from app.models.property import Property
 from app.models.user import SavedProperty
@@ -16,12 +15,11 @@ ml_service = MLService()
 data_service = DataService()
 
 @bp.route('/')
-@login_required
 def overview():
-    """Dashboard overview page."""
+    """Dashboard overview page - Demo mode without authentication."""
     try:
-        # Get user's saved properties count
-        saved_count = current_user.saved_properties.count()
+        # Demo dashboard without user authentication
+        saved_count = 0  # Demo value
         
         # Get recent market activity
         recent_date = datetime.utcnow() - timedelta(days=30)
@@ -29,51 +27,73 @@ def overview():
             Property.created_at >= recent_date
         ).count()
         
-        # Get user's preferred cities data
-        preferred_cities = []
-        if current_user.preferred_cities:
-            cities = json.loads(current_user.preferred_cities)
-            for city in cities[:5]:  # Limit to top 5
-                city_stats = data_service.get_city_statistics(city)
-                preferred_cities.append(city_stats)
+        # Simple demo data instead of complex service calls
+        preferred_cities = [
+            {'name': 'Toronto', 'avg_price': 850000, 'property_count': 1234},
+            {'name': 'Vancouver', 'avg_price': 950000, 'property_count': 987},
+            {'name': 'Montreal', 'avg_price': 450000, 'property_count': 765}
+        ]
         
-        # Get market trends for user's interests
-        market_trends = data_service.get_personalized_trends(current_user)
+        # Demo market trends
+        market_trends = {
+            'price_change': '+5.2%',
+            'volume_change': '+12.4%',
+            'direction': 'up'
+        }
         
-        # Get investment recommendations
-        recommendations = ml_service.get_investment_recommendations(current_user)
+        # Demo recommendations
+        recommendations = [
+            {'type': 'Buy', 'location': 'Toronto East', 'confidence': 85},
+            {'type': 'Hold', 'location': 'Vancouver West', 'confidence': 78},
+            {'type': 'Sell', 'location': 'Calgary North', 'confidence': 92}
+        ]
         
-        # Get economic indicators dashboard
-        key_indicators = data_service.get_dashboard_economic_indicators()
+        # Demo economic indicators
+        key_indicators = {
+            'interest_rate': 4.75,
+            'inflation': 3.1,
+            'unemployment': 5.8,
+            'gdp_growth': 2.4
+        }
         
-        return render_template('dashboard/overview.html',
+        return render_template('dashboard.html',  # Use simple template name
                              saved_count=saved_count,
                              recent_properties=recent_properties,
                              preferred_cities=preferred_cities,
                              market_trends=market_trends,
                              recommendations=recommendations,
-                             key_indicators=key_indicators)
+                             key_indicators=key_indicators,
+                             demo_mode=True)
     
     except Exception as e:
         current_app.logger.error(f"Error loading dashboard: {str(e)}")
-        return render_template('dashboard/overview.html', error=True)
+        # Return minimal template to avoid template errors
+        return render_template('dashboard.html', 
+                             error=True,
+                             demo_mode=True,
+                             saved_count=0,
+                             recent_properties=0,
+                             preferred_cities=[],
+                             market_trends={},
+                             recommendations=[],
+                             key_indicators={})
 
 
 @bp.route('/portfolio')
-@login_required
 def portfolio():
-    """User's property portfolio page."""
+    """Demo property portfolio page."""
     try:
-        # Get user's saved properties
-        saved_properties = current_user.saved_properties.join(Property).all()
+        # Demo portfolio without authentication
+        saved_properties = []  # Empty demo portfolio
         
-        # Calculate portfolio statistics
+        # Calculate demo portfolio statistics
         portfolio_stats = {
-            'total_properties': len(saved_properties),
+            'total_properties': 0,
             'total_value': 0,
             'avg_price': 0,
             'property_types': {},
-            'cities': {}
+            'cities': {},
+            'demo_mode': True
         }
         
         if saved_properties:
@@ -111,7 +131,6 @@ def portfolio():
 
 
 @bp.route('/market')
-@login_required
 def market():
     """Market analysis dashboard."""
     try:
@@ -143,35 +162,69 @@ def market():
 
 
 @bp.route('/analytics')
-@login_required
 def analytics():
-    """Advanced analytics dashboard."""
+    """Advanced analytics dashboard - Demo mode."""
     try:
-        # Get user's search and activity analytics
-        user_analytics = data_service.get_user_analytics(current_user)
+        # Demo analytics without user data
+        user_analytics = {}
         
-        # Get investment opportunity analysis
-        opportunities = ml_service.identify_investment_opportunities(current_user)
+        # Get general investment opportunities
+        opportunities = []
+        try:
+            opportunities = ml_service.get_general_investment_opportunities()
+        except Exception as e:
+            current_app.logger.warning(f"Could not get opportunities: {e}")
         
-        # Get risk analysis
-        risk_analysis = ml_service.get_portfolio_risk_analysis(current_user)
+        # Demo risk analysis
+        risk_analysis = {}
         
-        # Get ROI projections
-        roi_projections = ml_service.calculate_roi_projections(current_user)
+        # Demo ROI projections
+        roi_projections = {}
         
         return render_template('dashboard/analytics.html',
                              user_analytics=user_analytics,
                              opportunities=opportunities,
                              risk_analysis=risk_analysis,
-                             roi_projections=roi_projections)
+                             roi_projections=roi_projections,
+                             demo_mode=True)
     
     except Exception as e:
         current_app.logger.error(f"Error loading analytics: {str(e)}")
         return render_template('dashboard/analytics.html', error=True)
 
 
+@bp.route('/analytics/insights')
+def analytics_insights():
+    """Analytics insights subpage with feature importance and price analysis."""
+    try:
+        # Get feature importance analysis
+        feature_analysis = ml_service.get_feature_importance_analysis()
+        
+        # Get price analytics by location
+        price_analytics = ml_service.get_price_analytics_by_location()
+        
+        # Get neighbourhood analysis for top cities
+        neighbourhood_analysis = {}
+        if price_analytics.get('success') and price_analytics.get('data', {}).get('cities'):
+            top_cities = price_analytics['data']['cities'][:5]  # Top 5 cities
+            for city_data in top_cities:
+                city_name = city_data['name']
+                neighbourhood_analysis[city_name] = ml_service.get_neighbourhood_price_analysis(city_name)
+        
+        return render_template('dashboard/analytics_insights.html',
+                             feature_analysis=feature_analysis,
+                             price_analytics=price_analytics,
+                             neighbourhood_analysis=neighbourhood_analysis,
+                             page_title="Analytics Insights")
+    
+    except Exception as e:
+        current_app.logger.error(f"Error loading analytics insights: {str(e)}")
+        return render_template('dashboard/analytics_insights.html', 
+                             error=True, 
+                             error_message=str(e))
+
+
 @bp.route('/economic')
-@login_required
 def economic():
     """Economic indicators dashboard."""
     try:
@@ -220,7 +273,6 @@ def economic():
 
 
 @bp.route('/api/chart-data/<chart_type>')
-@login_required
 def get_chart_data(chart_type):
     """API endpoint for dashboard chart data."""
     try:
@@ -235,7 +287,8 @@ def get_chart_data(chart_type):
         elif chart_type == 'economic_indicators':
             data = data_service.get_economic_indicators_chart_data(timeframe)
         elif chart_type == 'portfolio_performance':
-            data = ml_service.get_portfolio_performance_data(current_user, timeframe)
+            # Return demo data instead of user-specific data
+            data = {'demo': True, 'message': 'Portfolio performance requires authentication'}
         elif chart_type == 'regional_comparison':
             data = data_service.get_regional_comparison_data()
         else:
@@ -249,7 +302,6 @@ def get_chart_data(chart_type):
 
 
 @bp.route('/api/property-analysis/<listing_id>')
-@login_required
 def get_property_analysis(listing_id):
     """Get detailed AI analysis for a property."""
     try:
@@ -268,7 +320,6 @@ def get_property_analysis(listing_id):
 
 
 @bp.route('/api/investment-simulator', methods=['POST'])
-@login_required
 def investment_simulator():
     """Investment scenario simulator."""
     try:
@@ -303,11 +354,17 @@ def investment_simulator():
 
 
 @bp.route('/api/market-alerts')
-@login_required
 def get_market_alerts():
-    """Get personalized market alerts."""
+    """Get general market alerts - Demo mode."""
     try:
-        alerts = data_service.get_market_alerts(current_user)
+        # Return demo alerts instead of personalized ones
+        alerts = [
+            {
+                'type': 'info',
+                'message': 'Authentication required for personalized market alerts',
+                'demo': True
+            }
+        ]
         return jsonify({'success': True, 'data': alerts})
     
     except Exception as e:
@@ -316,32 +373,18 @@ def get_market_alerts():
 
 
 @bp.route('/api/save-preferences', methods=['POST'])
-@login_required
 def save_preferences():
-    """Save user dashboard preferences."""
+    """Demo preferences save - Authentication required."""
     try:
-        data = request.get_json()
-        
-        # Update user preferences
-        if 'preferred_cities' in data:
-            current_user.preferred_cities = json.dumps(data['preferred_cities'])
-        
-        if 'preferred_property_types' in data:
-            current_user.preferred_property_types = json.dumps(data['preferred_property_types'])
-        
-        if 'price_range_min' in data:
-            current_user.price_range_min = data['price_range_min']
-        
-        if 'price_range_max' in data:
-            current_user.price_range_max = data['price_range_max']
-        
-        db.session.commit()
-        
-        return jsonify({'success': True, 'message': 'Preferences saved successfully'})
+        # Return demo response
+        return jsonify({
+            'success': False, 
+            'message': 'Authentication required to save preferences',
+            'demo': True
+        })
     
     except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"Error saving preferences: {str(e)}")
+        current_app.logger.error(f"Error in demo save preferences: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500
 
 

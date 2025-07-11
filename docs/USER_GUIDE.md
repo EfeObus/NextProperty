@@ -513,6 +513,29 @@ NextProperty AI is an advanced real estate platform that combines traditional pr
    - Check if ad blockers are interfering
    ```
 
+5. **"Too Many Requests" Error (Error 429)**
+   ```
+   If you see a "Too Many Requests" message:
+   - You've exceeded the rate limit for requests
+   - Wait a few minutes before trying again
+   - The message will show when you can retry
+   - Consider spacing out your requests
+   - Contact support if you need higher limits for legitimate use
+   ```
+
+   **Rate Limits by Action:**
+   - Property searches: 200 requests per minute
+   - AI predictions: 50 requests per minute
+   - Login attempts: 10 attempts per minute
+   - API calls: 100 requests per minute
+   - File uploads: 10 uploads per minute
+
+   **Tips to Avoid Rate Limits:**
+   - Avoid rapid-fire clicking or refreshing
+   - Use search filters to get more specific results
+   - Save interesting properties to favorites instead of re-searching
+   - If using the API, implement proper delay between requests
+
 ### Getting Help
 
 1. **Contact Support**

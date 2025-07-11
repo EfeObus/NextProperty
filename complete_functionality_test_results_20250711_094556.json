@@ -1,0 +1,827 @@
+{
+  "health_check": {
+    "server_responsive": true,
+    "response_time": 0.00751495361328125,
+    "status_code": 200,
+    "basic_content": true,
+    "error": null,
+    "headers": {
+      "Server": "Werkzeug/2.3.7 Python/3.11.5",
+      "Date": "Fri, 11 Jul 2025 13:45:28 GMT",
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Length": "56710",
+      "X-XSS-Protection": "1; mode=block",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "SAMEORIGIN",
+      "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.numlookupapi.com; frame-src 'self' https://maps.google.com; object-src 'none'; base-uri 'self';",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=()",
+      "X-RateLimit-Limit": "100, 100",
+      "X-RateLimit-Remaining": "98, 98",
+      "X-RateLimit-Window": "3600",
+      "X-RateLimit-Reset": "1752241577",
+      "Retry-After": "48",
+      "Connection": "close"
+    }
+  },
+  "web_pages": {
+    "/": {
+      "status_code": 200,
+      "response_time": 0.002288818359375,
+      "content_length": 56708,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/properties": {
+      "status_code": 200,
+      "response_time": 0.12086200714111328,
+      "content_length": 665808,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/search": {
+      "status_code": 200,
+      "response_time": 0.23032021522521973,
+      "content_length": 52496,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/mapview": {
+      "status_code": 200,
+      "response_time": 0.0450749397277832,
+      "content_length": 622708,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/favourites": {
+      "status_code": 200,
+      "response_time": 0.018269777297973633,
+      "content_length": 50268,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/predict-price": {
+      "status_code": 200,
+      "response_time": 0.009356975555419922,
+      "content_length": 96007,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/upload-property": {
+      "status_code": 200,
+      "response_time": 0.013689756393432617,
+      "content_length": 113950,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/top-properties": {
+      "status_code": null,
+      "response_time": null,
+      "error": "HTTPConnectionPool(host='localhost', port=5007): Read timed out. (read timeout=15)",
+      "success": false
+    },
+    "/market-insights": {
+      "status_code": 200,
+      "response_time": 0.013628959655761719,
+      "content_length": 24195,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": true
+    },
+    "/economic-dashboard": {
+      "status_code": 429,
+      "response_time": 0.0049021244049072266,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/about": {
+      "status_code": 429,
+      "response_time": 0.002155780792236328,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/contact": {
+      "status_code": 429,
+      "response_time": 0.002006053924560547,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/careers": {
+      "status_code": 429,
+      "response_time": 0.0017390251159667969,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/privacy": {
+      "status_code": 429,
+      "response_time": 0.0016939640045166016,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/investment-guide": {
+      "status_code": 429,
+      "response_time": 0.0020873546600341797,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/market-reports": {
+      "status_code": 429,
+      "response_time": 0.002012968063354492,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/api-docs": {
+      "status_code": 429,
+      "response_time": 0.0018568038940429688,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    },
+    "/help": {
+      "status_code": 429,
+      "response_time": 0.0018339157104492188,
+      "content_length": 19753,
+      "has_content": true,
+      "content_type": "text/html; charset=utf-8",
+      "success": false
+    }
+  },
+  "api_endpoints": {
+    "/api/health": {
+      "status_code": 429,
+      "response_time": 0.0016908645629882812,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/properties": {
+      "status_code": 429,
+      "response_time": 0.0044231414794921875,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/search": {
+      "status_code": 429,
+      "response_time": 0.0014951229095458984,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/stats/summary": {
+      "status_code": 429,
+      "response_time": 0.0016169548034667969,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/market/trends": {
+      "status_code": 429,
+      "response_time": 0.001840829849243164,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/market/economic-indicators": {
+      "status_code": 429,
+      "response_time": 0.0017452239990234375,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/market/predictions": {
+      "status_code": 429,
+      "response_time": 0.0015361309051513672,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/market-summary": {
+      "status_code": 429,
+      "response_time": 0.0015840530395507812,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/economic-indicators": {
+      "status_code": 429,
+      "response_time": 0.0017788410186767578,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/market-impact": {
+      "status_code": 429,
+      "response_time": 0.0017230510711669922,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/economic-insights": {
+      "status_code": 429,
+      "response_time": 0.0015630722045898438,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/properties/map-data": {
+      "status_code": 429,
+      "response_time": 0.0015938282012939453,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    },
+    "/api/model/status": {
+      "status_code": 429,
+      "response_time": 0.0013828277587890625,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108,
+      "content_type": "application/json",
+      "success": false
+    }
+  },
+  "property_search": {
+    "city_search": {
+      "web_search": {
+        "status_code": 429,
+        "response_time": 0.0016388893127441406,
+        "content_length": 19753,
+        "success": false
+      },
+      "api_search": {
+        "status_code": 429,
+        "response_time": 0.0017359256744384766,
+        "is_json": true,
+        "success": false
+      },
+      "params": {
+        "city": "Toronto"
+      }
+    },
+    "price_range": {
+      "web_search": {
+        "status_code": 429,
+        "response_time": 0.0018050670623779297,
+        "content_length": 19753,
+        "success": false
+      },
+      "api_search": {
+        "status_code": 429,
+        "response_time": 0.0014142990112304688,
+        "is_json": true,
+        "success": false
+      },
+      "params": {
+        "min_price": 300000,
+        "max_price": 800000
+      }
+    },
+    "property_type": {
+      "web_search": {
+        "status_code": 429,
+        "response_time": 0.0015759468078613281,
+        "content_length": 19753,
+        "success": false
+      },
+      "api_search": {
+        "status_code": 429,
+        "response_time": 0.0016930103302001953,
+        "is_json": true,
+        "success": false
+      },
+      "params": {
+        "type": "House"
+      }
+    },
+    "combined_search": {
+      "web_search": {
+        "status_code": 429,
+        "response_time": 0.0018050670623779297,
+        "content_length": 19753,
+        "success": false
+      },
+      "api_search": {
+        "status_code": 429,
+        "response_time": 0.0015087127685546875,
+        "is_json": true,
+        "success": false
+      },
+      "params": {
+        "city": "Toronto",
+        "property_type": "House",
+        "min_price": 300000,
+        "max_price": 800000,
+        "bedrooms": 3,
+        "bathrooms": 2
+      }
+    }
+  },
+  "ml_predictions": {
+    "prediction_page": {
+      "status_code": 429,
+      "response_time": 0.0015559196472167969,
+      "success": false,
+      "content_length": 19753
+    },
+    "prediction_request": {
+      "status_code": 400,
+      "response_time": 0.0012102127075195312,
+      "success": false,
+      "content_length": 24,
+      "redirect": false
+    }
+  },
+  "map_functionality": {
+    "map_page": {
+      "status_code": 429,
+      "response_time": 0.0016100406646728516,
+      "success": false,
+      "content_length": 19753
+    },
+    "map_data_api": {
+      "status_code": 429,
+      "response_time": 0.0017058849334716797,
+      "success": false,
+      "is_json": true,
+      "data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "property_count": 0
+    }
+  },
+  "property_upload": {
+    "upload_page": {
+      "status_code": 429,
+      "response_time": 0.001463174819946289,
+      "success": false,
+      "content_length": 19753
+    }
+  },
+  "authentication": {
+    "/login": {
+      "status_code": 429,
+      "response_time": 0.0013701915740966797,
+      "success": false,
+      "content_length": 19753
+    },
+    "/register": {
+      "status_code": 429,
+      "response_time": 0.0015130043029785156,
+      "success": false,
+      "content_length": 19753
+    }
+  },
+  "economic_data": {
+    "/economic-dashboard": {
+      "status_code": 429,
+      "response_time": 0.001772165298461914,
+      "success": false,
+      "is_json": false,
+      "json_data": null,
+      "content_length": 19753
+    },
+    "/market-insights": {
+      "status_code": 429,
+      "response_time": 0.003013134002685547,
+      "success": false,
+      "is_json": false,
+      "json_data": null,
+      "content_length": 19753
+    },
+    "/api/economic-indicators": {
+      "status_code": 429,
+      "response_time": 0.0019812583923339844,
+      "success": false,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108
+    },
+    "/api/market-impact": {
+      "status_code": 429,
+      "response_time": 0.0014629364013671875,
+      "success": false,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108
+    },
+    "/api/economic-insights": {
+      "status_code": 429,
+      "response_time": 0.0013430118560791016,
+      "success": false,
+      "is_json": true,
+      "json_data": {
+        "error": "Rate limit exceeded",
+        "limit_type": "burst",
+        "message": "Burst rate limit exceeded",
+        "retry_after": 36
+      },
+      "content_length": 108
+    }
+  },
+  "error_handling": {
+    "invalid_property_id": {
+      "status_code": 429,
+      "response_time": 0.0019001960754394531,
+      "handled_gracefully": false,
+      "content_length": 19753
+    },
+    "malformed_search": {
+      "status_code": 429,
+      "response_time": 0.0017590522766113281,
+      "handled_gracefully": false,
+      "content_length": 108
+    },
+    "non_existent_endpoint": {
+      "status_code": 429,
+      "response_time": 0.0016410350799560547,
+      "handled_gracefully": false,
+      "content_length": 19753
+    },
+    "invalid_api_request": {
+      "status_code": 429,
+      "response_time": 0.0014309883117675781,
+      "handled_gracefully": false,
+      "content_length": 108
+    }
+  },
+  "performance": {
+    "/": {
+      "avg_response_time": 0.006419181823730469,
+      "min_response_time": 0.001783132553100586,
+      "max_response_time": 0.012900829315185547,
+      "success_rate": 0.0,
+      "all_times": [
+        0.001783132553100586,
+        0.007521867752075195,
+        0.002749204635620117,
+        0.0071408748626708984,
+        0.012900829315185547
+      ]
+    },
+    "/properties": {
+      "avg_response_time": 0.007091045379638672,
+      "min_response_time": 0.0024650096893310547,
+      "max_response_time": 0.012060880661010742,
+      "success_rate": 0.0,
+      "all_times": [
+        0.007714033126831055,
+        0.006928205490112305,
+        0.006287097930908203,
+        0.0024650096893310547,
+        0.012060880661010742
+      ]
+    },
+    "/api/properties": {
+      "avg_response_time": 0.005486869812011718,
+      "min_response_time": 0.0023589134216308594,
+      "max_response_time": 0.007308006286621094,
+      "success_rate": 0.0,
+      "all_times": [
+        0.005982160568237305,
+        0.006308078765869141,
+        0.0023589134216308594,
+        0.005477190017700195,
+        0.007308006286621094
+      ]
+    },
+    "/mapview": {
+      "avg_response_time": 0.006536054611206055,
+      "min_response_time": 0.004729032516479492,
+      "max_response_time": 0.008991003036499023,
+      "success_rate": 0.0,
+      "all_times": [
+        0.004729032516479492,
+        0.005666017532348633,
+        0.008991003036499023,
+        0.0062541961669921875,
+        0.0070400238037109375
+      ]
+    },
+    "/api/properties/map-data": {
+      "avg_response_time": 0.004778575897216797,
+      "min_response_time": 0.0025420188903808594,
+      "max_response_time": 0.006448030471801758,
+      "success_rate": 0.0,
+      "all_times": [
+        0.005316972732543945,
+        0.006448030471801758,
+        0.0063669681549072266,
+        0.0025420188903808594,
+        0.0032188892364501953
+      ]
+    }
+  },
+  "concurrency": {
+    "results": [
+      {
+        "endpoint": "/api/properties",
+        "status_code": 429,
+        "response_time": 0.009427785873413086,
+        "success": false
+      },
+      {
+        "endpoint": "/",
+        "status_code": 429,
+        "response_time": 0.013029098510742188,
+        "success": false
+      },
+      {
+        "endpoint": "/api/properties",
+        "status_code": 429,
+        "response_time": 0.016192913055419922,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.020720243453979492,
+        "success": false
+      },
+      {
+        "endpoint": "/mapview",
+        "status_code": 429,
+        "response_time": 0.02077960968017578,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.020117998123168945,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.02258610725402832,
+        "success": false
+      },
+      {
+        "endpoint": "/",
+        "status_code": 429,
+        "response_time": 0.017603158950805664,
+        "success": false
+      },
+      {
+        "endpoint": "/mapview",
+        "status_code": 429,
+        "response_time": 0.013379096984863281,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.011197805404663086,
+        "success": false
+      },
+      {
+        "endpoint": "/mapview",
+        "status_code": 429,
+        "response_time": 0.009500741958618164,
+        "success": false
+      },
+      {
+        "endpoint": "/mapview",
+        "status_code": 429,
+        "response_time": 0.005014181137084961,
+        "success": false
+      },
+      {
+        "endpoint": "/mapview",
+        "status_code": 429,
+        "response_time": 0.004984140396118164,
+        "success": false
+      },
+      {
+        "endpoint": "/api/properties",
+        "status_code": 429,
+        "response_time": 0.005545854568481445,
+        "success": false
+      },
+      {
+        "endpoint": "/api/properties",
+        "status_code": 429,
+        "response_time": 0.004579067230224609,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.00630497932434082,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.007992029190063477,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.0068399906158447266,
+        "success": false
+      },
+      {
+        "endpoint": "/",
+        "status_code": 429,
+        "response_time": 0.005291938781738281,
+        "success": false
+      },
+      {
+        "endpoint": "/properties",
+        "status_code": 429,
+        "response_time": 0.004949808120727539,
+        "success": false
+      }
+    ],
+    "summary": {
+      "total_requests": 20,
+      "successful_requests": 0,
+      "success_rate": 0.0,
+      "avg_response_time": 0,
+      "max_response_time": 0
+    }
+  },
+  "summary": {
+    "total_execution_time": 28.314555168151855,
+    "categories_tested": 12,
+    "overall_health": "DEGRADED",
+    "category_summaries": {
+      "health_check": {
+        "status": "FAILED",
+        "details": "Test execution failed"
+      },
+      "web_pages": {
+        "status": "DEGRADED",
+        "details": "8/18 endpoints successful (44.4%)"
+      },
+      "api_endpoints": {
+        "status": "DEGRADED",
+        "details": "0/13 endpoints successful (0.0%)"
+      },
+      "property_search": {
+        "status": "HEALTHY",
+        "details": "Test completed with mixed results"
+      },
+      "ml_predictions": {
+        "status": "HEALTHY",
+        "details": "Test completed with mixed results"
+      },
+      "map_functionality": {
+        "status": "FAILED",
+        "details": "Test completed with mixed results"
+      },
+      "property_upload": {
+        "status": "HEALTHY",
+        "details": "Test completed with mixed results"
+      },
+      "authentication": {
+        "status": "DEGRADED",
+        "details": "0/2 endpoints successful (0.0%)"
+      },
+      "economic_data": {
+        "status": "FAILED",
+        "details": "Test completed with mixed results"
+      },
+      "error_handling": {
+        "status": "HEALTHY",
+        "details": "Test completed with mixed results"
+      },
+      "performance": {
+        "status": "HEALTHY",
+        "details": "Test completed with mixed results"
+      },
+      "concurrency": {
+        "status": "HEALTHY",
+        "details": "Test completed with mixed results"
+      }
+    },
+    "critical_issues": [],
+    "recommendations": []
+  }
+}

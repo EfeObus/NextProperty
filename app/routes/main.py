@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app, jsonify
-from app.extensions import db, cache
+from app.extensions import db, cache, limiter, csrf
 from app.models.property import Property, PropertyPhoto
 from app.models.user import SavedProperty, User
 from app.services.ml_service import MLService
@@ -7,8 +7,9 @@ from app.services.data_service import DataService
 from app.services.external_apis import ExternalAPIsService
 from app.utils.validators import validate_property_photos
 from app.security.middleware import csrf_protect, xss_protect
+from app.security.rate_limiter import rate_limit
 from flask_login import login_required, current_user
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, text
 from sqlalchemy.orm import joinedload, selectinload
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -23,6 +24,25 @@ bp = Blueprint('main', __name__)
 ml_service = MLService()
 data_service = DataService()
 external_apis_service = ExternalAPIsService()
+
+@bp.route('/health')
+@cache.cached(timeout=60)
+def health():
+    """Simple health check endpoint."""
+    try:
+        # Basic database check
+        db.session.execute(text('SELECT 1'))
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'service': 'nextproperty-ai'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat()
+        }), 503
 
 @bp.route('/')
 @cache.cached(timeout=300)  # Cache for 5 minutes
@@ -723,19 +743,33 @@ def format_date(value):
     return str(value)
 
 
-@bp.route('/login')
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Simple login page for demonstration."""
-    return render_template('auth/login.html')
+    """Demo login page - Authentication not implemented."""
+    if request.method == 'POST':
+        return jsonify({
+            'success': False,
+            'message': 'Authentication is not implemented in this demo version.',
+            'demo': True
+        })
+    return render_template('auth/login.html', demo_mode=True)
 
 
-@bp.route('/register')
+@bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """Simple registration page for demonstration."""
-    return render_template('auth/register.html')
+    """Demo registration page - Authentication not implemented."""
+    if request.method == 'POST':
+        return jsonify({
+            'success': False,
+            'message': 'Registration is not implemented in this demo version.',
+            'demo': True
+        })
+    return render_template('auth/register.html', demo_mode=True)
 
 
 @bp.route('/predict-price', methods=['GET', 'POST'])
+@limiter.exempt
+@csrf.exempt  # Exempt from CSRF for API calls
 @xss_protect  # Only add XSS protection, CSRF will be handled by Flask-WTF for POST requests
 def predict_price():
     """Property price prediction page."""
@@ -753,61 +787,99 @@ def predict_price():
                                  property_types=property_types)
         
         # POST request - process prediction
-        property_features = {
-            'bedrooms': request.form.get('bedrooms', type=int),
-            'bathrooms': request.form.get('bathrooms', type=float),
-            'square_feet': request.form.get('square_feet', type=int),
-            'lot_size': request.form.get('lot_size', type=int),
-            'year_built': request.form.get('year_built', type=int),
-            'property_type': request.form.get('property_type'),
-            'city': request.form.get('city'),
-            'province': request.form.get('province'),
-            'postal_code': request.form.get('postal_code')
-        }
+        if request.is_json:
+            # Handle JSON request from API calls
+            data = request.get_json()
+            property_features = {
+                'bedrooms': data.get('bedrooms'),
+                'bathrooms': data.get('bathrooms'),
+                'square_feet': data.get('square_feet'),
+                'lot_size': data.get('lot_size'),
+                'year_built': data.get('year_built'),
+                'property_type': data.get('property_type'),
+                'city': data.get('city'),
+                'province': data.get('province'),
+                'postal_code': data.get('postal_code')
+            }
+        else:
+            # Handle form data
+            property_features = {
+                'bedrooms': request.form.get('bedrooms', type=int),
+                'bathrooms': request.form.get('bathrooms', type=float),
+                'square_feet': request.form.get('square_feet', type=int),
+                'lot_size': request.form.get('lot_size', type=int),
+                'year_built': request.form.get('year_built', type=int),
+                'property_type': request.form.get('property_type'),
+                'city': request.form.get('city'),
+                'province': request.form.get('province'),
+                'postal_code': request.form.get('postal_code')
+            }
         
         # Validate required fields
         required_fields = ['bedrooms', 'bathrooms', 'square_feet', 'property_type', 'city', 'province']
         missing_fields = [field for field in required_fields if not property_features.get(field)]
         
         if missing_fields:
-            # Import comprehensive Canadian cities list
-            from app.data.canadian_cities import get_all_canadian_cities
-            
-            flash(f'Please fill in all required fields: {", ".join(missing_fields)}', 'error')
-            cities = get_all_canadian_cities()  # Use comprehensive list
-            property_types = data_service.get_property_types()
-            return render_template('properties/price_prediction_form.html',
-                                 cities=cities,
-                                 property_types=property_types,
-                                 form_data=property_features)
+            if request.is_json:
+                return jsonify({
+                    'success': False, 
+                    'error': f'Missing required fields: {", ".join(missing_fields)}'
+                }), 400
+            else:
+                # Import comprehensive Canadian cities list
+                from app.data.canadian_cities import get_all_canadian_cities
+                
+                flash(f'Please fill in all required fields: {", ".join(missing_fields)}', 'error')
+                cities = get_all_canadian_cities()  # Use comprehensive list
+                property_types = data_service.get_property_types()
+                return render_template('properties/price_prediction_form.html',
+                                     cities=cities,
+                                     property_types=property_types,
+                                     form_data=property_features)
         
         # Get prediction from ML service
         prediction_result = ml_service.predict_property_price(property_features)
         
         if prediction_result.get('error'):
-            # Import comprehensive Canadian cities list
-            from app.data.canadian_cities import get_all_canadian_cities
-            
-            flash(f'Prediction error: {prediction_result["error"]}', 'error')
-            cities = get_all_canadian_cities()  # Use comprehensive list
-            property_types = data_service.get_property_types()
-            return render_template('properties/price_prediction_form.html',
-                                 cities=cities,
-                                 property_types=property_types,
-                                 form_data=property_features)
+            if request.is_json:
+                return jsonify({
+                    'success': False,
+                    'error': prediction_result['error']
+                }), 500
+            else:
+                # Import comprehensive Canadian cities list
+                from app.data.canadian_cities import get_all_canadian_cities
+                
+                flash(f'Prediction error: {prediction_result["error"]}', 'error')
+                cities = get_all_canadian_cities()  # Use comprehensive list
+                property_types = data_service.get_property_types()
+                return render_template('properties/price_prediction_form.html',
+                                     cities=cities,
+                                     property_types=property_types,
+                                     form_data=property_features)
         
-        return render_template('properties/price_prediction.html',
-                             prediction=prediction_result,
-                             property_data=property_features)
+        if request.is_json:
+            return jsonify({
+                'success': True,
+                'prediction': prediction_result
+            })
+        else:
+            return render_template('properties/price_prediction.html',
+                                 prediction=prediction_result,
+                                 property_data=property_features)
     
     except Exception as e:
         current_app.logger.error(f"Error in price prediction: {str(e)}")
-        flash('Error generating prediction. Please try again.', 'error')
-        cities = data_service.get_unique_cities()
-        property_types = data_service.get_property_types()
-        return render_template('properties/price_prediction_form.html',
-                             cities=cities,
-                             property_types=property_types)
+        
+        if request.is_json:
+            return jsonify({'success': False, 'error': 'Internal server error'}), 500
+        else:
+            flash('Error generating prediction. Please try again.', 'error')
+            cities = data_service.get_unique_cities()
+            property_types = data_service.get_property_types()
+            return render_template('properties/price_prediction_form.html',
+                                 cities=cities,
+                                 property_types=property_types)
 
 
 @bp.route('/upload-property', methods=['GET', 'POST'])
@@ -1107,6 +1179,16 @@ def upload_property():
         # Save to database
         db.session.add(property_obj)
         db.session.commit()
+        
+        # Clear analytics cache to ensure real-time updates
+        try:
+            from app import cache
+            cache.delete('analytics_real_time_updates')
+            cache.delete('market_summary')
+            cache.delete('stats_summary')
+            current_app.logger.info("Analytics cache cleared after new property upload")
+        except Exception as cache_error:
+            current_app.logger.warning(f"Failed to clear analytics cache: {str(cache_error)}")
         
         # Check if property qualifies as a top deal
         top_deal_status = None
@@ -1590,3 +1672,77 @@ def api_documentation():
 def help_center():
     """Help Center page."""
     return render_template('pages/help.html')
+
+
+@bp.route('/test-predict-price', methods=['POST'])
+@limiter.exempt
+def test_predict_price():
+    """Test property price prediction page without XSS protection."""
+    try:
+        current_app.logger.info("Test prediction endpoint called")
+        
+        # POST request - process prediction
+        if request.is_json:
+            # Handle JSON request from API calls
+            data = request.get_json()
+            current_app.logger.info(f"Received JSON data: {data}")
+            
+            property_features = {
+                'bedrooms': data.get('bedrooms'),
+                'bathrooms': data.get('bathrooms'),
+                'square_feet': data.get('square_feet'),
+                'lot_size': data.get('lot_size'),
+                'year_built': data.get('year_built'),
+                'property_type': data.get('property_type'),
+                'city': data.get('city'),
+                'province': data.get('province'),
+                'postal_code': data.get('postal_code')
+            }
+        else:
+            return jsonify({'error': 'Only JSON requests supported for test endpoint'}), 400
+        
+        current_app.logger.info(f"Property features: {property_features}")
+        
+        # Validate required fields
+        required_fields = ['bedrooms', 'bathrooms', 'square_feet', 'property_type', 'city', 'province']
+        missing_fields = [field for field in required_fields if not property_features.get(field)]
+        
+        if missing_fields:
+            current_app.logger.warning(f"Missing fields: {missing_fields}")
+            return jsonify({
+                'success': False, 
+                'error': f'Missing required fields: {", ".join(missing_fields)}'
+            }), 400
+        
+        current_app.logger.info("All required fields present, calling ML service")
+        
+        # Get prediction from ML service
+        prediction_result = ml_service.predict_property_price(property_features)
+        
+        current_app.logger.info(f"ML service result: {prediction_result}")
+        
+        if prediction_result.get('error'):
+            return jsonify({
+                'success': False,
+                'error': prediction_result['error']
+            }), 500
+        
+        return jsonify({
+            'success': True,
+            'prediction': prediction_result
+        })
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in test price prediction: {str(e)}")
+        return jsonify({'success': False, 'error': 'Internal server error'}), 500
+
+
+@bp.route('/debug-simple', methods=['POST'])
+def debug_simple():
+    """Minimal debug endpoint."""
+    try:
+        current_app.logger.info("Debug endpoint called")
+        return jsonify({'status': 'success', 'message': 'Endpoint reached'})
+    except Exception as e:
+        current_app.logger.error(f"Debug endpoint error: {str(e)}")
+        return jsonify({'error': str(e)}), 500

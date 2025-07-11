@@ -1,0 +1,1138 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Insights - NextProperty AI{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .insights-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    .insights-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 20px 0;
+    }
+    .feature-bar {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        height: 25px;
+        border-radius: 12px;
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        color: white;
+        font-weight: 500;
+        padding: 0 12px;
+        font-size: 0.9rem;
+    }
+    .price-metric {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    .location-card {
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    .location-card:hover {
+        border-left-color: #764ba2;
+        background-color: #f8f9fa;
+    }
+    .back-nav {
+        background: rgba(102, 126, 234, 0.1);
+        border: none;
+        border-radius: 10px;
+        padding: 8px 16px;
+        color: #667eea;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .back-nav:hover {
+        background: rgba(102, 126, 234, 0.2);
+        color: #764ba2;
+        text-decoration: none;
+    }
+    .section-header {
+        border-bottom: 3px solid #667eea;
+        padding-bottom: 10px;
+        margin-bottom: 2rem;
+    }
+    .error-state {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+    }
+    .feature-category-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .progress-animated {
+        transition: width 0.6s ease;
+    }
+    .chart-controls {
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 15px;
+    }
+    .insight-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 10px;
+        padding: 15px;
+        border-left: 4px solid #667eea;
+    }
+    .category-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .category-legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    .category-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        margin-right: 6px;
+    }
+    .modal-xl {
+        max-width: 95%;
+    }
+    @media (max-width: 768px) {
+        .chart-container {
+            height: 300px;
+        }
+        .modal-xl {
+            max-width: 100%;
+            margin: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{{ url_for('dashboard.analytics') }}" class="back-nav me-3">
+                        <i class="fas fa-arrow-left"></i> Back to Analytics
+                    </a>
+                    <h1 class="h3 mb-1 d-inline"><i class="fas fa-brain text-primary"></i> {{ page_title or 'Analytics Insights' }}</h1>
+                    <p class="text-muted mb-0">Deep dive into feature importance and geographic price analysis</p>
+                </div>
+                <div>
+                    <button class="btn btn-outline-primary" onclick="exportCharts()">
+                        <i class="fas fa-download"></i> Export Charts
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="row">
+        <div class="col-12">
+            <div class="error-state">
+                <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                <h4>Insights Temporarily Unavailable</h4>
+                <p class="mb-3">{{ error_message or 'We are experiencing technical difficulties. Please try again later.' }}</p>
+                <a href="{{ url_for('dashboard.analytics') }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Return to Analytics
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Feature Importance Analysis -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="section-header">
+                <i class="fas fa-microscope text-primary"></i> ML Model Feature Importance Analysis (26 Features)
+            </h2>
+        </div>
+        
+        {% if feature_analysis and feature_analysis.success %}
+        <!-- Main Feature Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar text-success"></i> Top 15 Features Influencing Property Prices
+                    </h5>
+                    <small class="text-muted">Model: {{ feature_analysis.model_type }} | Total Features: {{ feature_analysis.total_features }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 500px;">
+                        <canvas id="featureChart"></canvas>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="showAllFeatures()">
+                            <i class="fas fa-expand"></i> Show All 26 Features
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="showCategoryChart()">
+                            <i class="fas fa-layer-group"></i> View by Category
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="debugCharts()">
+                            <i class="fas fa-bug"></i> Debug
+                        </button>
+                    </div>
+                    <!-- Debug info -->
+                    <div id="debugInfo" style="display: none;" class="mt-3">
+                        <h6>Debug Information:</h6>
+                        <pre id="debugData"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Rankings and Categories -->
+        <div class="col-lg-4 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ranking-star text-warning"></i> Top 10 Feature Rankings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for feature in feature_analysis.top_10_features %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <span class="fw-medium">{{ loop.index }}. {{ feature.feature }}</span>
+                            <br><small class="text-muted">{{ feature.category }}</small>
+                        </div>
+                        <span class="badge bg-primary">{{ feature.importance_percent|round(2) }}%</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <hr class="my-3">
+                    <div class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#allFeaturesModal">
+                            <i class="fas fa-list"></i> View All 26 Features
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Importance Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-layer-group text-info"></i> Feature Category Importance
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Category Breakdown -->
+        <div class="col-lg-6 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie text-purple"></i> Category Breakdown
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for category in feature_analysis.category_importance %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong>{{ category.category }}</strong>
+                            <span class="badge bg-info">{{ category.importance_percent|round(1) }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-gradient" 
+                                 style="width: {{ category.importance_percent|round(1) }}%; 
+                                        background: linear-gradient(90deg, #667eea {{ category.importance_percent|round(1) }}%, #764ba2 100%);"></div>
+                        </div>
+                        <small class="text-muted">
+                            {% set category_features = [] %}
+                            {% for feature in feature_analysis.all_features %}
+                                {% if feature.category == category.category %}
+                                    {% set _ = category_features.append(feature.feature) %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ category_features|length }} features: {{ category_features[:3]|join(', ') }}{% if category_features|length > 3 %}...{% endif %}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                Feature analysis is not available. This might be due to model loading issues or insufficient data.
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Geographic Price Analysis -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="section-header">
+                <i class="fas fa-map-marked-alt text-primary"></i> Geographic Price Analysis
+            </h2>
+        </div>
+        
+        {% if price_analytics and price_analytics.success %}
+        <!-- Summary Metrics -->
+        <div class="col-12 mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="price-metric">
+                        <h4>{{ price_analytics.summary.total_cities }}</h4>
+                        <p class="mb-0">Cities Analyzed</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="price-metric">
+                        <h4>{{ price_analytics.summary.total_provinces }}</h4>
+                        <p class="mb-0">Provinces</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="price-metric">
+                        <h4>{{ price_analytics.summary.total_zones }}</h4>
+                        <p class="mb-0">Postal Zones</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="price-metric">
+                        <h4>{{ price_analytics.summary.total_property_types }}</h4>
+                        <p class="mb-0">Property Types</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-city text-info"></i> Average Prices by Major Cities
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="cityPriceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-home text-success"></i> Average Prices by Property Type
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="propertyTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-flag text-warning"></i> Average Prices by Province
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="provinceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card insights-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-pin text-danger"></i> Average Prices by Postal Zone
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="zoneChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Tables -->
+        <div class="col-12">
+            <div class="card insights-card">
+                <div class="card-header bg-transparent">
+                    <ul class="nav nav-tabs card-header-tabs" id="priceDetailTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="cities-detail-tab" data-bs-toggle="tab" data-bs-target="#cities-detail" type="button" role="tab">
+                                Cities
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="provinces-detail-tab" data-bs-toggle="tab" data-bs-target="#provinces-detail" type="button" role="tab">
+                                Provinces
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="types-detail-tab" data-bs-toggle="tab" data-bs-target="#types-detail" type="button" role="tab">
+                                Property Types
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="zones-detail-tab" data-bs-toggle="tab" data-bs-target="#zones-detail" type="button" role="tab">
+                                Postal Zones
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="priceDetailContent">
+                        <div class="tab-pane fade show active" id="cities-detail" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>City</th>
+                                            <th>Average Price</th>
+                                            <th>Properties</th>
+                                            <th>Price Range</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for city in price_analytics.data.cities[:15] %}
+                                        <tr class="location-card">
+                                            <td><strong>{{ city.name }}</strong></td>
+                                            <td>${{ city.avg_price|format_large_number }}</td>
+                                            <td>{{ city.property_count }}</td>
+                                            <td class="text-muted">${{ city.min_price|format_large_number }} - ${{ city.max_price|format_large_number }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="provinces-detail" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Province</th>
+                                            <th>Average Price</th>
+                                            <th>Properties</th>
+                                            <th>Price Range</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for province in price_analytics.data.provinces %}
+                                        <tr class="location-card">
+                                            <td><strong>{{ province.name }}</strong></td>
+                                            <td>${{ province.avg_price|format_large_number }}</td>
+                                            <td>{{ province.property_count }}</td>
+                                            <td class="text-muted">${{ province.min_price|format_large_number }} - ${{ province.max_price|format_large_number }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="types-detail" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Property Type</th>
+                                            <th>Average Price</th>
+                                            <th>Properties</th>
+                                            <th>Price Range</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for type in price_analytics.data.property_types %}
+                                        <tr class="location-card">
+                                            <td><strong>{{ type.name }}</strong></td>
+                                            <td>${{ type.avg_price|format_large_number }}</td>
+                                            <td>{{ type.property_count }}</td>
+                                            <td class="text-muted">${{ type.min_price|format_large_number }} - ${{ type.max_price|format_large_number }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="zones-detail" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Postal Zone</th>
+                                            <th>Average Price</th>
+                                            <th>Properties</th>
+                                            <th>Price Range</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for zone in price_analytics.data.zones %}
+                                        <tr class="location-card">
+                                            <td><strong>{{ zone.name }}</strong></td>
+                                            <td>${{ zone.avg_price|format_large_number }}</td>
+                                            <td>{{ zone.property_count }}</td>
+                                            <td class="text-muted">${{ zone.min_price|format_large_number }} - ${{ zone.max_price|format_large_number }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                Price analytics data is not available. Please try again later.
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- All Features Modal -->
+{% if feature_analysis and feature_analysis.success %}
+<div class="modal fade" id="allFeaturesModal" tabindex="-1" aria-labelledby="allFeaturesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="allFeaturesModalLabel">
+                    <i class="fas fa-list"></i> All 26 Features - Complete Importance Analysis
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Feature</th>
+                                        <th>Category</th>
+                                        <th>Importance Score</th>
+                                        <th>Percentage</th>
+                                        <th>Visual Impact</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for feature in feature_analysis.all_features %}
+                                    <tr>
+                                        <td><strong>#{{ feature.rank }}</strong></td>
+                                        <td>{{ feature.feature }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ ['primary', 'success', 'info', 'warning', 'danger', 'secondary'][loop.index0 % 6] }}">
+                                                {{ feature.category }}
+                                            </span>
+                                        </td>
+                                        <td><code>{{ feature.importance|round(6) }}</code></td>
+                                        <td><strong>{{ feature.importance_percent|round(2) }}%</strong></td>
+                                        <td>
+                                            <div class="progress" style="height: 8px; width: 80px;">
+                                                <div class="progress-bar bg-gradient" 
+                                                     style="width: {{ (feature.importance_percent / feature_analysis.all_features[0].importance_percent * 100)|round(1) }}%; 
+                                                            background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Key Insights</h6>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="text-primary">Top Predictors:</h6>
+                                <ul class="list-unstyled">
+                                    {% for feature in feature_analysis.all_features[:5] %}
+                                    <li><strong>{{ feature.feature }}</strong> ({{ feature.importance_percent|round(1) }}%)</li>
+                                    {% endfor %}
+                                </ul>
+                                
+                                <h6 class="text-success mt-3">Category Distribution:</h6>
+                                {% for category in feature_analysis.category_importance %}
+                                <div class="mb-2">
+                                    <span class="fw-medium">{{ category.category }}</span>
+                                    <div class="progress mt-1" style="height: 6px;">
+                                        <div class="progress-bar" 
+                                             style="width: {{ category.importance_percent|round(1) }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ category.importance_percent|round(1) }}%</small>
+                                </div>
+                                {% endfor %}
+                                
+                                <div class="mt-3 p-2 bg-light rounded">
+                                    <small>
+                                        <strong>Model:</strong> {{ feature_analysis.model_type }}<br>
+                                        <strong>Total Features:</strong> {{ feature_analysis.total_features }}<br>
+                                        <strong>Analysis:</strong> Feature importance shows how much each input influences property price predictions.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="exportFeatureData()">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script>
+// Global chart variables
+let featureChart = null;
+let categoryChart = null;
+let currentView = 'top15'; // 'top15', 'all26', 'category'
+
+// Chart configuration
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: false
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                callback: function(value) {
+                    return '$' + value.toLocaleString();
+                }
+            }
+        }
+    }
+};
+
+// Feature importance data
+{% if feature_analysis and feature_analysis.success %}
+const featureData = {
+    top10: {
+        labels: [{% for feature in feature_analysis.top_10_features %}'{{ feature.feature|safe }}'{{ ',' if not loop.last }}{% endfor %}],
+        data: [{% for feature in feature_analysis.top_10_features %}{{ feature.importance_percent|round(4) }}{{ ',' if not loop.last }}{% endfor %}],
+        colors: [{% for feature in feature_analysis.top_10_features %}'rgba(102, 126, 234, 0.8)'{{ ',' if not loop.last }}{% endfor %}]
+    },
+    {% if feature_analysis.top_15_features %}
+    top15: {
+        labels: [{% for feature in feature_analysis.top_15_features %}'{{ feature.feature|safe }}'{{ ',' if not loop.last }}{% endfor %}],
+        data: [{% for feature in feature_analysis.top_15_features %}{{ feature.importance_percent|round(4) }}{{ ',' if not loop.last }}{% endfor %}],
+        colors: [{% for feature in feature_analysis.top_15_features %}'rgba(102, 126, 234, 0.8)'{{ ',' if not loop.last }}{% endfor %}]
+    },
+    {% else %}
+    top15: {
+        labels: [{% for feature in feature_analysis.top_10_features %}'{{ feature.feature|safe }}'{{ ',' if not loop.last }}{% endfor %}],
+        data: [{% for feature in feature_analysis.top_10_features %}{{ feature.importance_percent|round(4) }}{{ ',' if not loop.last }}{% endfor %}],
+        colors: [{% for feature in feature_analysis.top_10_features %}'rgba(102, 126, 234, 0.8)'{{ ',' if not loop.last }}{% endfor %}]
+    },
+    {% endif %}
+    all26: {
+        labels: [{% for feature in feature_analysis.all_features %}'{{ feature.feature|safe }}'{{ ',' if not loop.last }}{% endfor %}],
+        data: [{% for feature in feature_analysis.all_features %}{{ feature.importance_percent|round(4) }}{{ ',' if not loop.last }}{% endfor %}],
+        colors: [{% for feature in feature_analysis.all_features %}'rgba({{ 102 + (loop.index0 * 13) % 153 }}, {{ 126 + (loop.index0 * 19) % 129 }}, {{ 234 - (loop.index0 * 7) % 100 }}, 0.8)'{{ ',' if not loop.last }}{% endfor %}]
+    },
+    categories: {
+        labels: [{% for category in feature_analysis.category_importance %}'{{ category.category|safe }}'{{ ',' if not loop.last }}{% endfor %}],
+        data: [{% for category in feature_analysis.category_importance %}{{ category.importance_percent|round(4) }}{{ ',' if not loop.last }}{% endfor %}],
+        colors: ['rgba(102, 126, 234, 0.8)', 'rgba(118, 75, 162, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 99, 132, 0.8)', 'rgba(75, 192, 192, 0.8)', 'rgba(255, 205, 86, 0.8)']
+    }
+};
+
+console.log('Feature data loaded:', featureData);
+
+// Initialize Feature Importance Chart
+function initFeatureChart() {
+    try {
+        const featureCtx = document.getElementById('featureChart');
+        if (!featureCtx) {
+            console.error('Feature chart canvas not found');
+            return;
+        }
+        
+        const ctx = featureCtx.getContext('2d');
+        
+        // Use top15 data if available, otherwise fall back to top10
+        const chartData = featureData.top15 || featureData.top10;
+        
+        if (!chartData || !chartData.labels || chartData.labels.length === 0) {
+            console.error('No feature data available for chart');
+            return;
+        }
+        
+        console.log('Initializing feature chart with data:', chartData);
+        
+        featureChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Importance %',
+                    data: chartData.data,
+                    backgroundColor: chartData.colors,
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: chartData === featureData.top15 ? 'Top 15 Features by Importance' : 'Top 10 Features by Importance',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toFixed(2) + '% importance';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(1) + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Importance (%)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            font: {
+                                size: 10
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Features'
+                        }
+                    }
+                }
+            });
+        
+        console.log('Feature chart initialized successfully');
+    } catch (error) {
+        console.error('Error initializing feature chart:', error);
+    }
+}
+
+// Initialize Category Chart
+function initCategoryChart() {
+    try {
+        const categoryCtx = document.getElementById('categoryChart');
+        if (!categoryCtx) {
+            console.error('Category chart canvas not found');
+            return;
+        }
+        
+        const ctx = categoryCtx.getContext('2d');
+        
+        if (!featureData.categories || !featureData.categories.labels || featureData.categories.labels.length === 0) {
+            console.error('No category data available for chart');
+            return;
+        }
+        
+        console.log('Initializing category chart with data:', featureData.categories);
+        
+        categoryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: featureData.categories.labels,
+                datasets: [{
+                    data: featureData.categories.data,
+                    backgroundColor: featureData.categories.colors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Feature Categories by Total Importance'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                }
+            });
+        
+        console.log('Category chart initialized successfully');
+    } catch (error) {
+        console.error('Error initializing category chart:', error);
+    }
+}
+
+// Show all 26 features
+function showAllFeatures() {
+    if (featureChart) {
+        featureChart.data.labels = featureData.all26.labels;
+        featureChart.data.datasets[0].data = featureData.all26.data;
+        featureChart.data.datasets[0].backgroundColor = featureData.all26.colors;
+        featureChart.options.plugins.title.text = 'All 26 Features by Importance';
+        featureChart.update();
+        currentView = 'all26';
+    }
+}
+
+// Show category view
+function showCategoryChart() {
+    if (featureChart) {
+        featureChart.destroy();
+        const featureCtx = document.getElementById('featureChart').getContext('2d');
+        featureChart = new Chart(featureCtx, {
+            type: 'bar',
+            data: {
+                labels: featureData.categories.labels,
+                datasets: [{
+                    label: 'Category Importance %',
+                    data: featureData.categories.data,
+                    backgroundColor: featureData.categories.colors,
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Feature Categories by Total Importance',
+                        font: {
+                            size: 16
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toFixed(1) + '% total category importance';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(1) + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Total Category Importance (%)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        title: {
+                            display: true,
+                            text: 'Feature Categories'
+                        }
+                    }
+                }
+            });
+        currentView = 'category';
+    }
+}
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing charts...');
+    
+    // Check if feature analysis data exists
+    if (typeof featureData !== 'undefined') {
+        console.log('Feature data available, initializing charts');
+        
+        // Initialize charts with a small delay to ensure DOM is ready
+        setTimeout(() => {
+            initFeatureChart();
+            initCategoryChart();
+        }, 100);
+    } else {
+        console.error('Feature data not available');
+    }
+});
+{% else %}
+console.log('Feature analysis not available or failed');
+{% endif %}
+
+// Price Charts
+{% if price_analytics and price_analytics.success %}
+// Cities Chart
+const cityCtx = document.getElementById('cityPriceChart').getContext('2d');
+const cityChart = new Chart(cityCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for city in price_analytics.data.cities[:10] %}'{{ city.name }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            data: [{% for city in price_analytics.data.cities[:10] %}{{ city.avg_price }}{{ ',' if not loop.last }}{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: chartOptions
+});
+
+// Property Types Chart
+const typeCtx = document.getElementById('propertyTypeChart').getContext('2d');
+const typeChart = new Chart(typeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for type in price_analytics.data.property_types %}'{{ type.name }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            data: [{% for type in price_analytics.data.property_types %}{{ type.avg_price }}{{ ',' if not loop.last }}{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 205, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Provinces Chart
+const provinceCtx = document.getElementById('provinceChart').getContext('2d');
+const provinceChart = new Chart(provinceCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for province in price_analytics.data.provinces %}'{{ province.name }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            data: [{% for province in price_analytics.data.provinces %}{{ province.avg_price }}{{ ',' if not loop.last }}{% endfor %}],
+            backgroundColor: 'rgba(255, 159, 64, 0.8)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: chartOptions
+});
+
+// Zones Chart
+const zoneCtx = document.getElementById('zoneChart').getContext('2d');
+const zoneChart = new Chart(zoneCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for zone in price_analytics.data.zones[:10] %}'{{ zone.name }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            data: [{% for zone in price_analytics.data.zones[:10] %}{{ zone.avg_price }}{{ ',' if not loop.last }}{% endfor %}],
+            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: chartOptions
+});
+{% endif %}
+
+// Export functionality
+function exportCharts() {
+    const zip = new JSZip();
+    
+    // Export feature chart
+    if (featureChart) {
+        const featureCanvas = featureChart.canvas;
+        const featureImage = featureCanvas.toDataURL('image/png');
+        zip.file('feature_importance_chart.png', featureImage.split(',')[1], {base64: true});
+    }
+    
+    // Export category chart
+    if (categoryChart) {
+        const categoryCanvas = categoryChart.canvas;
+        const categoryImage = categoryCanvas.toDataURL('image/png');
+        zip.file('category_importance_chart.png', categoryImage.split(',')[1], {base64: true});
+    }
+    
+    // Generate and download zip
+    zip.generateAsync({type: 'blob'}).then(function(content) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = 'analytics_insights_charts.zip';
+        link.click();
+    });
+}
+
+function exportFeatureData() {
+    {% if feature_analysis and feature_analysis.success %}
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + "Rank,Feature,Category,Importance,Percentage\n"
+        + [{% for feature in feature_analysis.all_features %}"{{ feature.rank }}","{{ feature.feature }}","{{ feature.category }}","{{ feature.importance }}","{{ feature.importance_percent }}"{{ ',' if not loop.last }}{% endfor %}].join('\n');
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'feature_importance_analysis.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    {% endif %}
+}
+
+// Add smooth animations
+function animateValue(element, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        element.innerHTML = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Debug function
+function debugCharts() {
+    const debugInfo = document.getElementById('debugInfo');
+    const debugData = document.getElementById('debugData');
+    
+    debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+    
+    const debug = {
+        featureDataExists: typeof featureData !== 'undefined',
+        featureChart: featureChart ? 'Initialized' : 'Not initialized',
+        categoryChart: categoryChart ? 'Initialized' : 'Not initialized',
+        canvasElements: {
+            featureChart: document.getElementById('featureChart') ? 'Found' : 'Not found',
+            categoryChart: document.getElementById('categoryChart') ? 'Found' : 'Not found'
+        }
+    };
+    
+    if (typeof featureData !== 'undefined') {
+        debug.featureDataStructure = {
+            top10Labels: featureData.top10 ? featureData.top10.labels.length : 'Not available',
+            top15Labels: featureData.top15 ? featureData.top15.labels.length : 'Not available',
+            all26Labels: featureData.all26 ? featureData.all26.labels.length : 'Not available',
+            categoriesLabels: featureData.categories ? featureData.categories.labels.length : 'Not available'
+        };
+    }
+    
+    debugData.textContent = JSON.stringify(debug, null, 2);
+}
+
+// Additional utility functions
+function resetToTop15() {
+    if (featureChart && currentView !== 'top15') {
+        featureChart.data.labels = featureData.top15.labels;
+        featureChart.data.datasets[0].data = featureData.top15.data;
+        featureChart.data.datasets[0].backgroundColor = featureData.top15.colors;
+        featureChart.options.plugins.title.text = 'Top 15 Features by Importance';
+        featureChart.update();
+        currentView = 'top15';
+    }
+}
+</script>
+{% endblock %}
