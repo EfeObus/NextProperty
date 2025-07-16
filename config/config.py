@@ -10,22 +10,22 @@ class Config:
     # Flask Configuration
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
-    # Database Configuration - Optimized for performance
+    # Database Configuration - Updated for Docker MySQL
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql+pymysql://root:Jesutekevwe1@@localhost:3306/nextproperty_ai'
+        'mysql+pymysql://studentGroup:juifcdhoifdqw13f@184.107.4.32:8002/NextProperty'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_size': 20,           # Increased from 10
-        'max_overflow': 30,        # Allow overflow connections
-        'pool_recycle': 300,       # Increased from 120 seconds
+        'pool_size': 10,              # Reduced for Docker container
+        'max_overflow': 20,           # Reduced overflow connections
+        'pool_recycle': 3600,         # Increased for stability
         'pool_pre_ping': True,
-        'pool_timeout': 30,        # Connection timeout
-        'echo': False,             # Disable SQL logging in production
+        'pool_timeout': 60,           # Increased timeout for Docker
+        'echo': False,                # Disable SQL logging
         'connect_args': {
             'charset': 'utf8mb4',
-            'connect_timeout': 30,
-            'read_timeout': 30,
-            'write_timeout': 30,
+            'connect_timeout': 60,    # Increased for Docker
+            'read_timeout': 60,       # Increased for Docker  
+            'write_timeout': 60,      # Increased for Docker
             'autocommit': False,
             'sql_mode': 'TRADITIONAL'
         }

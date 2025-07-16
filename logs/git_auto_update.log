@@ -1,0 +1,38 @@
+2025-07-06 16:53:24,046 - INFO - Git repository validated: /Users/efeobukohwo/Desktop/Nextproperty Real Estate
+2025-07-06 16:53:24,059 - ERROR - Git command failed: git diff --quiet
+2025-07-06 16:53:24,059 - ERROR - Error output: 
+2025-07-06 16:53:35,493 - INFO - Git repository validated: /Users/efeobukohwo/Desktop/Nextproperty Real Estate
+2025-07-06 16:53:38,355 - INFO - Starting auto-update cycle...
+2025-07-06 16:53:38,382 - ERROR - Git command failed: git diff --quiet
+2025-07-06 16:53:38,382 - ERROR - Error output: 
+2025-07-06 16:53:38,437 - INFO - Changes detected: {'modified': ['app/security/middleware.py', 'docs/CHANGELOG.md', 'docs/COMPREHENSIVE_MANAGEMENT_REPORT.md', 'docs/README.md', 'requirements.txt'], 'added': [], 'deleted': [], 'untracked': ['app/security/advanced_validation.py', 'app/security/advanced_xss.py', 'app/security/behavioral_analysis.py', 'app/security/enhanced_config.py', 'app/security/enhanced_csp.py', 'app/security/enhanced_integration.py', 'app/security/example_routes.py', 'docs/AUTO_GIT_UPDATE_GUIDE.md', 'docs/ENHANCED_SECURITY_COMPLETION_REPORT.md', 'docs/ENHANCED_XSS_IMPLEMENTATION_SUMMARY.md', 'docs/ENHANCED_XSS_PROTECTION_IMPLEMENTATION.md', 'scripts/auto_git_update.py', 'scripts/com.nextproperty.autoupdate.plist', 'scripts/config_auto_update.json', 'scripts/demo_auto_update.py', 'scripts/git_auto_update.sh', 'scripts/git_hooks.py', 'scripts/nextproperty-auto-update.service', 'scripts/requirements_auto_update.txt']}
+2025-07-06 16:53:38,449 - INFO - Staged: app/security/middleware.py
+2025-07-06 16:53:38,459 - INFO - Staged: docs/CHANGELOG.md
+2025-07-06 16:53:38,470 - INFO - Staged: docs/COMPREHENSIVE_MANAGEMENT_REPORT.md
+2025-07-06 16:53:38,481 - INFO - Staged: docs/README.md
+2025-07-06 16:53:38,491 - INFO - Staged: requirements.txt
+2025-07-06 16:53:38,502 - INFO - Staged: app/security/advanced_validation.py
+2025-07-06 16:53:38,512 - INFO - Staged: app/security/advanced_xss.py
+2025-07-06 16:53:38,522 - INFO - Staged: app/security/behavioral_analysis.py
+2025-07-06 16:53:38,532 - INFO - Staged: app/security/enhanced_config.py
+2025-07-06 16:53:38,542 - INFO - Staged: app/security/enhanced_csp.py
+2025-07-06 16:53:38,551 - INFO - Staged: app/security/enhanced_integration.py
+2025-07-06 16:53:38,561 - INFO - Staged: app/security/example_routes.py
+2025-07-06 16:53:38,570 - INFO - Staged: docs/AUTO_GIT_UPDATE_GUIDE.md
+2025-07-06 16:53:38,579 - INFO - Staged: docs/ENHANCED_SECURITY_COMPLETION_REPORT.md
+2025-07-06 16:53:38,589 - INFO - Staged: docs/ENHANCED_XSS_IMPLEMENTATION_SUMMARY.md
+2025-07-06 16:53:38,598 - INFO - Staged: docs/ENHANCED_XSS_PROTECTION_IMPLEMENTATION.md
+2025-07-06 16:53:38,608 - INFO - Staged: scripts/auto_git_update.py
+2025-07-06 16:53:38,617 - INFO - Staged: scripts/com.nextproperty.autoupdate.plist
+2025-07-06 16:53:38,626 - INFO - Staged: scripts/config_auto_update.json
+2025-07-06 16:53:38,635 - INFO - Staged: scripts/demo_auto_update.py
+2025-07-06 16:53:38,644 - INFO - Staged: scripts/git_auto_update.sh
+2025-07-06 16:53:38,654 - INFO - Staged: scripts/git_hooks.py
+2025-07-06 16:53:38,663 - INFO - Staged: scripts/nextproperty-auto-update.service
+2025-07-06 16:53:38,672 - INFO - Staged: scripts/requirements_auto_update.txt
+2025-07-06 16:53:38,672 - INFO - Generated commit message: Enhanced security features and XSS protection - 24 files updated (bulk update)
+2025-07-06 16:53:38,694 - INFO - Successfully committed: Enhanced security features and XSS protection - 24 files updated (bulk update)
+2025-07-06 16:53:38,694 - INFO - Pulling latest changes from remote...
+2025-07-06 16:53:38,909 - INFO - Pushing changes to origin/main...
+2025-07-06 16:53:39,852 - INFO - Successfully pushed changes to GitHub
+2025-07-06 16:53:39,852 - INFO - Auto-update cycle completed successfully

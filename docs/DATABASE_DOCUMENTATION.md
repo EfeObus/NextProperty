@@ -2,6 +2,7 @@
 
 ## Table of Contents
 - [Overview](#overview)
+- [Current Database Configuration](#current-database-configuration)
 - [Database Schema](#database-schema)
 - [Models](#models)
 - [Migrations](#migrations)
@@ -12,13 +13,45 @@
 
 ## Overview
 
-NextProperty AI uses MySQL as the primary database with SQLAlchemy ORM for database operations:
-- **Production**: MySQL 8.0+ (recommended)
-- **Development**: MySQL 8.0+ (migrated from SQLite)
-- **Testing**: SQLite (for simplicity and speed)
+NextProperty AI uses Docker MySQL as the primary production database with SQLAlchemy ORM for database operations:
+- **Production**: Docker MySQL 8.0.42 (Current)
+- **Development**: Docker MySQL 8.0.42 (Unified Environment)
+- **Testing**: SQLite (for testing speed and isolation)
 
-### Database Migration Status
- **Successfully migrated from SQLite to MySQL** with 49,551 property records loaded.
+## Current Database Configuration
+
+### Production Database (v2.7.0+)
+- **Host**: 184.107.4.32
+- **Port**: 8001
+- **Database**: NextProperty
+- **Engine**: MySQL 8.0.42
+- **Connection**: mysql+pymysql://studentGroup:password@184.107.4.32:8001/NextProperty
+- **Tables**: 11 production tables
+- **Character Set**: UTF8MB4
+- **Collation**: utf8mb4_unicode_ci
+
+### Database Migration History
+- **July 16, 2025**: ✅ Successfully migrated to Docker MySQL infrastructure
+- **Previous**: SQLite to MySQL migration with 49,551 property records loaded
+- **Status**: Production-ready with zero downtime migration
+
+### Connection Configuration
+```python
+# Production Configuration
+DATABASE_URL = "mysql+pymysql://studentGroup:password@184.107.4.32:8001/NextProperty"
+
+# Engine Settings
+engine_options = {
+    'pool_recycle': 3600,
+    'pool_pre_ping': True,
+    'connect_args': {
+        'charset': 'utf8mb4',
+        'connect_timeout': 30,
+        'read_timeout': 30,
+        'write_timeout': 30
+    }
+}
+```
 
 ## Database Schema
 

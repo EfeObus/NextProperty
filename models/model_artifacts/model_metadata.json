@@ -1,0 +1,96 @@
+{
+  "best_model": "Ensemble",
+  "model_performance": {
+    "r2_score": 0.8830515568485345,
+    "rmse": 197944.0452555035,
+    "mae": 140076.44664662864,
+    "mape": 9.870497138209744
+  },
+  "training_info": {
+    "training_date": "2025-06-12T19:44:00.299695",
+    "training_samples": 4000,
+    "test_samples": 1000,
+    "features_count": 26,
+    "pca_components": 15,
+    "cv_folds": 5
+  },
+  "feature_columns": [
+    "bedrooms",
+    "bathrooms",
+    "square_feet",
+    "lot_size",
+    "rooms",
+    "city_encoded",
+    "province_encoded",
+    "property_type_encoded",
+    "year_built",
+    "current_year",
+    "current_month",
+    "dom",
+    "taxes",
+    "policy_rate",
+    "prime_rate",
+    "mortgage_rate",
+    "inflation_rate",
+    "unemployment_rate",
+    "exchange_rate",
+    "gdp_growth",
+    "interest_environment",
+    "economic_momentum",
+    "affordability_pressure",
+    "property_affordability",
+    "economic_sensitivity",
+    "market_timing"
+  ],
+  "all_models_performance": {
+    "Ridge": {
+      "r2": 0.7138239302738569,
+      "rmse": 309643.4349106287,
+      "mae": 235271.3133961059,
+      "mape": 17.45142124895316,
+      "training_time": 0.593878
+    },
+    "ElasticNet": {
+      "r2": 0.7101737792056813,
+      "rmse": 311611.91549226415,
+      "mae": 232926.04566389418,
+      "mape": 17.149143108488687,
+      "training_time": 0.628093
+    },
+    "RandomForest": {
+      "r2": 0.7657826512270824,
+      "rmse": 280126.8575341905,
+      "mae": 208092.1828490538,
+      "mape": 15.862133703514694,
+      "training_time": 241.940095
+    },
+    "GradientBoosting": {
+      "r2": 0.8609355251915763,
+      "rmse": 215850.62924073447,
+      "mae": 153938.18363007906,
+      "mape": 10.992333705827152,
+      "training_time": 276.633703
+    },
+    "XGBoost": {
+      "r2": 0.8781454141000224,
+      "rmse": 202053.39781740325,
+      "mae": 142880.76077829322,
+      "mape": 10.07001474529345,
+      "training_time": 30.584889
+    },
+    "LightGBM": {
+      "r2": 0.8737210525120577,
+      "rmse": 205688.8242940695,
+      "mae": 147258.16791934695,
+      "mape": 10.49860997088642,
+      "training_time": 8.700964
+    },
+    "Ensemble": {
+      "r2": 0.8830515568485345,
+      "rmse": 197944.0452555035,
+      "mae": 140076.44664662864,
+      "mape": 9.870497138209744,
+      "training_time": 6.79171
+    }
+  }
+}

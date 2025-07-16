@@ -1,0 +1,21 @@
+2025-07-11 20:28:39,480 - INFO - ============================================================
+2025-07-11 20:28:39,480 - INFO - NextProperty Database Migration Script
+2025-07-11 20:28:39,480 - INFO - ============================================================
+2025-07-11 20:28:39,488 - INFO - Starting database migration...
+2025-07-11 20:28:39,488 - INFO - Testing database connections...
+2025-07-11 20:28:39,674 - ERROR - ✗ Connection test failed: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '@@localhost' ([Errno 8] nodename nor servname provided, or not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-07-11 20:28:39,674 - ERROR - Connection test failed. Aborting migration.
+2025-07-11 20:28:39,675 - ERROR - Migration failed!
+2025-07-11 20:28:39,675 - INFO - Migration script completed.
+2025-07-11 20:29:03,341 - INFO - ============================================================
+2025-07-11 20:29:03,341 - INFO - NextProperty Database Migration Script
+2025-07-11 20:29:03,341 - INFO - ============================================================
+2025-07-11 20:29:03,350 - INFO - Starting database migration...
+2025-07-11 20:29:03,351 - INFO - Testing database connections...
+2025-07-11 20:29:03,356 - INFO - ✓ Successfully connected to old database
+2025-07-11 20:29:55,280 - ERROR - ✗ Connection test failed: (pymysql.err.OperationalError) (2013, 'Lost connection to MySQL server during query')
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-07-11 20:29:55,281 - ERROR - Connection test failed. Aborting migration.
+2025-07-11 20:29:55,281 - ERROR - Migration failed!
+2025-07-11 20:29:55,281 - INFO - Migration script completed.

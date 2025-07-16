@@ -209,13 +209,12 @@ DEBUG=True  # Set to False in production
 
 #### Database Configuration
 ```env
-# MySQL (primary database - migrated from SQLite)
-DATABASE_URL=mysql+pymysql://username:password@localhost:3306/nextproperty_ai
+# Docker MySQL (production database - current)
+DATABASE_URL=mysql+pymysql://studentGroup:password@184.107.4.32:8001/NextProperty
 
-# For development, you can still use SQLite
+# Legacy configurations (deprecated)
+# DATABASE_URL=mysql+pymysql://username:password@localhost:3306/nextproperty_ai
 # DATABASE_URL=sqlite:///instance/nextproperty_dev.db
-
-# PostgreSQL (alternative production option)
 # DATABASE_URL=postgresql://username:password@localhost/nextproperty_db
 ```
 
