@@ -244,3 +244,8 @@ env/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Test result files
+feature_status_results.json
+*_test_results*.json
+*_results*.json
