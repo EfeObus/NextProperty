@@ -1,18 +1,3 @@
-2025-07-11 20:38:57,399 - INFO - ============================================================
-2025-07-11 20:38:57,400 - INFO - NextProperty Database Export for Docker Migration
-2025-07-11 20:38:57,400 - INFO - ============================================================
-2025-07-11 20:38:57,400 - INFO - Starting database export for Docker migration...
-2025-07-11 20:38:57,407 - INFO - ✓ Connected to source database. Found 11 tables.
-2025-07-11 20:38:57,407 - INFO - Exporting complete database...
-2025-07-11 20:38:58,140 - INFO - ✓ Complete database exported to database_export/complete_database.sql
-2025-07-11 20:38:58,140 - INFO - Exporting database structure...
-2025-07-11 20:38:58,168 - INFO - ✓ Database structure exported to database_export/database_structure.sql
-2025-07-11 20:38:58,168 - INFO - Exporting database data...
-2025-07-11 20:38:58,498 - INFO - ✓ Database data exported to database_export/database_data.sql
-2025-07-11 20:38:58,498 - INFO - ✓ Docker import script created: database_export/import_to_docker.sh
-2025-07-11 20:38:58,499 - INFO - ✓ Import instructions created: database_export/IMPORT_INSTRUCTIONS.md
-2025-07-11 20:38:58,499 - INFO - Export completed: 3/3 operations successful
-2025-07-11 20:38:58,499 - INFO - Files saved in: /Users/efeobukohwo/Desktop/Nextproperty Real Estate/database_export
-2025-07-11 20:38:58,499 - INFO - ✓ Database export completed successfully!
-2025-07-11 20:38:58,499 - INFO - Check the database_export directory for SQL files and instructions.
-2025-07-11 20:38:58,499 - INFO - Export script completed.
+version https://git-lfs.github.com/spec/v1
+oid sha256:bdacc1868d6bcd03794f05d6840ad9caf6ac4a74339271a0fbcf6cb13b5166d0
+size 1573

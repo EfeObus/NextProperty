@@ -1,28 +1,3 @@
-[
-  "bedrooms",
-  "bathrooms",
-  "square_feet",
-  "lot_size",
-  "rooms",
-  "city_encoded",
-  "province_encoded",
-  "property_type_encoded",
-  "year_built",
-  "current_year",
-  "current_month",
-  "dom",
-  "taxes",
-  "policy_rate",
-  "prime_rate",
-  "mortgage_rate",
-  "inflation_rate",
-  "unemployment_rate",
-  "exchange_rate",
-  "gdp_growth",
-  "interest_environment",
-  "economic_momentum",
-  "affordability_pressure",
-  "property_affordability",
-  "economic_sensitivity",
-  "market_timing"
-]
+version https://git-lfs.github.com/spec/v1
+oid sha256:05880a3e89defcee501e7e5b306adb0d000f3d0e4ef12fcc30b3f33cd57aa226
+size 493

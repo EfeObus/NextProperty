@@ -476,7 +476,11 @@ class AbuseDetectionRateLimiter:
                 timestamps.popleft()
             
             if len(timestamps) >= max_requests:
-                retry_after = int(window - (current_time - timestamps[0])) + 1
+                # Calculate retry time based on oldest remaining timestamp
+                if timestamps:
+                    retry_after = int(window - (current_time - timestamps[0])) + 1
+                else:
+                    retry_after = window  # If no timestamps, use full window
                 return False, retry_after
             
             # Add current timestamp
@@ -585,6 +589,12 @@ class AbuseDetectionMiddleware:
             return response
         
         start_time = getattr(g, 'request_start_time', time.time())
+        
+        # Handle both datetime objects and float timestamps
+        if hasattr(start_time, 'timestamp'):
+            # It's a datetime object, convert to timestamp
+            start_time = start_time.timestamp()
+        
         response_time = (time.time() - start_time) * 1000  # Convert to ms
         
         request_data = {

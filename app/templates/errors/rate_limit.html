@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limit Exceeded - NextProperty AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #ffa726, #42a5f5, #66bb6a);
+        }
+        
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+        
+        .error-code {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .message {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #5a6c7d;
+            margin-bottom: 30px;
+        }
+        
+        .retry-info {
+            background: #f8f9fc;
+            border: 2px solid #e3e8ee;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .retry-time {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .retry-details {
+            font-size: 14px;
+            color: #7f8fa4;
+        }
+        
+        .guidance {
+            background: #e8f4fd;
+            border-left: 4px solid #42a5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .guidance-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        
+        .guidance-text {
+            font-size: 14px;
+            color: #37474f;
+            line-height: 1.5;
+        }
+        
+        .details {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 12px;
+            color: #666;
+            text-align: left;
+        }
+        
+        .details-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #42a5f5;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1976d2;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #424242;
+        }
+        
+        .btn-secondary:hover {
+            background: #bdbdbd;
+        }
+        
+        .countdown {
+            font-weight: 600;
+            color: #ff6b6b;
+        }
+        
+        .limit-type-badge {
+            display: inline-block;
+            background: #e1f5fe;
+            color: #01579b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+        
+        /* Animation for the icon */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .icon {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Progress bar for countdown */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ffa726);
+            width: 0%;
+            transition: width 1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">⏰</div>
+        
+        <div class="error-code">Error 429</div>
+        
+        <div class="limit-type-badge">{{ limit_type | title }} Rate Limit</div>
+        
+        <h1 class="title">Rate Limit Exceeded</h1>
+        
+        <p class="message">{{ message }}</p>
+        
+        <div class="retry-info">
+            <div class="retry-time">
+                Please wait <span class="countdown" id="countdown">{{ retry_after_human }}</span>
+            </div>
+            <div class="retry-details">
+                You can try again at {{ current_time }}
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        {% if guidance %}
+        <div class="guidance">
+            <div class="guidance-title">💡 What can you do?</div>
+            <div class="guidance-text">{{ guidance }}</div>
+        </div>
+        {% endif %}
+        
+        {% if details %}
+        <div class="details">
+            <div class="details-title">Technical Details</div>
+            {% for key, value in details.items() %}
+                <div><strong>{{ key | title }}:</strong> {{ value }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="actions">
+            <a href="{{ url_for('main.index') if url_for else '/' }}" class="btn btn-primary">
+                🏠 Go Home
+            </a>
+            <button onclick="window.history.back()" class="btn btn-secondary">
+                ← Go Back
+            </button>
+            <button onclick="window.location.reload()" class="btn btn-secondary" id="retryBtn" disabled>
+                🔄 Retry Now
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Countdown functionality
+        let retryAfter = {{ retry_after }};
+        let startTime = Date.now();
+        
+        function updateCountdown() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const remaining = Math.max(0, retryAfter - elapsed);
+            
+            if (remaining > 0) {
+                const hours = Math.floor(remaining / 3600);
+                const minutes = Math.floor((remaining % 3600) / 60);
+                const seconds = remaining % 60;
+                
+                let timeString = '';
+                if (hours > 0) {
+                    timeString += hours + 'h ';
+                }
+                if (minutes > 0) {
+                    timeString += minutes + 'm ';
+                }
+                timeString += seconds + 's';
+                
+                document.getElementById('countdown').textContent = timeString;
+                
+                // Update progress bar
+                const progress = ((retryAfter - remaining) / retryAfter) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+                
+                setTimeout(updateCountdown, 1000);
+            } else {
+                document.getElementById('countdown').textContent = 'You can retry now!';
+                document.getElementById('retryBtn').disabled = false;
+                document.getElementById('retryBtn').style.background = '#4caf50';
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('progressBar').style.background = '#4caf50';
+            }
+        }
+        
+        // Start countdown
+        updateCountdown();
+        
+        // Auto-retry option
+        document.getElementById('retryBtn').addEventListener('click', function() {
+            if (!this.disabled) {
+                window.location.reload();
+            }
+        });
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'r' && e.ctrlKey) {
+                e.preventDefault();
+                if (!document.getElementById('retryBtn').disabled) {
+                    window.location.reload();
+                }
+            } else if (e.key === 'h' && e.ctrlKey) {
+                e.preventDefault();
+                window.location.href = "{{ url_for('main.index') if url_for else '/' }}";
+            }
+        });
+        
+        // Show shortcuts info
+        console.log('Keyboard shortcuts: Ctrl+R to retry, Ctrl+H to go home');
+    </script>
+</body>
+</html>
