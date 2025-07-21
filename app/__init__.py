@@ -35,6 +35,15 @@ def create_app(config_name=None):
     # Set up error handling
     from app.error_handling import global_error_handler, global_error_metrics
     
+    # Initialize enhanced rate limit error handler
+    from app.security.enhanced_rate_limit_error_handler import enhanced_rate_limit_handler
+    enhanced_rate_limit_handler.init_app(app)
+    
+    # Register test routes for abuse detection (only in development)
+    if app.config.get('TESTING') or app.config.get('DEBUG'):
+        from app.security.abuse_detection_handler import register_test_routes
+        register_test_routes(app)
+    
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
