@@ -1,14 +1,3 @@
--- Test connection file for Docker MySQL
--- Use this small file to test the import process first
-
-CREATE TABLE IF NOT EXISTS migration_test (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    test_message VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO migration_test (test_message) VALUES 
-('Migration test successful!'),
-('Connection to Docker MySQL working!');
-
-SELECT 'Migration test completed successfully' as status;
+version https://git-lfs.github.com/spec/v1
+oid sha256:2fac9b0109b22c15cc20deea5ee7295490d20680881cbed1ee4d94b352b3f97c
+size 449
