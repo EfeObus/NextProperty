@@ -1,22 +1,31 @@
-# Deployment Guide
+# NextProperty AI - Deployment Guide (v2.8.0)
 
 ## Table of Contents
 - [Overview](#overview)
 - [Environment Setup](#environment-setup)
 - [Docker Deployment](#docker-deployment)
+- [API Key System Configuration](#api-key-system-configuration)
+- [Rate Limiting Setup](#rate-limiting-setup)
+- [Security Configuration](#security-configuration)
+- [Database Configuration](#database-configuration)
 - [Traditional Server Deployment](#traditional-server-deployment)
 - [Cloud Deployment](#cloud-deployment)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [SSL/HTTPS Configuration](#sslhttps-configuration)
 - [Monitoring and Logging](#monitoring-and-logging)
 - [Backup Strategies](#backup-strategies)
-- [Security Considerations](#security-considerations)
 - [Scaling and Load Balancing](#scaling-and-load-balancing)
 - [Troubleshooting](#troubleshooting)
 
 ## Overview
 
-This guide covers deployment options for NextProperty AI in production environments, from containerized deployments to traditional server setups.
+This guide covers deployment options for NextProperty AI v2.8.0 in production environments, including the new API key system, advanced rate limiting, and Docker database infrastructure.
+
+### New in v2.8.0
+- **5-Tier API Key System**: Complete API monetization and developer quota management
+- **Advanced Rate Limiting**: Geographic controls and predictive limiting
+- **Docker MySQL**: Production-ready database infrastructure
+- **Enhanced Security**: Multi-layer protection with behavioral analysis
 
 ### Deployment Options
 - **Docker Compose** (Recommended for small-medium deployments)
@@ -26,27 +35,39 @@ This guide covers deployment options for NextProperty AI in production environme
 
 ## Environment Setup
 
-### Production Environment Variables
-
-Create a `.env.production` file:
+### Production Environment Variables (.env.production)
 
 ```env
-# Application
+# Application Configuration
 FLASK_ENV=production
-DEBUG=False
-SECRET_KEY=your-super-secret-production-key-here
-SECURITY_PASSWORD_SALT=your-security-salt-here
+FLASK_DEBUG=False
+SECRET_KEY=your-production-secret-key-256-bits
+EXPIRY_DATE=2025-12-31
+WTF_CSRF_SECRET_KEY=your-csrf-secret-key
 
-# Database
-DATABASE_URL=mysql://username:password@db-server:3306/nextproperty_prod
-SQLALCHEMY_ENGINE_OPTIONS='{"pool_size": 20, "pool_recycle": 300, "pool_pre_ping": true}'
+# Database Configuration (Docker MySQL)
+DATABASE_URL=mysql+pymysql://studentGroup:juifcdhoifdqw13f@184.107.4.32:8001/NextProperty
 
-# Redis Cache
-CACHE_TYPE=redis
-CACHE_REDIS_HOST=redis-server
-CACHE_REDIS_PORT=6379
-CACHE_REDIS_DB=0
-CACHE_REDIS_PASSWORD=your-redis-password
+# Redis Configuration (Required for Production)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_PASSWORD=your-redis-password
+
+# API Key System Configuration
+API_KEYS_STORAGE_FILE=api_keys_storage.json
+API_KEY_ENCRYPTION_KEY=your-api-key-encryption-key
+
+# Rate Limiting Configuration
+RATE_LIMIT_STORAGE_URI=redis://localhost:6379/1
+RATE_LIMIT_STRATEGY=rolling-window
+RATE_LIMIT_HEADERS_ENABLED=true
+
+# Security Configuration
+SECURITY_HEADERS_ENABLED=true
+CSP_NONCE_ENABLED=true
+XSS_PROTECTION_ENABLED=true
+BEHAVIORAL_ANALYSIS_ENABLED=true
 
 # External APIs
 BOC_API_KEY=your-bank-of-canada-api-key

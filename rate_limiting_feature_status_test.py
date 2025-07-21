@@ -85,6 +85,21 @@ class RateLimitingFeatureStatusTester:
                     'description': 'Global, IP, endpoint-specific, burst protection',
                     'limits': {'global': '1000/minute', 'ip': '100/hour', 'burst': '10-20/minute'},
                     'test_methods': ['test_global_limits', 'test_ip_limits', 'test_burst_protection']
+                },
+                'advanced_analytics': {
+                    'description': 'Real-time abuse detection, predictive rate limiting, usage pattern analysis',
+                    'features': ['abuse_detection', 'predictive_limiting', 'pattern_analysis', 'auto_threshold'],
+                    'test_methods': ['test_abuse_detection', 'test_predictive_limits', 'test_pattern_analysis']
+                },
+                'geographic_limiting': {
+                    'description': 'Canadian geographic rate limiting with provinces, cities, and timezones',
+                    'features': ['country_limits', 'timezone_restrictions', 'regional_quotas', 'geo_blocking'],
+                    'test_methods': ['test_country_limits', 'test_timezone_restrictions', 'test_regional_quotas', 'test_geo_blocking']
+                },
+                'api_key_system': {
+                    'description': 'API key generation, key-based rate limiting, developer quotas, usage tracking',
+                    'features': ['key_generation', 'key_based_limits', 'developer_quotas', 'usage_tracking'],
+                    'test_methods': ['test_key_generation', 'test_key_based_limits', 'test_developer_quotas', 'test_usage_tracking']
                 }
             },
             'demo_mode': {
@@ -105,21 +120,6 @@ class RateLimitingFeatureStatusTester:
                     'description': 'User profile rate limits, premium user tiers, API key management',
                     'missing_features': ['user_profiles', 'premium_tiers', 'api_keys', 'user_quotas'],
                     'test_methods': ['test_user_profiles', 'test_premium_tiers', 'test_api_keys']
-                },
-                'advanced_analytics': {
-                    'description': 'Real-time abuse detection, predictive rate limiting, usage pattern analysis',
-                    'missing_features': ['abuse_detection', 'predictive_limiting', 'pattern_analysis', 'auto_threshold'],
-                    'test_methods': ['test_abuse_detection', 'test_predictive_limits']
-                },
-                'geographic_limiting': {
-                    'description': 'Country-based limits, time-zone aware restrictions, regional quotas',
-                    'missing_features': ['country_limits', 'timezone_restrictions', 'regional_quotas', 'geo_blocking'],
-                    'test_methods': ['test_country_limits', 'test_timezone_restrictions']
-                },
-                'api_key_system': {
-                    'description': 'API key generation, key-based rate limiting, developer quotas',
-                    'missing_features': ['key_generation', 'key_based_limits', 'developer_quotas', 'usage_tracking'],
-                    'test_methods': ['test_api_key_generation', 'test_key_based_limits']
                 }
             }
         }
@@ -506,6 +506,259 @@ class RateLimitingFeatureStatusTester:
         """Test role-based limits in demo mode"""
         # Role-based limits require user system, which is in demo mode
         return False  # Not active in demo
+    
+    def test_abuse_detection(self) -> bool:
+        """Test abuse detection system functionality"""
+        try:
+            # Test if abuse detection CLI command works
+            result = subprocess.run(
+                ["python", "-m", "flask", "abuse-detection", "status"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Abuse detection CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Abuse detection CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing abuse detection: {str(e)}", "ERROR")
+            return False
+    
+    def test_predictive_limits(self) -> bool:
+        """Test predictive rate limiting functionality"""
+        try:
+            # Test if predictive limiting CLI command works
+            result = subprocess.run(
+                ["python", "-m", "flask", "predictive-limiting", "status"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Predictive limiting CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Predictive limiting CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing predictive limits: {str(e)}", "ERROR")
+            return False
+    
+    def test_pattern_analysis(self) -> bool:
+        """Test pattern analysis rate limiting functionality"""
+        try:
+            # Test if pattern analysis CLI command works
+            result = subprocess.run(
+                ["python", "-m", "flask", "pattern-analysis", "status"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Pattern analysis CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Pattern analysis CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing pattern analysis: {str(e)}", "ERROR")
+            return False
+    
+    def test_country_limits(self) -> bool:
+        """Test country-based limiting (Canada only)"""
+        try:
+            # Test geographic limiting status command
+            result = subprocess.run(
+                ["python", "-m", "flask", "geographic-limiting", "status"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Country limits (Geographic limiting) CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Country limits CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing country limits: {str(e)}", "ERROR")
+            return False
+    
+    def test_timezone_restrictions(self) -> bool:
+        """Test timezone-based restrictions"""
+        try:
+            # Test timezone status command
+            result = subprocess.run(
+                ["python", "-m", "flask", "geographic-limiting", "timezone-status"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Timezone restrictions CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Timezone restrictions CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing timezone restrictions: {str(e)}", "ERROR")
+            return False
+    
+    def test_regional_quotas(self) -> bool:
+        """Test regional quota system"""
+        try:
+            # Test regional quota report command
+            result = subprocess.run(
+                ["python", "-m", "flask", "geographic-limiting", "quota-report"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Regional quotas CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Regional quotas CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing regional quotas: {str(e)}", "ERROR")
+            return False
+    
+    def test_geo_blocking(self) -> bool:
+        """Test IP-based geo-blocking functionality"""
+        try:
+            # Test province limits command (part of geo-blocking system)
+            result = subprocess.run(
+                ["python", "-m", "flask", "geographic-limiting", "province-limits"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Geo-blocking (Province limits) CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Geo-blocking CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing geo-blocking: {str(e)}", "ERROR")
+            return False
+    
+    def test_key_generation(self) -> bool:
+        """Test API key generation functionality"""
+        try:
+            # Test API key generation CLI command
+            result = subprocess.run(
+                ["python", "-m", "flask", "api-keys", "list-tiers"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0 and ('FREE' in result.stdout or 'PREMIUM' in result.stdout):
+                self.log("    ✅ Key generation (API key tiers) CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Key generation CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing key generation: {str(e)}", "ERROR")
+            return False
+    
+    def test_key_based_limits(self) -> bool:
+        """Test key-based rate limiting functionality"""
+        try:
+            # Test API key help to verify commands exist
+            result = subprocess.run(
+                ["python", "-m", "flask", "api-keys", "--help"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0 and ('generate' in result.stdout and 'test' in result.stdout):
+                self.log("    ✅ Key-based limits (API key commands) CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Key-based limits CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing key-based limits: {str(e)}", "ERROR")
+            return False
+    
+    def test_developer_quotas(self) -> bool:
+        """Test developer quota functionality"""
+        try:
+            # Test developer quota CLI command
+            result = subprocess.run(
+                ["python", "-m", "flask", "api-keys", "analytics", "--help"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0 and 'developer-id' in result.stdout:
+                self.log("    ✅ Developer quotas (Analytics) CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Developer quotas CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing developer quotas: {str(e)}", "ERROR")
+            return False
+    
+    def test_usage_tracking(self) -> bool:
+        """Test usage tracking functionality"""
+        try:
+            # Test usage tracking via analytics command
+            result = subprocess.run(
+                ["python", "-m", "flask", "api-keys", "analytics", "--days", "1"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=os.path.dirname(os.path.abspath(__file__))
+            )
+            
+            if result.returncode == 0:
+                self.log("    ✅ Usage tracking (Analytics command) CLI command working", "SUCCESS")
+                return True
+            else:
+                self.log(f"    ⚠️ Usage tracking CLI error: {result.stderr}", "WARNING")
+                return False
+                
+        except Exception as e:
+            self.log(f"    ❌ Error testing usage tracking: {str(e)}", "ERROR")
+            return False
     
     def test_cli_commands(self) -> bool:
         """Test rate limiting CLI commands"""

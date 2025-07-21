@@ -46,6 +46,7 @@ def create_app(config_name=None):
     limiter.init_app(app)
     
     # Initialize custom rate limiter
+    redis_client = None
     try:
         import redis
         redis_client = redis.Redis(
@@ -61,8 +62,30 @@ def create_app(config_name=None):
     except Exception as e:
         app.logger.warning(f"Redis not available for rate limiting: {e}")
         app.logger.info("Rate limiter will use in-memory backend")
+        redis_client = None
     
     rate_limiter.init_app(app)
+    
+    # Initialize abuse detection system
+    from app.security.abuse_detection import init_abuse_detection
+    try:
+        abuse_detector = init_abuse_detection(app, redis_client)
+        app.logger.info("Abuse detection system initialized successfully")
+    except Exception as e:
+        app.logger.warning(f"Abuse detection system initialization failed: {e}")
+    
+    # Initialize API key rate limiter
+    from app.security.api_key_limiter import get_api_key_limiter
+    try:
+        api_key_limiter = get_api_key_limiter()
+        # Set Redis client if available
+        if redis_client is not None:
+            api_key_limiter.redis_client = redis_client
+        # Store in app context for access across CLI commands
+        app.api_key_limiter = api_key_limiter
+        app.logger.info("API key rate limiter initialized successfully")
+    except Exception as e:
+        app.logger.warning(f"API key rate limiter initialization failed: {e}")
     
     # Initialize security middleware
     security_middleware.init_app(app)

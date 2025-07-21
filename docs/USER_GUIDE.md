@@ -1,37 +1,166 @@
-# NextProperty AI - User Guide
+# NextProperty AI - User Guide (v2.8.0)
 
 ## Table of Contents
 - [Getting Started](#getting-started)
+- [API Key System](#api-key-system)
 - [Account Management](#account-management)
 - [Property Search](#property-search)
 - [Property Listings](#property-listings)
-- [Price Predictions](#price-predictions)
+- [AI Price Predictions](#ai-price-predictions)
 - [Favorites Management](#favorites-management)
 - [Dashboard Overview](#dashboard-overview)
 - [Market Analysis](#market-analysis)
+- [API Usage](#api-usage)
 - [Mobile Experience](#mobile-experience)
 - [Troubleshooting](#troubleshooting)
 - [Frequently Asked Questions](#frequently-asked-questions)
 
 ## Getting Started
 
-### Welcome to NextProperty AI
+### Welcome to NextProperty AI v2.8.0
 
-NextProperty AI is an advanced real estate platform that combines traditional property search with cutting-edge artificial intelligence to provide accurate property valuations and market insights. Whether you're buying, selling, or investing in real estate, our platform provides the tools and data you need to make informed decisions.
+NextProperty AI is an advanced real estate platform that combines traditional property search with cutting-edge artificial intelligence to provide accurate property valuations and market insights. With our new API key system, developers can integrate our AI-powered property analysis into their own applications.
+
+### ✨ New in v2.8.0
+- **🔑 5-Tier API Key System**: FREE, BASIC, PREMIUM, ENTERPRISE, and UNLIMITED tiers
+- **📊 Developer Analytics**: Real-time usage monitoring and quota management
+- **🌍 Geographic Controls**: Canadian province and city-based access management
+- **⚡ Advanced Rate Limiting**: Enhanced protection with predictive capabilities
+- **🐳 Docker Database**: Production-ready MySQL infrastructure
 
 ### Key Features
-- **Smart Property Search**: Find properties using advanced filters and AI-powered recommendations
-- **AI Price Predictions**: Get instant, accurate property valuations using machine learning
-- **Market Analysis**: Access real-time economic data and market trends
-- **Favorites Management**: Save and organize properties you're interested in
-- **Professional Network**: Connect with verified real estate agents
-- **Mobile-Friendly**: Access all features on any device
+- **🤖 AI-Powered Analysis**: 88.3% accuracy with 6+ machine learning models
+- **🔍 Smart Property Search**: Advanced filters with AI-powered recommendations
+- **💰 Instant Valuations**: Real-time property price predictions
+- **📈 Market Intelligence**: Live economic data from Bank of Canada & Statistics Canada
+- **⭐ Favorites Management**: Save and organize properties of interest
+- **🏘️ Professional Network**: Connect with verified real estate agents
+- **📱 Mobile-Friendly**: Full functionality on any device
+- **🔒 Enterprise Security**: Multi-layer protection with behavioral analysis
 
 ### System Requirements
 - **Web Browser**: Chrome 70+, Firefox 65+, Safari 12+, Edge 79+
-- **Internet Connection**: Broadband recommended
-- **JavaScript**: Must be enabled
-- **Cookies**: Must be enabled for login functionality
+- **Internet Connection**: Broadband recommended for optimal performance
+- **JavaScript**: Must be enabled for full functionality
+- **Cookies**: Required for authentication and preferences
+
+---
+
+## 🔑 API Key System
+
+### Overview
+The API Key system allows developers to access NextProperty AI's powerful property analysis and prediction capabilities programmatically. Choose from 5 tiers based on your needs.
+
+### API Tier Comparison
+
+| Feature | FREE | BASIC | PREMIUM | ENTERPRISE | UNLIMITED |
+|---------|------|-------|---------|------------|-----------|
+| **Requests/min** | 10 | 60 | 300 | 1,500 | 10,000 |
+| **Requests/hour** | 100 | 1,000 | 5,000 | 25,000 | 100,000 |
+| **Requests/day** | 1,000 | 10,000 | 50,000 | 250,000 | 1,000,000 |
+| **Data Transfer** | 10MB/day | 100MB/day | 1GB/day | 10GB/day | 100GB/day |
+| **Compute Time** | 60s/day | 300s/day | 1,800s/day | 7,200s/day | 86,400s/day |
+| **Support** | Community | Email | Priority | 24/7 Phone | Dedicated Manager |
+| **SLA** | None | 99% | 99.5% | 99.9% | 99.99% |
+
+### Getting Started with API Keys
+
+#### 1. Request API Access
+- Contact our team at api@nextproperty.ai
+- Specify your use case and expected usage
+- Choose appropriate tier based on requirements
+
+#### 2. API Key Format
+```
+npai_{tier}_{random_string}
+Example: npai_premium_k8x9m2n4p7q1w5e8r3t6y0u2i5o9
+```
+
+#### 3. API Authentication
+```bash
+# Include API key in request headers
+curl -H "X-API-Key: npai_premium_..." \
+     https://nextproperty.ai/api/properties
+```
+
+### API Usage Examples
+
+#### Property Search
+```python
+import requests
+
+headers = {'X-API-Key': 'npai_premium_...'}
+params = {
+    'city': 'Toronto',
+    'min_price': 500000,
+    'max_price': 1000000,
+    'bedrooms': 3
+}
+
+response = requests.get(
+    'https://nextproperty.ai/api/properties',
+    headers=headers,
+    params=params
+)
+
+properties = response.json()
+```
+
+#### Price Prediction
+```python
+prediction_data = {
+    'sqft': 2000,
+    'bedrooms': 3,
+    'bathrooms': 2,
+    'city': 'Toronto',
+    'property_type': 'house'
+}
+
+response = requests.post(
+    'https://nextproperty.ai/api/predict',
+    headers=headers,
+    json=prediction_data
+)
+
+prediction = response.json()
+print(f"Predicted price: ${prediction['price']:,.2f}")
+print(f"Confidence: {prediction['confidence']:.1%}")
+```
+
+#### Market Analytics
+```python
+response = requests.get(
+    'https://nextproperty.ai/api/market/toronto',
+    headers=headers
+)
+
+market_data = response.json()
+print(f"Average price: ${market_data['avg_price']:,.2f}")
+print(f"Market trend: {market_data['trend']}")
+```
+
+### API Usage Monitoring
+
+#### Check Your Usage
+```python
+response = requests.get(
+    'https://nextproperty.ai/api/usage',
+    headers=headers
+)
+
+usage = response.json()
+print(f"Requests today: {usage['requests_today']}/{usage['daily_limit']}")
+print(f"Data transfer: {usage['data_transfer_mb']:.1f}MB/{usage['data_limit_mb']}MB")
+```
+
+#### Rate Limiting Headers
+All API responses include rate limiting information:
+```http
+X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 245
+X-RateLimit-Reset: 1642694400
+X-RateLimit-Retry-After: 60
+```
 
 ## Account Management
 

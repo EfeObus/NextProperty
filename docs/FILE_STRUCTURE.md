@@ -1,62 +1,171 @@
+# NextProperty AI - File Structure (v2.8.0)
+
+## Project Organization
+
 ```
 nextproperty-ai/
- app/
-    __init__.py                 # Flask application factory
-    extensions.py               # Flask extensions initialization  
-    error_handling.py           # Global error handlers
-    logging_config.py           # Logging configuration
-    models/                     # Database models
-       property.py             # Property model and database operations
-       agent.py                # Real estate agent model
-       economic_data.py        # Economic indicators model
-       user.py                 # User authentication model
-       favourite.py            # User favorites model
-    routes/                     # Application routes/blueprints
-       api.py                  # Enhanced REST API endpoints
-       main.py                 # Main web routes
-       admin.py                # Admin routes
-       dashboard.py            # Dashboard routes
-    services/                   # Business logic layer
-       ml_service.py           # Enhanced ML service (6+ models)
-       data_service.py         # Data processing and analysis
-       economic_service.py     # Economic data integration
-       external_apis.py        # BoC and StatCan API integration
-       geospatial_service.py   # Location-based services
-       data_processors.py      # Data cleaning and processing
-       database_optimizer.py   # Database performance optimization
-       etl_service.py          # ETL operations service
-       export_service.py       # Enhanced export capabilities
-    security/                   #  SECURITY MODULE (ENHANCED)
-       __init__.py
-       middleware.py           # Security middleware and decorators
-       config.py               # Security configuration
-       rate_limiter.py         #  Advanced rate limiting engine (NEW)
-       rate_limit_config.py    #  Rate limiting configuration (NEW)
-       advanced_xss.py         # Advanced XSS protection
-       behavioral_analysis.py  # Behavioral security analysis
-       enhanced_csp.py         # Enhanced CSP management
-       advanced_validation.py  # ML-based input validation
-       enhanced_integration.py # Unified security framework
-       enhanced_config.py      # Enhanced security configuration
-    forms/                      #  SECURE FORMS MODULE (NEW)
-       __init__.py
-       secure_forms.py         # XSS-protected form fields
-    cli/                        # Command Line Interface
-       __init__.py
-       etl_commands.py         # ETL and model management CLI commands
-       rate_limit_commands.py  #  Rate limiting management CLI (NEW)
-    cache/                      # Caching system
-       __init__.py
-       api_cache.py            # API response caching
-       cache_decorators.py     # Cache decorators
-       cache_manager.py        # Cache management utilities
-       cache_warming.py        # Cache warming strategies
-       market_cache.py         # Market data caching
-       property_cache.py       # Property data caching
-    data/                       # Application data processing
-       __init__.py
-       processors.py           # Data processing utilities
-    templates/                  # Jinja2 HTML templates
+├── app/
+│   ├── __init__.py                    # Flask application factory with API key limiter
+│   ├── extensions.py                  # Flask extensions (Flask-Limiter, CSRF, etc.)
+│   ├── error_handling.py              # Global error handlers
+│   ├── logging_config.py              # Logging configuration
+│   │
+│   ├── models/                        # Database models
+│   │   ├── __init__.py
+│   │   ├── property.py                # Property model with performance optimizations
+│   │   ├── agent.py                   # Real estate agent model
+│   │   ├── economic_data.py           # Economic indicators model
+│   │   ├── user.py                    # User authentication model
+│   │   └── favourite.py               # User favorites model
+│   │
+│   ├── routes/                        # Application routes/blueprints
+│   │   ├── __init__.py
+│   │   ├── api.py                     # REST API endpoints with rate limiting
+│   │   ├── main.py                    # Main web routes with CSRF protection
+│   │   ├── admin.py                   # Admin routes with enhanced security
+│   │   └── dashboard.py               # Dashboard routes
+│   │
+│   ├── services/                      # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── ml_service.py              # Enhanced ML service (6+ models, 88.3% accuracy)
+│   │   ├── data_service.py            # Data processing and analysis
+│   │   ├── economic_service.py        # Economic data integration (BoC/StatCan)
+│   │   ├── external_apis.py           # External API integrations
+│   │   ├── geospatial_service.py      # Location-based services
+│   │   ├── data_processors.py         # Data cleaning and processing
+│   │   ├── database_optimizer.py      # Database performance optimization
+│   │   ├── etl_service.py             # ETL operations service
+│   │   └── export_service.py          # Enhanced export capabilities
+│   │
+│   ├── security/                      # 🔒 COMPREHENSIVE SECURITY MODULE
+│   │   ├── __init__.py                # Security module initialization
+│   │   ├── middleware.py              # Security middleware and decorators
+│   │   ├── config.py                  # Security configuration
+│   │   ├── rate_limiter.py            # Advanced rate limiting engine
+│   │   ├── rate_limit_config.py       # Rate limiting configuration
+│   │   ├── api_key_limiter.py         # 🆕 API key rate limiting system (600+ lines)
+│   │   ├── advanced_xss.py            # Advanced XSS protection with ML
+│   │   ├── behavioral_analysis.py     # Behavioral security analysis
+│   │   ├── enhanced_csp.py            # Enhanced CSP management
+│   │   ├── advanced_validation.py     # ML-based input validation
+│   │   ├── enhanced_integration.py    # Unified security framework
+│   │   └── enhanced_config.py         # Enhanced security configuration
+│   │
+│   ├── forms/                         # 🔒 SECURE FORMS MODULE
+│   │   ├── __init__.py
+│   │   └── secure_forms.py            # XSS-protected form fields
+│   │
+│   ├── cli/                           # 🔧 COMMAND LINE INTERFACE
+│   │   ├── __init__.py                # CLI registration
+│   │   ├── etl_commands.py            # ETL and model management CLI
+│   │   ├── rate_limit_commands.py     # Rate limiting management CLI
+│   │   └── api_key_commands.py        # 🆕 API key management CLI (400+ lines)
+│   │
+│   ├── cache/                         # 📊 CACHING SYSTEM
+│   │   ├── __init__.py
+│   │   └── api_cache.py               # API response caching
+│   │
+│   ├── static/                        # 🎨 STATIC ASSETS
+│   │   ├── css/                       # Stylesheets with security headers
+│   │   ├── js/                        # JavaScript with CSRF protection
+│   │   ├── images/                    # Image assets
+│   │   └── uploads/                   # User uploaded files
+│   │
+│   ├── templates/                     # 🌐 JINJA2 TEMPLATES
+│   │   ├── base.html                  # Base template with security headers
+│   │   ├── index.html                 # Homepage with optimized loading
+│   │   ├── errors/
+│   │   │   └── 429.html               # Rate limit exceeded page
+│   │   ├── macros/
+│   │   │   └── secure_forms.html      # 🔒 Secure form macros
+│   │   ├── pages/                     # Static pages
+│   │   ├── properties/                # Property-related templates
+│   │   ├── dashboard/                 # Dashboard templates
+│   │   └── admin/                     # Admin templates
+│   │
+│   └── utils/                         # 🛠️ UTILITY MODULES
+│       ├── __init__.py
+│       ├── validators.py              # Data validation utilities
+│       ├── formatters.py              # Data formatting utilities
+│       ├── helpers.py                 # General helper functions
+│       └── constants.py               # Application constants
+│
+├── config/                            # ⚙️ CONFIGURATION
+│   ├── __init__.py
+│   ├── config.py                      # Application configuration with security settings
+│   └── logging.conf                   # Logging configuration
+│
+├── data/                              # 📊 DATA STORAGE
+│   ├── raw/                           # Raw data files
+│   ├── processed/                     # Processed datasets
+│   ├── models/                        # Trained ML models
+│   └── exports/                       # Data exports
+│
+├── database_export/                   # 🗄️ DATABASE EXPORTS
+│   └── nextproperty_backup.sql        # Database backup files
+│
+├── docs/                              # 📚 DOCUMENTATION
+│   ├── README.md                      # Main documentation
+│   ├── CHANGELOG.md                   # Version history and changes
+│   ├── COMPREHENSIVE_MANAGEMENT_REPORT.md  # Executive management report
+│   ├── DEVELOPMENT_GUIDE.md           # Development setup and guidelines
+│   ├── DEPLOYMENT_GUIDE.md            # Production deployment guide
+│   ├── API_DOCUMENTATION.md           # Complete API reference
+│   ├── MACHINE_LEARNING_DOCUMENTATION.md  # ML models and implementation
+│   ├── DATABASE_DOCUMENTATION.md      # Database schema and operations
+│   ├── SECURITY_IMPLEMENTATION.md     # Security implementation guide
+│   ├── RATE_LIMITING_COMPREHENSIVE_DOCUMENTATION.md  # Rate limiting guide
+│   ├── ARCHITECTURE_DOCUMENTATION.md  # System architecture
+│   ├── TESTING_DOCUMENTATION.md       # Testing procedures
+│   ├── PERFORMANCE_OPTIMIZATION.md    # Performance tuning guide
+│   ├── SECRET_KEY_MANAGEMENT.md       # Secret key management
+│   ├── FILE_STRUCTURE.md              # This file
+│   ├── USER_GUIDE.md                  # End-user documentation
+│   └── CONTRIBUTORS.md                # Contributing guidelines
+│
+├── instance/                          # 🔧 INSTANCE CONFIGURATION
+│   ├── config.py                      # Instance-specific configuration
+│   └── logs/                          # Application logs
+│
+├── logs/                              # 📋 LOGGING
+│   ├── application.log                # Application logs
+│   ├── error.log                      # Error logs
+│   └── security.log                   # Security event logs
+│
+├── migrations/                        # 🔄 DATABASE MIGRATIONS
+│   ├── versions/                      # Migration versions
+│   ├── alembic.ini                    # Alembic configuration
+│   ├── env.py                         # Migration environment
+│   └── script.py.mako                 # Migration script template
+│
+├── scripts/                           # 🔧 UTILITY SCRIPTS
+│   ├── generate_secret_key.py         # Secret key generation
+│   ├── generate_secret_key.sh         # Shell wrapper for automation
+│   ├── setup_secret_key_cron.sh       # Cron job setup
+│   ├── check_secret_key.py            # Secret key status checker
+│   ├── secret-key                     # Unified CLI tool
+│   ├── database_migration_script.py   # Database migration utilities
+│   └── SECRET_KEY_MANAGEMENT.md       # Secret key documentation
+│
+├── tests/                             # 🧪 TEST SUITE
+│   ├── __init__.py
+│   ├── test_models.py                 # Model unit tests
+│   ├── test_routes.py                 # Route integration tests
+│   ├── test_services.py               # Service layer tests
+│   ├── test_security.py               # Security feature tests
+│   ├── test_api.py                    # API endpoint tests
+│   ├── test_ml.py                     # ML model tests
+│   └── conftest.py                    # Test configuration
+│
+├── .env                               # 🔐 ENVIRONMENT VARIABLES
+├── .gitignore                         # Git ignore rules
+├── requirements.txt                   # 📦 Python dependencies
+├── pytest.ini                        # Testing configuration
+├── docker-compose.yml                # 🐳 Docker composition
+├── Dockerfile                        # Docker container definition
+├── README.md                          # 📖 Project README
+└── app.py                            # 🚀 Application entry point
+```
        base.html               # Base template with navigation
        index.html              # Landing page
        economic_dashboard.html # Economic indicators dashboard

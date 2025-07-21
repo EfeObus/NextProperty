@@ -1,8 +1,10 @@
-# NextProperty AI - Development Guide
+# NextProperty AI - Development Guide (v2.8.0)
 
 ## Table of Contents
 - [Getting Started](#getting-started)
 - [Development Environment](#development-environment)
+- [API Key System Development](#api-key-system-development)
+- [Security Development](#security-development)
 - [Code Standards](#code-standards)
 - [Project Structure](#project-structure)
 - [Development Workflow](#development-workflow)
@@ -17,7 +19,9 @@
 - Git
 - Virtual environment (venv, conda, or virtualenv)
 - Node.js (for frontend dependencies)
+- Docker (recommended for database)
 - MySQL 8.0+ (primary database)
+- Redis (for rate limiting - optional, falls back to in-memory)
 - SQLite (for testing only)
 
 ### Quick Start
@@ -28,6 +32,103 @@ cd "Nextproperty Real Estate"
 
 # Set up virtual environment
 python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment configuration
+cp .env.example .env
+# Edit .env with your specific configuration
+
+# Initialize database
+flask db upgrade
+
+# Generate initial API key for testing
+flask api-keys generate --developer-id dev-test --name "Development Key" --tier free
+
+# Run the application
+flask run
+```
+
+## Development Environment
+
+### Environment Variables (.env)
+```bash
+# Database Configuration (Docker MySQL recommended)
+DATABASE_URL=mysql+pymysql://studentGroup:juifcdhoifdqw13f@184.107.4.32:8001/NextProperty
+
+# Redis Configuration (optional - for distributed rate limiting)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DB=0
+
+# Security Configuration
+SECRET_KEY=your-secret-key-here
+EXPIRY_DATE=2025-08-20
+WTF_CSRF_SECRET_KEY=your-csrf-secret-key
+
+# Flask Configuration
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# API Configuration
+API_KEYS_STORAGE_FILE=api_keys_storage.json
+RATE_LIMIT_STORAGE_URI=redis://localhost:6379/1
+```
+
+## API Key System Development
+
+### Working with API Keys
+
+The API key system is central to v2.8.0. Here's how to work with it:
+
+#### CLI Commands for Development
+```bash
+# Generate test API keys
+flask api-keys generate --developer-id test-dev --name "Test API" --tier premium
+
+# Test API key functionality
+flask api-keys test --api-key npai_premium_... --endpoint /api/properties
+
+# Check key information and usage
+flask api-keys info --api-key npai_premium_... --format json
+
+# View analytics
+flask api-keys analytics --developer-id test-dev --days 7
+
+# Manage key lifecycle
+flask api-keys suspend --api-key npai_premium_...
+flask api-keys reactivate --api-key npai_premium_...
+flask api-keys revoke --api-key npai_premium_...
+```
+
+#### API Key Integration in Code
+```python
+from app.security.api_key_limiter import api_key_limiter
+
+# Protect routes with API key rate limiting
+@api.route('/properties')
+@api_key_limiter.limit_by_key()
+def get_properties():
+    return jsonify(properties)
+
+# Custom rate limiting
+@api.route('/expensive-operation')
+@api_key_limiter.limit_by_key(override_limits={'requests': '5/hour'})
+def expensive_operation():
+    return jsonify(result)
+```
+
+### API Key Tiers and Limits
+
+| Tier | Requests/min | Requests/hour | Requests/day | Data Transfer | Compute Time |
+|------|--------------|---------------|--------------|---------------|--------------|
+| FREE | 10 | 100 | 1,000 | 10MB/day | 60s/day |
+| BASIC | 60 | 1,000 | 10,000 | 100MB/day | 300s/day |
+| PREMIUM | 300 | 5,000 | 50,000 | 1GB/day | 1,800s/day |
+| ENTERPRISE | 1,500 | 25,000 | 250,000 | 10GB/day | 7,200s/day |
+| UNLIMITED | 10,000 | 100,000 | 1,000,000 | 100GB/day | 86,400s/day |
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies

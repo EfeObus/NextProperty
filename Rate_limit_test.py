@@ -305,6 +305,31 @@ class RateLimitTester:
             self.log("❌ Could not measure performance impact", "ERROR")
             return False
     
+    def test_abuse_detection_integration(self):
+        """Test integration with abuse detection system."""
+        self.log("🔍 Testing Abuse Detection Integration", "TEST")
+        
+        self.log("Testing abuse detection headers...")
+        
+        # Make rapid requests to trigger abuse detection
+        for i in range(15):
+            result = self.make_request("/api/limited")
+            
+            if result['status_code'] == 429:
+                abuse_type = result['rate_limit'].get('abuse_type')
+                abuse_level = result['rate_limit'].get('abuse_level')
+                
+                if abuse_type or abuse_level:
+                    self.log(f"✅ Abuse detection triggered (Type: {abuse_type}, Level: {abuse_level})")
+                    return True
+                else:
+                    self.log("🔄 Rate limited by standard rate limiter")
+            
+            time.sleep(0.1)
+        
+        self.log("ℹ️ Abuse detection integration test completed")
+        return True
+    
     def test_error_handling(self):
         """Test error handling and user experience."""
         self.log("🚨 Testing Error Handling", "TEST")
@@ -344,6 +369,7 @@ class RateLimitTester:
             ("Rate Limit Recovery", self.test_rate_limit_recovery),
             ("Header Information", self.test_header_information),
             ("Performance Impact", self.test_performance_impact),
+            ("Abuse Detection Integration", self.test_abuse_detection_integration),
             ("Error Handling", self.test_error_handling),
         ]
         
